@@ -1,0 +1,12 @@
+{
+	"recommendations": [
+		"dbaeumer.vscode-eslint",
+		"mikestead.dotenv",
+		"yoavbls.pretty-ts-errors",
+		"ecmel.vscode-html-css",
+		"ms-azuretools.vscode-containers",
+		"esbenp.prettier-vscode",
+		"svelte.svelte-vscode",
+		"ardenivanov.svelte-intellisense"
+	]
+}
