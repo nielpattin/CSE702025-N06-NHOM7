@@ -2,6 +2,16 @@
 
 ## Developing
 
+### 📋 Danh sách thành viên nhóm
+
+| STT | Họ và tên        | Mã sinh viên | Chức vụ     |
+|-----|------------------|--------------|-------------|
+| 1   | Trần Thành Long  | 23010070     | Nhóm trưởng |
+| 2   | Vương Quang Quý  | 23010039     | Thành viên  |
+| 3   | Nguyễn Xuân Mạnh | 23010045     | Thành viên  |
+| 4   | Vũ văn Sơn       | 23010060     | Thành viên  |
+
+
 ### Setup Environment
 
 - Copy the `.env.example` file to `.env` and set the environment variables.
