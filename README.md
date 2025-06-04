@@ -1,16 +1,13 @@
-# SvelteKit + TypeScript + pnpm + PostgreSQL + Eslint + Prettier + Husky + Commitlint + Lint-Staged
-
-## Developing
-
 ### 📋 Danh sách thành viên nhóm
 
-| STT | Họ và tên        | Mã sinh viên | Chức vụ     |
-|-----|------------------|--------------|-------------|
-| 1   | Trần Thành Long  | 23010070     | Nhóm trưởng |
-| 2   | Vương Quang Quý  | 23010039     | Thành viên  |
-| 3   | Nguyễn Xuân Mạnh | 23010045     | Thành viên  |
-| 4   | Vũ văn Sơn       | 23010060     | Thành viên  |
+| STT | Họ và tên        | Mã sinh viên | github username |
+| --- | ---------------- | ------------ | --------------- |
+| 1   | Trần Thành Long  | 23010070     | nielpattin      |
+| 2   | Vương Quang Quý  | 23010039     | akitosuref      |
+| 3   | Nguyễn Xuân Mạnh | 23010045     | xuanmanh-2110   |
+| 4   | Vũ Văn Sơn       | 23010060     | sunyn582        |
 
+## Developing
 
 ### Setup Environment
 
@@ -46,25 +43,22 @@ pnpm db:push
 pnpm dev --open
 ```
 
-## SvelteKit Checking (Optional)
+### SvelteKit Checking (Optional)
 
 ```bash
 # Check the SvelteKit app for errors
 pnpm check:watch
 ```
 
-## Contributing
+## Development Tech
 
-- Please make sure to follow the [contribution guidelines](CONTRIBUTING.md).
-  <!-- - Please make sure to follow the [code style guidelines](CODE_STYLE.md). -->
-  <!-- - Please make sure to follow the [commit message guidelines](COMMIT_MESSAGE.md). -->
-  <!-- - Please make sure to follow the [branch naming guidelines](BRANCH_NAMING.md). -->
-  <!-- - Please make sure to follow the [pull request guidelines](PULL_REQUEST.md). -->
-  <!-- - Please make sure to follow the [issue guidelines](ISSUE_TEMPLATE.md). -->
-  <!-- - Please make sure to follow the [release guidelines](RELEASE.md). -->
-  <!-- - Please make sure to follow the [versioning guidelines](VERSIONING.md). -->
-  <!-- - Please make sure to follow the [testing guidelines](TESTING.md). -->
-  <!-- - Please make sure to follow the [deployment guidelines](DEPLOYMENT.md). -->
-  <!-- - Please make sure to follow the [localization guidelines](LOCALIZATION.md). -->
-  <!-- - Please make sure to follow the [documentation guidelines](DOCUMENTATION.md). -->
-  <!-- - Please make sure to follow the [design guidelines](DESIGN.md). -->
+- SvelteKit
+- TypeScript
+- pnpm
+- PostgreSQL
+- Eslint
+- Prettier
+- Husky
+- Commitlint
+- Lint-Staged
+- TailwindCSS
