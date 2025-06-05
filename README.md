@@ -17,37 +17,22 @@
   - [pnpm](https://pnpm.io/installation#using-corepack) (latest version)
   - [Docker](https://www.docker.com/get-started) (for PostgreSQL)
 
-### Install dependencies
+### 🔧 Development Commands
 
 ```bash
-# Install package, setup husky, .svelte-kit folder
+# Setup
 pnpm install
-```
+pnpm db:start          # Start PostgreSQL container
+pnpm db:push           # Push schema changes
 
-### Run the database docker container (REQUIRED INSTALL DOCKER)
+# Development
+pnpm dev --open        # Start dev server
+pnpm check:watch       # Type checking
+pnpm format            # Format code
+pnpm lint              # Lint code
 
-```bash
-# Start the database container
-pnpm db:start
-
-# push the database schema (create tables, etc.) for the database
-# make sure to keep the database container running
-pnpm db:push
-
-```
-
-### Run the SvelteKit app
-
-```bash
-# Start the server and open the app in a new browser tab(automatically)
-pnpm dev --open
-```
-
-### SvelteKit Checking (Optional)
-
-```bash
-# Check the SvelteKit app for errors
-pnpm check:watch
+# Database
+pnpm db:studio         # Open Drizzle Studio
 ```
 
 ## Development Tech

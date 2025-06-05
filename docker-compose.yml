@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres
-    restart: always
+    # restart: always
     ports:
       - ${DB_PORT}:${DB_PORT}
     environment:
