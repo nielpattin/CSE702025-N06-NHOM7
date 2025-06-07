@@ -70,7 +70,9 @@ Dự án này nhằm mục đích phát triển một ứng dụng web trắc ng
 - **FR1.1:** Đăng nhập bằng Google OAuth - người dùng sử dụng tài khoản Google để xác thực.
 - **FR1.2:** Tự động tạo tài khoản người dùng mới khi đăng nhập lần đầu qua Google OAuth.
 - **FR1.3:** Đăng xuất và quản lý thông tin cá nhân (tên hiển thị, ảnh đại diện từ Google).
-- **FR1.4:** Phân quyền: User (tạo/tham gia quiz), Admin (quản lý hệ thống).
+- **FR1.4:** Phân quyền: Hệ thống chỉ có 2 vai trò:
+  - **User:** Có quyền tạo, quản lý quiz của riêng mình và tham gia vào các quiz khác.
+  - **Admin:** Có quyền quản lý toàn bộ hệ thống, bao gồm tất cả người dùng và quiz.
 - **FR1.5:** Hệ thống lưu trữ thông tin từ Google: email, tên, ảnh đại diện.
 
 ### FR2: Quản lý Quiz
@@ -130,13 +132,13 @@ Dự án này nhằm mục đích phát triển một ứng dụng web trắc ng
 ### 2.1. Trang chủ (`/`) - Chưa đăng nhập
 
 - Header với logo, navigation
-  - "Login" button chuyển đến `/login`
+  - "Sign in" button chuyển đến `/signin`
   - Enter Code to join button
 - Hero section
 - Features overview
 - Footer
 
-### 2.2. Authentication (`/login`)
+### 2.2. Authentication (`/signin`)
 
 - Trang đăng nhập với nhiều authentication providers
 - Google OAuth button (provider chính hiện tại)

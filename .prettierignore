@@ -5,3 +5,14 @@ yarn.lock
 bun.lock
 bun.lockb
 .vscode
+
+# Roo configuration
+.roo/
+
+# Build outputs
+.svelte-kit/
+build/
+dist/
+
+# Database files
+drizzle/

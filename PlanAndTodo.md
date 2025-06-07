@@ -61,8 +61,8 @@
 
 #### Thiết lập dự án & hạ tầng core
 
-- [ ] Thiết lập Auth.js với Google OAuth provider trong [`src/hooks.server.ts`](src/hooks.server.ts)
-- [ ] Cấu hình environment variables và secrets trong [`.env`](.env)
+- [x] Thiết lập Auth.js với Google OAuth provider trong [`src/hooks.server.ts`](src/hooks.server.ts)
+- [x] Cấu hình environment variables và secrets trong [`.env`](.env)
 - [ ] Thiết lập session management và middleware
 - [ ] Kiểm thử Google OAuth flow từ đầu đến cuối
 - [ ] Cập nhật user table schema trong [`src/lib/server/db/schema.ts`](src/lib/server/db/schema.ts:1) cho authentication

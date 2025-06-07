@@ -13,8 +13,9 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"db:start": "docker compose up",
-		"db:push": "drizzle-kit push",
+		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
+		"db:check": "drizzle-kit check --dialect=postgresql --out=./drizzle",
 		"db:studio": "drizzle-kit studio"
 	},
 	"devDependencies": {
@@ -40,13 +41,16 @@
 		"prettier-plugin-svelte": "^3.3.3",
 		"prettier-plugin-tailwindcss": "^0.6.11",
 		"svelte": "^5.28.2",
-		"tailwindcss": "^4.0.0",
 		"svelte-check": "^4.1.7",
+		"tailwindcss": "^4.0.0",
 		"typescript": "^5.8.3",
 		"typescript-eslint": "^8.32.0",
-		"vite": "^6.3.5"
+		"vite": "^6.3.5",
+		"vite-plugin-devtools-json": "^0.1.0"
 	},
 	"dependencies": {
+		"@auth/drizzle-adapter": "^1.9.1",
+		"@auth/sveltekit": "^1.9.2",
 		"drizzle-orm": "^0.40.0",
 		"pg": "^8.16.0"
 	},

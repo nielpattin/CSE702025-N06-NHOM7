@@ -1,91 +1,138 @@
-<script>
-	export let data
+<script lang="ts">
+	import { page } from "$app/state"
+	import { signOut } from "@auth/sveltekit/client"
+	import { goto } from "$app/navigation"
 
-	$: dbStatus = data.dbStatus
+	let data = $derived(page.data)
+	let session = $derived(data.session)
+	let { userRole } = $derived(data)
+
+	function handleSignIn() {
+		goto("/signin")
+	}
 </script>
 
-<div class="container mx-auto p-8">
-	<h1 class="mb-6 text-3xl font-bold">Welcome to Quiz Learn</h1>
+<svelte:head>
+	<title>Home</title>
+	<meta name="description" content="SvelteKit authentication demo with Auth.js" />
+</svelte:head>
 
-	<!-- Database Connection Status -->
-	<div class="mb-6 rounded-lg bg-white p-6 shadow-md">
-		<h2 class="mb-4 text-2xl font-semibold">Database Connection Status</h2>
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+	<!-- Header -->
+	<header class="border-b border-gray-700 bg-gray-900 shadow-lg">
+		<nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+			<div class="flex h-16 items-center justify-between">
+				<!-- Logo -->
+				<div class="flex items-center space-x-3">
+					<div class="flex h-8 w-8 items-center justify-center rounded-lg">
+						<img src="/quiz-learn-logo.png" alt="Quiz Learn Logo" class="h-8 w-8 object-contain" />
+					</div>
+					<span class="text-xl font-semibold text-white">Quiz Learn</span>
+				</div>
 
-		<div class="space-y-4">
-			<!-- Connection Status -->
-			<div class="flex items-center space-x-3">
-				<div class="flex-shrink-0">
-					{#if dbStatus.connected}
-						<div class="h-3 w-3 rounded-full bg-green-500"></div>
+				<!-- Authentication Section -->
+				<div class="flex items-center space-x-4">
+					{#if session?.user}
+						<!-- User info when authenticated -->
+						<div class="flex items-center space-x-3">
+							{#if session.user.image}
+								<img src={session.user.image} alt="Profile" class="h-8 w-8 rounded-full ring-2 ring-blue-400 ring-offset-2 ring-offset-gray-900" />
+							{/if}
+							<span class="hidden text-sm text-gray-300 sm:block">
+								{session.user.name || session.user.email}
+							</span>
+							<button onclick={() => signOut()} class="inline-flex cursor-pointer items-center rounded-md border border-gray-600 bg-gray-800 px-4 py-2 text-sm font-medium text-gray-200 shadow-sm transition-colors hover:border-gray-500 hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> Sign Out </button>
+						</div>
 					{:else}
-						<div class="h-3 w-3 rounded-full bg-red-500"></div>
+						<!-- Sign In button for non-authenticated users -->
+						<button onclick={handleSignIn} class="inline-flex cursor-pointer items-center rounded-md border border-transparent bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> Sign In </button>
 					{/if}
 				</div>
-				<div>
-					<p class="text-lg font-medium">
-						Status: <span class={dbStatus.connected ? "text-green-600" : "text-red-600"}>
-							{dbStatus.connected ? "Connected" : "Disconnected"}
+			</div>
+		</nav>
+	</header>
+
+	<!-- Main Content -->
+	<main class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+		{#if session?.user}
+			<!-- Authenticated User View -->
+			<div class="text-center">
+				<!-- Welcome Section -->
+				<div class="mb-8">
+					<div class="mb-6 flex justify-center">
+						{#if session.user.image}
+							<img src={session.user.image} alt="Profile" class="h-24 w-24 rounded-full shadow-lg ring-4 ring-blue-400 ring-offset-4 ring-offset-gray-800" />
+						{:else}
+							<div class="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg ring-4 ring-blue-400 ring-offset-4 ring-offset-gray-800">
+								<span class="text-2xl font-bold text-white">
+									{session.user.name?.charAt(0) || session.user.email?.charAt(0) || "U"}
+								</span>
+							</div>
+						{/if}
+					</div>
+
+					<h1 class="mb-2 text-4xl font-bold text-white">
+						Hi, {session.user.name || "there"}! 👋
+					</h1>
+
+					<p class="mb-2 text-xl text-gray-300">Welcome back to your dashboard</p>
+
+					<!-- Role Display -->
+					<div class="mb-6 inline-flex items-center rounded-full px-4 py-2 text-sm font-medium {userRole === 'Admin' ? 'bg-red-900 text-red-200' : 'bg-blue-900 text-blue-200'}">
+						<span class="mr-2">
+							{userRole === "Admin" ? "👑" : "🎓"}
 						</span>
-					</p>
-					<p class="text-gray-600">{dbStatus.message}</p>
+						Role: {userRole?.toUpperCase() || "USER"}
+					</div>
+				</div>
+
+				<!-- Role-based Content -->
+				<div class="grid gap-6 md:grid-cols-2">
+					<!-- User Content -->
+					<div class="rounded-lg bg-gray-800 p-6 shadow-lg">
+						<h3 class="mb-3 text-xl font-semibold text-white">📝 User Features</h3>
+						<p class="mb-4 text-gray-300">Access your quizzes and track your progress.</p>
+						<ul class="space-y-2 text-sm text-gray-400">
+							<li>• Take quizzes</li>
+							<li>• View results</li>
+							<li>• Track progress</li>
+						</ul>
+					</div>
+
+					<!-- Admin Content (only visible to admins) -->
+					{#if userRole === "Admin"}
+						<div class="rounded-lg bg-gray-800 p-6 shadow-lg ring-2 ring-red-500">
+							<h3 class="mb-3 text-xl font-semibold text-red-400">👑 Admin Features</h3>
+							<p class="mb-4 text-gray-300">Full system administration and user management.</p>
+							<ul class="mb-4 space-y-2 text-sm text-gray-400">
+								<li>• Manage users</li>
+								<li>• Assign roles</li>
+								<li>• System settings</li>
+								<li>• Analytics</li>
+							</ul>
+							<a href="/admin" class="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"> Open Admin Panel → </a>
+						</div>
+					{/if}
 				</div>
 			</div>
-
-			<!-- Database Details -->
-			{#if dbStatus.connected}
-				<div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-					<div class="rounded bg-gray-50 p-4">
-						<h3 class="font-semibold text-gray-800">User Table</h3>
-						<p class="text-sm text-gray-600">
-							Exists: <span class={dbStatus.userTableExists ? "text-green-600" : "text-red-600"}>
-								{dbStatus.userTableExists ? "Yes" : "No"}
-							</span>
-						</p>
-						<p class="text-sm text-gray-600">Records: {dbStatus.userCount}</p>
+		{:else}
+			<!-- Non-authenticated User View -->
+			<div class="text-center">
+				<!-- Hero Section -->
+				<div class="mb-12">
+					<div class="mb-8 flex justify-center">
+						<div class="flex h-32 w-32 items-center justify-center rounded-2xl shadow-2xl">
+							<img src="/quiz-learn-logo.png" alt="Quiz Learn Logo" class="h-32 w-32 object-contain" />
+						</div>
 					</div>
 
-					<div class="rounded bg-gray-50 p-4">
-						<h3 class="font-semibold text-gray-800">Test Query</h3>
-						<p class="text-sm text-gray-600">{dbStatus.testQuery?.query || "N/A"}</p>
-						<p class="text-xs text-gray-500">
-							Status: <span class="text-green-600">Success</span>
-						</p>
-					</div>
+					<h1 class="mb-6 text-5xl font-bold text-white">
+						Welcome to <span class="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Quiz Learn</span>
+					</h1>
+
+					<p class="mb-8 text-xl text-gray-300">Please sign in to access your personalized learning experience</p>
 				</div>
-
-				<!-- Sample Data -->
-				{#if dbStatus.sampleData}
-					<div class="mt-4 rounded bg-blue-50 p-4">
-						<h3 class="mb-2 font-semibold text-blue-800">Sample User Data</h3>
-						<pre class="overflow-x-auto text-sm text-blue-700">{JSON.stringify(
-								dbStatus.sampleData,
-								null,
-								2
-							)}</pre>
-					</div>
-				{:else if dbStatus.userTableExists}
-					<div class="mt-4 rounded bg-yellow-50 p-4">
-						<p class="text-yellow-800">User table exists but contains no data</p>
-					</div>
-				{/if}
-			{:else}
-				<!-- Error Details -->
-				<div class="mt-4 rounded bg-red-50 p-4">
-					<h3 class="mb-2 font-semibold text-red-800">Error Details</h3>
-					<p class="text-sm text-red-700">{dbStatus.error}</p>
-				</div>
-			{/if}
-
-			<!-- Timestamp -->
-			<div class="mt-4 text-xs text-gray-500">
-				Last checked: {new Date(dbStatus.timestamp).toLocaleString()}
 			</div>
-		</div>
-	</div>
+		{/if}
+	</main>
 </div>
-
-<style>
-	.container {
-		max-width: 1200px;
-	}
-</style>
