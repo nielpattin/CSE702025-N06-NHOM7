@@ -8,6 +8,13 @@
       "when": 1749308432823,
       "tag": "0000_free_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1749310972222,
+      "tag": "0001_red_power_man",
+      "breakpoints": true
     }
   ]
 }
