@@ -9,57 +9,6 @@
 | Nguyễn Xuân Mạnh | xuanmanh-2110   | Auth & Results UI       |
 | Vũ Văn Sơn       | sunyn582        | Dashboard & Sessions UI |
 
-## 🎯 Phạm vi dự án
-
-## 🥅 Mục tiêu dự án
-
-- Phát triển một nền tảng trắc nghiệm trực tuyến đa năng, dễ sử dụng.
-- Cung cấp các tính năng tạo trắc nghiệm linh hoạt cho người dùng.
-- Mang lại trải nghiệm làm trắc nghiệm thú vị và có tính tương tác cao.
-- Đảm bảo hệ thống hoạt động ổn định và có khả năng mở rộng.
-
-## ⚙️ Công nghệ sử dụng
-
-- **Frontend & Backend:** SvelteKit
-- **Ngôn ngữ:** TypeScript
-- **Database:** PostgreSQL with Drizzle ORM
-- **Authentication:** Auth.js với Google OAuth Provider
-- **OAuth Provider:** Google OAuth 2.0
-- **Styling:** CSS thuần hoặc TailwindCSS
-- **Deployment:** Docker via Coolify
-
-### Core Features (In-Scope):
-
-- **Quản lý người dùng:** Đăng ký, đăng nhập, phân quyền (User, Admin).
-- **Tạo và quản lý Quiz:**
-  - Tạo quiz với câu hỏi trắc nghiệm nhiều lựa chọn và đúng/sai.
-  - Thêm hình ảnh vào câu hỏi.
-  - Thiết lập thời gian, điểm số cho câu hỏi.
-  - Chỉnh sửa, xóa quiz.
-- **Tham gia Quiz:**
-  - Người tham gia có thể bắt đầu bất cứ lúc nào, làm lại nhiều lần đến khi hết hạn
-  - Người dùng tham gia quiz qua link chia sẻ hoặc mã mời.
-  - Trả lời câu hỏi trong thời gian giới hạn.
-  - Xem kết quả và lịch sử các lần làm bài.
-- **Dashboard cho người tạo quiz:**
-  - Active Sessions: Xem các self-paced sessions đang hoạt động
-  - Thống kê chi tiết cho từng session
-- **Xem kết quả:**
-  - Người tạo quiz xem thống kê đơn giản.
-- **Guest Player Behavior:**
-  - Người chơi không cần đăng nhập có thể tham gia bằng nickname.
-  - Dữ liệu của Guest (điểm số, các lần thử) chỉ được lưu trong phạm vi của `Quiz Session` và có thể bị xóa sau khi session kết thúc. Lịch sử làm bài không được lưu trữ lâu dài cho guest.
-
-### Tính năng phát triển sau:
-
-- Live Quiz (Kahoot-style): Host đợi ít nhất 1 người tham gia, tất cả làm bài đồng thời
-- WebSocket integration cho real-time features
-- Lobby system và synchronized gameplay
-- Real-time leaderboards
-- Câu hỏi điền từ ngắn (Short Answer)
-- Báo cáo chi tiết và xuất file
-- AI tạo quiz tự động
-
 ## 📅 Các giai đoạn phát triển
 
 - **Sprint 1-2:** Thiết lập dự án, User Management & Authentication.
@@ -95,28 +44,8 @@
 
 #### Database Schema
 
-- [ ] Thiết kế quiz, question, answer tables
-- [ ] Tạo quiz-session và attempt tracking tables
-- [ ] Thiết lập database relationships và foreign keys
-- [x] Viết migration files và kiểm thử schema
-  - [x] users, accounts, sessions (for Auth.js)
-  - [ ] quizzes, questions, answers, attempts, responses, quiz-sessions
-- [ ] Push schema changes sử dụng `pnpm db:push`
-
-#### Quiz CRUD API
-
-- [ ] Tạo quiz endpoints
-- [ ] Triển khai question management
-- [ ] Xây dựng quiz update/delete endpoints
-- [ ] Thêm image upload handling cho questions
-- [ ] Tạo quiz validation và error handling
-
-#### Session Management
-
-- [ ] Triển khai session creation API
-- [ ] Xây dựng session state management và validation
-- [ ] Tạo session join logic và participant tracking
-- [ ] Thêm session expiration và cleanup handling
+- [x] user, account, session
+- [x] Thiết kế quiz, question, question_option, quiz_session, session_participant, game_attempt, session_question, session_question_option, question_attempt
 
 ### Giai đoạn 3: Quiz Playing & Results
 
@@ -243,36 +172,21 @@
 
 ---
 
-## 📊 sunyn582 - Frontend Developer
-
-### Giai đoạn 1: Dashboard Layout
+## 📊 sunyn582 - Dashboard UI
 
 #### Cấu trúc Dashboard
 
-- [ ] Tạo main dashboard layout
-- [ ] Xây dựng sidebar navigation component
+- [x] Tạo main dashboard layout
+- [x] Xây dựng sidebar navigation component
 - [ ] Triển khai user menu và profile section
-- [ ] Thêm responsive sidebar với mobile hamburger menu
-- [ ] Tạo consistent dashboard header và breadcrumbs
-
-### Giai đoạn 2: Dashboard Components
 
 #### Tính năng Dashboard
 
-- [ ] Xây dựng main dashboard
-- [ ] Tạo trending quizzes section và discovery
-- [ ] Triển khai search bar cho quiz discovery
+- [x] Xây dựng main dashboard
+- [x] Tạo trending quizzes section
+- [x] Triển khai search bar cho quiz
 - [ ] Xây dựng user profile menu và settings access
 - [ ] Thêm dashboard statistics và activity feed
-
-#### Hoàn thiện Navigation
-
-- [ ] Tạo breadcrumb navigation component
-- [ ] Thêm active state indicators cho sidebar
-- [ ] Triển khai smooth transitions giữa các dashboard sections
-- [ ] Thêm keyboard navigation và accessibility
-
-### Giai đoạn 3: Session Management UI
 
 #### Active Sessions Dashboard
 
@@ -281,12 +195,3 @@
 - [ ] Triển khai session actions (Extend, End Early, View Details)
 - [ ] Thêm participant count và live session analytics
 - [ ] Xây dựng session details modal với participant list
-
-#### Tích hợp cuối cùng
-
-- [ ] Kết nối tất cả dashboard components với real data
-- [ ] Thêm real-time session status updates
-- [ ] Triển khai dashboard notifications và alerts
-- [ ] Kiểm thử cuối cùng dashboard functionality và responsiveness
-
----

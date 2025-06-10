@@ -10,7 +10,7 @@
 	</main>
 
 	<footer>
-		<p>&copy; 2025 My Svelte App</p>
+		<p>&copy; 2025 Quiz Learn</p>
 	</footer>
 </div>
 
