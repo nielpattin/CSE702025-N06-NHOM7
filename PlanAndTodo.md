@@ -11,45 +11,63 @@
 
 ## 🎯 Phạm vi dự án
 
-### Ưu tiên 1 (Bắt buộc):
+## 🥅 Mục tiêu dự án
 
-- ✅ Google OAuth Authentication
-- ✅ Quiz CRUD (Create, Read, Update, Delete)
-- ✅ Self-Paced Sessions với quản lý nâng cao
-- ✅ Dashboard cơ bản và kết quả
+- Phát triển một nền tảng trắc nghiệm trực tuyến đa năng, dễ sử dụng.
+- Cung cấp các tính năng tạo trắc nghiệm linh hoạt cho người dùng.
+- Mang lại trải nghiệm làm trắc nghiệm thú vị và có tính tương tác cao.
+- Đảm bảo hệ thống hoạt động ổn định và có khả năng mở rộng.
 
-### Ưu tiên 2 (Tùy chọn):
+## ⚙️ Công nghệ sử dụng
 
-- 🔄 Báo cáo nâng cao
-- 🔄 Live Quiz (tính năng real-time)
+- **Frontend & Backend:** SvelteKit
+- **Ngôn ngữ:** TypeScript
+- **Database:** PostgreSQL with Drizzle ORM
+- **Authentication:** Auth.js với Google OAuth Provider
+- **OAuth Provider:** Google OAuth 2.0
+- **Styling:** CSS thuần hoặc TailwindCSS
+- **Deployment:** Docker via Coolify
+
+### Core Features (In-Scope):
+
+- **Quản lý người dùng:** Đăng ký, đăng nhập, phân quyền (User, Admin).
+- **Tạo và quản lý Quiz:**
+  - Tạo quiz với câu hỏi trắc nghiệm nhiều lựa chọn và đúng/sai.
+  - Thêm hình ảnh vào câu hỏi.
+  - Thiết lập thời gian, điểm số cho câu hỏi.
+  - Chỉnh sửa, xóa quiz.
+- **Tham gia Quiz:**
+  - Người tham gia có thể bắt đầu bất cứ lúc nào, làm lại nhiều lần đến khi hết hạn
+  - Người dùng tham gia quiz qua link chia sẻ hoặc mã mời.
+  - Trả lời câu hỏi trong thời gian giới hạn.
+  - Xem kết quả và lịch sử các lần làm bài.
+- **Dashboard cho người tạo quiz:**
+  - Active Sessions: Xem các self-paced sessions đang hoạt động
+  - Thống kê chi tiết cho từng session
+- **Xem kết quả:**
+  - Người tạo quiz xem thống kê đơn giản.
+- **Guest Player Behavior:**
+  - Người chơi không cần đăng nhập có thể tham gia bằng nickname.
+  - Dữ liệu của Guest (điểm số, các lần thử) chỉ được lưu trong phạm vi của `Quiz Session` và có thể bị xóa sau khi session kết thúc. Lịch sử làm bài không được lưu trữ lâu dài cho guest.
+
+### Tính năng phát triển sau:
+
+- Live Quiz (Kahoot-style): Host đợi ít nhất 1 người tham gia, tất cả làm bài đồng thời
+- WebSocket integration cho real-time features
+- Lobby system và synchronized gameplay
+- Real-time leaderboards
+- Câu hỏi điền từ ngắn (Short Answer)
+- Báo cáo chi tiết và xuất file
+- AI tạo quiz tự động
 
 ## 📅 Các giai đoạn phát triển
 
-### Giai đoạn 1: Nền tảng
-
-- Thiết lập core và hạ tầng
-- Triển khai authentication
-- Landing pages và UI cơ bản
-- Hệ thống login
-- Layout dashboard
-
-### Giai đoạn 2: Hệ thống Quiz
-
-- Thiết kế database schema
-- Phát triển Quiz CRUD API
-- Hệ thống quản lý session
-- Giao diện Quiz Editor
-- Giao diện Quiz Library
-- Các component dashboard
-
-### Giai đoạn 3: Chơi & Hoàn thiện
-
-- Logic Quiz Player
-- Hệ thống kết quả
-- Giao diện Quiz Player
-- Giao diện kết quả & lịch sử
-- Session Dashboard
-- Tích hợp & kiểm thử
+- **Sprint 1-2:** Thiết lập dự án, User Management & Authentication.
+- **Sprint 3-4:** Core Quiz CRUD (tạo, sửa, xóa quiz và câu hỏi).
+- **Sprint 5-6:** Basic Quiz Participation (tham gia và làm bài).
+- **Sprint 7-8:** Results và Reports cơ bản.
+- **Sprint 9-10:** UI/UX improvements và testing.
+- **Sprint 11:** Deployment và launch.
 
 ---
 
@@ -59,43 +77,43 @@
 
 ### Giai đoạn 1: Nền tảng
 
-#### Thiết lập dự án & hạ tầng core
+#### Thiết lập dự án
 
-- [x] Thiết lập Auth.js với Google OAuth provider trong [`src/hooks.server.ts`](src/hooks.server.ts)
-- [x] Cấu hình environment variables và secrets trong [`.env`](.env)
-- [ ] Thiết lập session management và middleware
-- [ ] Kiểm thử Google OAuth flow từ đầu đến cuối
-- [ ] Cập nhật user table schema trong [`src/lib/server/db/schema.ts`](src/lib/server/db/schema.ts:1) cho authentication
+- [x] Thiết lập Auth.js với OAuth provider (Google, Github)
+- [x] Cấu hình PostgreSQL database với Drizzle ORM
+- [x] Tạo project structure và cấu hình SvelteKit
+- [x] Cấu hình environment variables và secrets (.env)
+- [x] Thiết lập ESLint, Prettier, Husky, Commitlint
 
 #### Hệ thống Authentication
 
-- [ ] Triển khai protected routes và middleware
-- [ ] Tạo user session management utilities
-- [ ] Thiết lập role-based access (User/Admin)
-- [ ] Kiểm thử authentication flows với các providers khác nhau
-- [ ] Tạo auth utilities cho frontend sử dụng trong [`src/lib/auth.ts`](src/lib/auth.ts)
+- [x] Add Role Management (User/Admin)
+- [x] Test auth flows với các providers khác nhau
+- [x] Triển khai protected routes
 
 ### Giai đoạn 2: Quiz System Core
 
 #### Database Schema
 
-- [ ] Thiết kế quiz, question, answer tables trong [`src/lib/server/db/schema.ts`](src/lib/server/db/schema.ts:1)
-- [ ] Tạo session và attempt tracking tables
+- [ ] Thiết kế quiz, question, answer tables
+- [ ] Tạo quiz-session và attempt tracking tables
 - [ ] Thiết lập database relationships và foreign keys
-- [ ] Viết migration files và kiểm thử schema
-- [ ] Push schema changes sử dụng [`pnpm db:push`](package.json:16)
+- [x] Viết migration files và kiểm thử schema
+  - [x] users, accounts, sessions (for Auth.js)
+  - [ ] quizzes, questions, answers, attempts, responses, quiz-sessions
+- [ ] Push schema changes sử dụng `pnpm db:push`
 
 #### Quiz CRUD API
 
-- [ ] Tạo quiz endpoints trong [`src/routes/api/quiz/+server.ts`](src/routes/api/quiz/+server.ts)
-- [ ] Triển khai question management trong [`src/routes/api/quiz/[id]/questions/+server.ts`](src/routes/api/quiz/[id]/questions/+server.ts)
+- [ ] Tạo quiz endpoints
+- [ ] Triển khai question management
 - [ ] Xây dựng quiz update/delete endpoints
 - [ ] Thêm image upload handling cho questions
 - [ ] Tạo quiz validation và error handling
 
 #### Session Management
 
-- [ ] Triển khai session creation API trong [`src/routes/api/sessions/+server.ts`](src/routes/api/sessions/+server.ts)
+- [ ] Triển khai session creation API
 - [ ] Xây dựng session state management và validation
 - [ ] Tạo session join logic và participant tracking
 - [ ] Thêm session expiration và cleanup handling
@@ -104,7 +122,7 @@
 
 #### Quiz Player Logic
 
-- [ ] Xây dựng attempt tracking trong [`src/routes/api/attempts/+server.ts`](src/routes/api/attempts/+server.ts)
+- [ ] Xây dựng attempt tracking
 - [ ] Triển khai answer submission và validation
 - [ ] Tạo scoring calculation và timing logic
 - [ ] Thêm progress saving và resume functionality
@@ -126,8 +144,8 @@
 
 #### Landing Pages
 
-- [ ] Cập nhật home page trong [`src/routes/+page.svelte`](src/routes/+page.svelte:1) với hero section
-- [ ] Tạo navigation components trong [`src/lib/components/Header.svelte`](src/lib/components/Header.svelte)
+- [ ] Cập nhật home page với hero section
+- [ ] Tạo navigation components
 - [ ] Xây dựng responsive layout và mobile navigation
 - [ ] Thêm loading states và error handling components
 - [ ] Tạo footer và cải thiện cấu trúc trang tổng thể
@@ -137,8 +155,8 @@
 
 #### Quiz Editor
 
-- [ ] Xây dựng quiz creation form trong [`src/routes/quiz/create/+page.svelte`](src/routes/quiz/create/+page.svelte)
-- [ ] Tạo question editor với drag-drop trong [`src/lib/components/QuestionEditor.svelte`](src/lib/components/QuestionEditor.svelte)
+- [ ] Xây dựng quiz creation form
+- [ ] Tạo question editor với drag-drop
 - [ ] Triển khai answer option management components
 - [ ] Thêm image upload component cho questions
 - [ ] Xây dựng quiz settings (time limits, points, question types)
@@ -154,7 +172,7 @@
 
 #### Quiz Player UI
 
-- [ ] Xây dựng self-paced quiz player trong [`src/routes/play/self-paced/[sessionId]/+page.svelte`](src/routes/play/self-paced/[sessionId]/+page.svelte)
+- [ ] Xây dựng self-paced quiz player
 - [ ] Tạo question display với timer component
 - [ ] Triển khai answer selection và submission interface
 - [ ] Thêm progress bar và question navigation
@@ -175,7 +193,7 @@
 
 #### Hệ thống Login
 
-- [ ] Tạo login page trong [`src/routes/login/+page.svelte`](src/routes/login/+page.svelte)
+- [ ] Tạo login page
 - [ ] Xây dựng Google OAuth button và authentication flow
 - [ ] Triển khai authentication state management
 - [ ] Thêm login/logout functionality và redirects
@@ -183,7 +201,7 @@
 
 #### Join Dashboard
 
-- [ ] Xây dựng join dashboard trong [`src/routes/join/+page.svelte`](src/routes/join/+page.svelte)
+- [ ] Xây dựng join dashboard
 - [ ] Tạo "Enter Code" section để tham gia quizzes
 - [ ] Thêm recent activity display và user history
 - [ ] Triển khai search functionality cho public quizzes
@@ -193,10 +211,10 @@
 
 #### Library Interface
 
-- [ ] Xây dựng quiz library trong [`src/routes/dashboard/library/+page.svelte`](src/routes/dashboard/library/+page.svelte)
+- [ ] Xây dựng quiz library
 - [ ] Tạo quiz cards với actions (Edit, Delete, Share)
 - [ ] Triển khai quiz listing, filtering, và sorting
-- [ ] Thêm quiz detail view trong [`src/routes/quiz/[id]/+page.svelte`](src/routes/quiz/[id]/+page.svelte)
+- [ ] Thêm quiz detail view
 - [ ] Tạo quiz statistics và metadata display
 
 #### Quản lý Quiz
@@ -210,7 +228,7 @@
 
 #### Results Interface
 
-- [ ] Xây dựng results page trong [`src/routes/results/[attemptId]/+page.svelte`](src/routes/results/[attemptId]/+page.svelte)
+- [ ] Xây dựng results page
 - [ ] Tạo attempt history và comparison view
 - [ ] Triển khai score visualization và charts
 - [ ] Thêm detailed question-by-question review
@@ -231,8 +249,8 @@
 
 #### Cấu trúc Dashboard
 
-- [ ] Tạo main dashboard layout trong [`src/routes/dashboard/+layout.svelte`](src/routes/dashboard/+layout.svelte)
-- [ ] Xây dựng sidebar navigation component trong [`src/lib/components/Sidebar.svelte`](src/lib/components/Sidebar.svelte)
+- [ ] Tạo main dashboard layout
+- [ ] Xây dựng sidebar navigation component
 - [ ] Triển khai user menu và profile section
 - [ ] Thêm responsive sidebar với mobile hamburger menu
 - [ ] Tạo consistent dashboard header và breadcrumbs
@@ -241,7 +259,7 @@
 
 #### Tính năng Dashboard
 
-- [ ] Xây dựng main dashboard trong [`src/routes/dashboard/+page.svelte`](src/routes/dashboard/+page.svelte)
+- [ ] Xây dựng main dashboard
 - [ ] Tạo trending quizzes section và discovery
 - [ ] Triển khai search bar cho quiz discovery
 - [ ] Xây dựng user profile menu và settings access
@@ -258,7 +276,7 @@
 
 #### Active Sessions Dashboard
 
-- [ ] Xây dựng active sessions page trong [`src/routes/dashboard/active-sessions/+page.svelte`](src/routes/dashboard/active-sessions/+page.svelte)
+- [ ] Xây dựng active sessions page
 - [ ] Tạo session cards với real-time status indicators
 - [ ] Triển khai session actions (Extend, End Early, View Details)
 - [ ] Thêm participant count và live session analytics
@@ -270,77 +288,5 @@
 - [ ] Thêm real-time session status updates
 - [ ] Triển khai dashboard notifications và alerts
 - [ ] Kiểm thử cuối cùng dashboard functionality và responsiveness
-
----
-
-# 🚀 Tiêu chuẩn kỹ thuật
-
-## Tiêu chuẩn Code
-
-- **Commit Messages:** Sử dụng conventional commits format
-- **Branch Naming:** `feature/[feature-name]`
-
-## Quy ước cấu trúc File
-
-```
-src/
-├── lib/
-│   ├── components/          # Reusable UI components
-│   ├── server/
-│   │   ├── db/             # Database schema and utilities
-│   │   └── auth/           # Authentication utilities
-│   └── utils/              # Shared utilities
-├── routes/
-│   ├── api/                # API endpoints
-│   ├── dashboard/          # Dashboard pages
-│   ├── quiz/               # Quiz management pages
-│   └── play/               # Quiz playing pages
-└── app.css                 # Global styles
-```
-
-## Database Tables cần thiết
-
-- [`users`](src/lib/server/db/schema.ts) - User authentication data
-- [`quizzes`](src/lib/server/db/schema.ts) - Quiz metadata
-- [`questions`](src/lib/server/db/schema.ts) - Quiz questions
-- [`answers`](src/lib/server/db/schema.ts) - Answer options
-- [`sessions`](src/lib/server/db/schema.ts) - Quiz sessions
-- [`attempts`](src/lib/server/db/schema.ts) - User attempts
-- [`responses`](src/lib/server/db/schema.ts) - Individual question responses
-
----
-
-# 🎯 Tiêu chí hoàn thành
-
-## Sản phẩm giai đoạn 1
-
-- [ ] Google OAuth authentication hoạt động
-- [ ] Basic page layouts và navigation
-- [ ] Database schema được định nghĩa và migrated
-- [ ] Development environment được cấu hình đầy đủ
-
-## Sản phẩm giai đoạn 2
-
-- [ ] Hoàn thành quiz creation và editing
-- [ ] Quiz library với tất cả CRUD operations
-- [ ] Session management system hoạt động
-- [ ] Tất cả API endpoints functional
-
-## Sản phẩm giai đoạn 3
-
-- [ ] Self-paced quiz playing experience
-- [ ] Results và attempt history
-- [ ] Session dashboard cho creators
-- [ ] Hệ thống tích hợp và kiểm thử đầy đủ
-
-## Yêu cầu demo cuối cùng
-
-- [ ] User có thể sign in với Google
-- [ ] User có thể tạo và chỉnh sửa quizzes
-- [ ] User có thể start self-paced session
-- [ ] Participants có thể join và complete quiz
-- [ ] Results được tính toán và hiển thị
-- [ ] Session management dashboard hoạt động
-- [ ] Responsive design trên desktop và mobile
 
 ---

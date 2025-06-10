@@ -1,17 +1,24 @@
-import { timestamp, pgTable, text, primaryKey, integer } from "drizzle-orm/pg-core"
+import { timestamp, pgTable, text, primaryKey, integer, boolean, jsonb, varchar, serial } from "drizzle-orm/pg-core"
 import type { AdapterAccountType } from "@auth/sveltekit/adapters"
 
 export type UserRole = "Admin" | "User"
+export type QuizStatus = "draft" | "published" | "archived"
+export type QuizVisibility = "public" | "private" | "unlisted"
+export type QuestionType = "multiple_choice" | "true_false"
+export type AttemptStatus = "in_progress" | "completed" | "abandoned"
 
+// Auth.js tables (with minimal additions)
 export const users = pgTable("user", {
 	id: text("id")
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
-	name: text("name"),
 	email: text("email").unique(),
-	emailVerified: timestamp("emailVerified", { mode: "date" }),
+	name: text("name"),
 	image: text("image"),
-	role: text("role").$type<UserRole>().notNull().default("User")
+	emailVerified: timestamp("emailVerified", { mode: "date" }),
+	role: text("role").$type<UserRole>().notNull().default("User"),
+	createdAt: timestamp("created_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow()
 })
 
 export const accounts = pgTable(
@@ -44,4 +51,124 @@ export const sessions = pgTable("session", {
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
 	expires: timestamp("expires", { mode: "date" }).notNull()
+})
+
+// Application tables
+export const quizzes = pgTable("quizzes", {
+	id: serial("id").primaryKey(),
+	title: varchar("title", { length: 256 }),
+	description: text("description"),
+	creatorId: text("creator_id").references(() => users.id),
+	status: varchar("status").$type<QuizStatus>(),
+	visibility: varchar("visibility").$type<QuizVisibility>(),
+	createdAt: timestamp("created_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow()
+})
+
+export const questions = pgTable("questions", {
+	id: serial("id").primaryKey(),
+	quizId: integer("quiz_id")
+		.notNull()
+		.references(() => quizzes.id, { onDelete: "cascade" }),
+	type: varchar("type").$type<QuestionType>(),
+	content: varchar("content", { length: 5000 }),
+	timeLimit: integer("time_limit"),
+	points: integer("points"),
+	createdAt: timestamp("created_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow()
+})
+
+export const questionOptions = pgTable("question_options", {
+	id: serial("id").primaryKey(),
+	questionId: integer("question_id")
+		.notNull()
+		.references(() => questions.id, { onDelete: "cascade" }),
+	order: integer("order"),
+	content: varchar("content", { length: 2500 }),
+	correct: boolean("correct")
+})
+
+export const quizSessions = pgTable("quiz_sessions", {
+	id: serial("id").primaryKey(),
+	quizId: integer("quiz_id")
+		.notNull()
+		.references(() => quizzes.id, { onDelete: "cascade" }),
+	hostId: text("host_id")
+		.notNull()
+		.references(() => users.id),
+	shareableCode: varchar("shareable_code", { length: 7 }).unique(),
+	settingsOverrides: jsonb("settings_overrides"),
+	createdAt: timestamp("created_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow(),
+	endTime: timestamp("end_time")
+})
+
+export const sessionParticipants = pgTable("session_participants", {
+	id: serial("id").primaryKey(),
+	quizSessionId: integer("quiz_session_id")
+		.notNull()
+		.references(() => quizSessions.id, { onDelete: "cascade" }),
+	playerId: varchar("player_id").unique(),
+	userId: text("user_id").references(() => users.id), // NULL for guests
+	nickname: varchar("nickname"),
+	totalAttempts: integer("total_attempts"),
+	bestScore: integer("best_score"),
+	data: jsonb("data"),
+	createdAt: timestamp("created_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow()
+})
+
+export const gameAttempts = pgTable("game_attempts", {
+	id: serial("id").primaryKey(),
+	quizSessionId: integer("quiz_session_id")
+		.notNull()
+		.references(() => quizSessions.id, { onDelete: "cascade" }),
+	playerId: varchar("player_id").references(() => sessionParticipants.playerId),
+	attemptNumber: integer("attempt_number"),
+	score: integer("score"),
+	status: varchar("status").$type<AttemptStatus>(),
+	startedAt: timestamp("started_at"),
+	completedAt: timestamp("completed_at"),
+	updatedAt: timestamp("updated_at").defaultNow()
+})
+
+export const sessionQuestions = pgTable("session_questions", {
+	id: serial("id").primaryKey(),
+	quizSessionId: integer("quiz_session_id")
+		.notNull()
+		.references(() => quizSessions.id, { onDelete: "cascade" }),
+	originalQuestionId: integer("original_question_id")
+		.notNull()
+		.references(() => questions.id),
+	type: varchar("type"),
+	content: text("content"),
+	timeLimit: integer("time_limit"),
+	points: integer("points")
+})
+
+export const sessionQuestionOptions = pgTable("session_question_options", {
+	id: serial("id").primaryKey(),
+	sessionQuestionId: integer("session_question_id")
+		.notNull()
+		.references(() => sessionQuestions.id, { onDelete: "cascade" }),
+	originalOptionId: integer("original_option_id")
+		.notNull()
+		.references(() => questionOptions.id),
+	order: integer("order"),
+	content: varchar("content"),
+	correct: boolean("correct")
+})
+
+export const questionAttempts = pgTable("question_attempts", {
+	id: serial("id").primaryKey(),
+	gameAttemptId: integer("game_attempt_id")
+		.notNull()
+		.references(() => gameAttempts.id, { onDelete: "cascade" }),
+	sessionQuestionId: integer("session_question_id")
+		.notNull()
+		.references(() => sessionQuestions.id),
+	selectedSessionOptionId: integer("selected_session_option_id").references(() => sessionQuestionOptions.id), // NULL if no answer
+	correct: boolean("correct"),
+	timeTakenMs: integer("time_taken_ms"),
+	pointsAwarded: integer("points_awarded")
 })

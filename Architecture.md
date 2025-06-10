@@ -19,13 +19,13 @@ Dự án này nhằm mục đích phát triển một ứng dụng web trắc ng
 - **Tạo và quản lý Quiz:**
   - Tạo quiz với câu hỏi trắc nghiệm nhiều lựa chọn và đúng/sai.
   - Thêm hình ảnh vào câu hỏi.
-  - Thiết lập thời gian, điểm sốI'm using Oauth like google, no credential username and password anymore cho câu hỏi.
+  - Thiết lập thời gian, điểm số cho câu hỏi.
   - Chỉnh sửa, xóa quiz.
-- **Tham gia Quiz - Self-Paced:**
-  - **Self-Paced Quiz:** Người tham gia có thể bắt đầu bất cứ lúc nào, làm lại nhiều lần đến khi hết hạn
+- **Tham gia Quiz:**
+  - Người tham gia có thể bắt đầu bất cứ lúc nào, làm lại nhiều lần đến khi hết hạn
   - Người dùng tham gia quiz qua link chia sẻ hoặc mã mời.
   - Trả lời câu hỏi trong thời gian giới hạn.
-  - Xem kết quả tức thì và lịch sử các lần làm bài.
+  - Xem kết quả và lịch sử các lần làm bài.
 - **Dashboard cho người tạo quiz:**
   - Active Sessions: Xem các self-paced sessions đang hoạt động
   - Thống kê chi tiết cho từng session
@@ -91,12 +91,15 @@ Dự án này nhằm mục đích phát triển một ứng dụng web trắc ng
 - **FR3.1:** Host tạo Self-Paced session và thiết lập thời gian kết thúc.
 - **FR3.2:** Người tham gia có thể bắt đầu bất cứ lúc nào khi họ ấn start.
 - **FR3.3:** Cho phép làm lại nhiều lần cho đến khi hết thời gian.
-- **FR3.4:** Lưu tất cả lần thử và hiển thị lịch sử để so sánh.
+- **FR3.4:** Lưu tất cả lần thử và hiển thị lịch sử để so sánh (chỉ dành cho registered users).
 - **FR3.5:** Người tham gia có thể xem báo cáo chi tiết các lần làm bài.
 - **FR3.6:** Tham gia quiz bằng link chia sẻ hoặc mã mời.
-- **FR3.7:** Nhập nickname để tham gia.
+- **FR3.7:** Nhập nickname để tham gia (guest participation).
 - **FR3.8:** Xem câu hỏi và trả lời trong thời gian quy định.
 - **FR3.9:** Xem tổng kết điểm số sau khi hoàn thành.
+- **FR3.10 (Mới):** Guest Player Behavior:
+  - Người chơi không cần đăng nhập có thể tham gia bằng nickname.
+  - Dữ liệu của Guest (điểm số, các lần thử) chỉ được lưu trong phạm vi của `Quiz Session` và có thể bị xóa sau khi session kết thúc. Lịch sử làm bài không được lưu trữ lâu dài cho guest.
 
 ### FR4: Active Sessions Dashboard
 
@@ -127,112 +130,236 @@ Dự án này nhằm mục đích phát triển một ứng dụng web trắc ng
 - **Phản hồi:** Loading states, success/error messages rõ ràng.
 - **Desktop-first Design:** Tối ưu cho trải nghiệm desktop.
 
-## 2. Các màn hình chính
+## 2. Các màn hình chính (Tóm tắt, không thay đổi)
 
-### 2.1. Trang chủ (`/`) - Chưa đăng nhập
+# Database Design
 
-- Header với logo, navigation
-  - "Sign in" button chuyển đến `/signin`
-  - Enter Code to join button
-- Hero section
-- Features overview
-- Footer
+## Entity Relationship Diagram
 
-### 2.2. Authentication (`/signin`)
+```mermaid
+erDiagram
+    %% Auth.js Tables
+    users {
+        text id PK "UUID"
+        text email UK "Unique email address"
+        text name "Display name"
+        text image "Profile picture URL"
+        timestamp emailVerified "Email verification timestamp"
+        text role "ENUM: Admin, User"
+        timestamp created_at
+        timestamp updated_at
+    }
 
-- Trang đăng nhập với nhiều authentication providers
-- Google OAuth button (provider chính hiện tại)
-- Placeholder cho các providers khác (GitHub, Facebook, etc.)
-- Tự động redirect sau khi xác thực thành công
-- Tạo User mới nếu chưa có trong database
-- Hiển thị thông tin người dùng sau khi đăng nhập thành công (email, tên, ảnh đại diện)
-- Redirect về `/join` sau khi đăng nhập thành công
+    accounts {
+        text userId FK "References users.id"
+        text type "Account type (oidc, oauth)"
+        text provider "OAuth provider (google, github)"
+        text providerAccountId "Provider account ID"
+        text refresh_token "OAuth refresh token"
+        text access_token "OAuth access token"
+        int expires_at "Token expiration"
+        text token_type "Token type"
+        text scope "OAuth scope"
+        text id_token "ID token"
+        text session_state "Session state"
+    }
 
-### 2.3. Join Dashboard (`/join`) - Sau khi đăng nhập
+    sessions {
+        text sessionToken PK "Session token"
+        text userId FK "References users.id"
+        timestamp expires "Session expiration"
+    }
 
-- Main content:
-  - Create Quiz button (goto `/dashboard`)
-  - Burger menu (bên phải) với Settings và Logout
-  - Enter code to join section
-  - Find a quiz search bar
-  - Recent activity: Danh sách quiz đã tham gia gần đây
+    %% Application Tables
+    quizzes {
+        serial id PK "Auto-increment ID"
+        varchar title "Quiz title (256 chars)"
+        text description "Quiz description"
+        text creator_id FK "References users.id"
+        varchar status "ENUM: draft, published, archived"
+        varchar visibility "ENUM: public, private, unlisted"
+        timestamp created_at
+        timestamp updated_at
+    }
 
-### 2.4. Dashboard (`/dashboard`) - Sau khi click Create Quiz
+    questions {
+        serial id PK "Auto-increment ID"
+        int quiz_id FK "References quizzes.id"
+        varchar type "ENUM: multiple_choice, true_false"
+        varchar content "Question text (5000 chars)"
+        int time_limit "Time limit in seconds"
+        int points "Points for correct answer"
+        timestamp created_at
+        timestamp updated_at
+    }
 
-- Sidebar bên trái:
-  - Create Quiz
-  - Library (các quiz đã tạo)
-  - Active Sessions (em các self-paced sessions đang hoạt động)
-  - Reports (thống kê về các quiz đã tạo)
-- Main container:
-  - Search bar để tìm quiz
-  - Trending Quizzes: Danh sách các quiz đang hot
-- Góc phải:
-  - Enter code để join quiz
-  - Burger menu với:
-    - View Profile
-    - Settings
-    - Logout
+    question_options {
+        serial id PK "Auto-increment ID"
+        int question_id FK "References questions.id"
+        int order "Option order"
+        varchar content "Option text (2500 chars)"
+        boolean correct "Correct answer flag"
+    }
 
-### 2.5. Quiz Management (`/dashboard/library`)
+    quiz_sessions {
+        serial id PK "Auto-increment ID"
+        int quiz_id FK "References quizzes.id"
+        text host_id FK "References users.id"
+        varchar shareable_code UK "7-digit code (0-9)"
+        jsonb settings_overrides "Custom session settings"
+        timestamp created_at
+        timestamp updated_at
+        timestamp end_time
+    }
 
-- Danh sách quiz đã tạo (dạng cards)
-- Mỗi quiz hiển thị: Tên, thời gian từ lúc tạo, số câu hỏi
-- Actions: Copy Share Link, Play,
-- Click vào quiz để vào trang chi tiết quiz (`/quiz/:id`)
+    session_participants {
+        serial id PK "Auto-increment ID"
+        int quiz_session_id FK "References quiz_sessions.id"
+        varchar player_id UK "Guest/registered player identifier"
+        text user_id FK "References users.id (NULL for guests)"
+        varchar nickname "Display name for session"
+        int total_attempts "Number of attempts made"
+        int best_score "Highest score achieved"
+        jsonb data "Report data: correct, incorrect, attempts, total_time_ms, questions_per_sec"
+        timestamp created_at
+        timestamp updated_at
+    }
 
-### 2.6. Quiz Detail (`/quiz/:id`)
+    game_attempts {
+        serial id PK "Auto-increment ID"
+        int quiz_session_id FK "References quiz_sessions.id"
+        varchar player_id FK "References session_participants.player_id"
+        int attempt_number "Attempt sequence number"
+        int score "Total score for attempt"
+        varchar status "ENUM: in_progress, completed, abandoned"
+        timestamp started_at "Attempt start time"
+        timestamp completed_at "Attempt completion time"
+        timestamp updated_at
+    }
 
-- Hiển thị thông tin quiz: Tiêu đề, mô tả, người tạo
-- Danh sách câu hỏi với số điểm và thời gian
-- Buttons: Edit Quiz, Delete Quiz, Start Self-Paced Session
-  - Khi ấn Start Self-Paced Session:
-    - Thiết lập end time
-    - Tạo link chia sẻ `/play/self-paced/:sessionId`
+    question_attempts {
+        serial id PK "Auto-increment ID"
+        int game_attempt_id FK "References game_attempts.id"
+        int session_question_id FK "References session_questions.id"
+        int selected_session_option_id FK "References session_question_options.id (NULL if no answer)"
+        boolean correct "Answer correctness snapshot"
+        int time_taken_ms "Response time in milliseconds"
+        int points_awarded "Points earned for this question"
+    }
 
-### 2.7. Quiz Editor (`/quiz/edit/:id`)
+    %% Session-specific tables for temporary questions/options
+    session_questions {
+        serial id PK "Auto-increment ID"
+        int quiz_session_id FK "References quiz_sessions.id"
+        int original_question_id FK "References questions.id"
+        varchar type "Question type snapshot"
+        text content "Question content snapshot"
+        int time_limit "Time limit snapshot"
+        int points "Points value snapshot"
+    }
 
-- Save button (lưu thay đổi)
-  - Khi click sẽ lưu quiz và go to `/quiz/:id`
-- Return button (trở về dashboard)
-- Form thông tin quiz: Tiêu đề
-- Danh sách câu hỏi với drag-drop để sắp xếp
-- Add Question button
-- Question List:
-  - Câu hỏi, hình ảnh, đáp án, thời gian, điểm, loại câu hỏi, delete button, edit button
+    session_question_options {
+        serial id PK "Auto-increment ID"
+        int session_question_id FK "References session_questions.id"
+        int original_option_id FK "References question_options.id"
+        int order "Option order snapshot"
+        varchar content "Option text snapshot"
+        boolean correct "Correct answer snapshot"
+    }
 
-### 2.8. Quiz Player - Self-Paced Mode
+    %% Relationships
+    users ||--o{ accounts : has
+    users ||--o{ sessions : has
+    users ||--o{ quizzes : creates
+    users ||--o{ quiz_sessions : hosts
+    users ||--o| session_participants : participates
 
-#### Self-Paced Quiz (`/play/self-paced/:sessionId`)
+    quizzes ||--o{ questions : contains
+    quizzes ||--o{ quiz_sessions : used_in
 
-**Landing page:**
+    questions ||--o{ question_options : has
+    questions ||--o{ session_questions : source_for
 
-- Thông tin quiz và thời gian còn lại
-- Lịch sử các lần thử trước (nếu có)
-- Nút "Start New Attempt"
+    quiz_sessions ||--o{ session_participants : has
+    quiz_sessions ||--o{ game_attempts : contains
+    quiz_sessions ||--o{ session_questions : snapshots
 
-**Quiz interface (`/attempt/:attemptId`):**
+    session_participants ||--o{ game_attempts : makes
 
-- Progress bar (câu hỏi X/Y)
-- Có thể thoát và tiếp tục sau
-- Auto-save tiến độ
+    session_questions ||--o{ session_question_options : has
+    session_questions ||--o{ question_attempts : attempted_in
 
-**Results (`/results/:attemptId`):**
+    question_options ||--o{ session_question_options : source_for
+    game_attempts ||--o{ question_attempts : consists_of
+    session_question_options ||--o| question_attempts : selected_in
+```
 
-- Kết quả lần thử hiện tại
-- So sánh với các lần thử trước
-- Nút "Try Again" (nếu chưa hết thời gian)
+## 4. Data Flow Diagrams
 
-## 3. Active Sessions Dashboard (`/dashboard/active-sessions`)
+### 4.1. Session Creation & Question Snapshotting Flow
 
-- Hiển thị danh sách các self-paced sessions đang hoạt động dưới dạng cards.
-- Mỗi card hiển thị:
-  - Tên quiz
-  - Trạng thái (Active/Expired)
-  - Thời gian kết thúc
-  - Số người tham gia
-  - Link chia sẻ (với nút copy)
-- Nút "View Details" trên mỗi card để chuyển đến trang thống kê chi tiết của session đó.
-- Có thể có các filter (ví dụ: theo tên quiz, theo thời gian kết thúc).
+```mermaid
+sequenceDiagram
+    participant Host
+    participant System
+    participant Database
 
-## 4. Style Guide
+    Host->>System: Create Session (with quiz_id)
+    activate System
+    System->>Database: CREATE quiz_session
+    Database-->>System: return quiz_session_id
+    System->>Database: SELECT questions, question_options FROM quiz WHERE id = quiz_id
+    Database-->>System: return quiz content
+    System->>Database: INSERT session_questions (with quiz_session_id)
+    System->>Database: INSERT session_question_options
+    deactivate System
+```
+
+### 4.2. Player Game Attempt Flow
+
+```mermaid
+sequenceDiagram
+    participant Player
+    participant System
+    participant Database
+
+    Player->>System: Start Game Attempt (in quiz_session_id)
+    activate System
+    System->>Database: CREATE game_attempt (quiz_session_id, player_id)
+    Database-->>System: return game_attempt_id
+    System->>Database: SELECT * FROM session_questions WHERE quiz_session_id = quiz_session_id
+    Database-->>System: return session questions
+    deactivate System
+
+    Note over Player, System: System presents questions to Player...
+```
+
+## 5. User Flow Diagram
+
+```mermaid
+graph TD
+    subgraph "Host Journey"
+        A[Start] --> B{Create/Select Quiz};
+        B --> C[Create Session & Get Code];
+        C --> D[Share Session Code];
+        D --> E[End Session When Ready];
+        E --> F[View Final Leaderboard/Results];
+    end
+
+    subgraph "Player Journey"
+        P_A[Start] --> P_B[Enter Session Code];
+        P_B --> P_C[Enter Nickname];
+        P_C --> P_D[Start Game Attempt];
+        P_D --> P_E[Answer Question];
+        P_E --> P_F{More Questions?};
+        P_F -- Yes --> P_E;
+        P_F -- No --> P_G[Attempt Complete];
+        P_G --> P_H[View Leaderboard & Personal Report];
+        P_H --> P_I{Re-attempt Quiz?};
+        P_I -- Yes --> P_D;
+        P_I -- No --> P_J[Exit Session];
+    end
+
+    %% Connection
+    C --> P_B;
+```

@@ -15,6 +15,13 @@
       "when": 1749310972222,
       "tag": "0001_red_power_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1749541529901,
+      "tag": "0002_pretty_rockslide",
+      "breakpoints": true
     }
   ]
 }

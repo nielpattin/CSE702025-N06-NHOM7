@@ -11,6 +11,11 @@ Dự án này nhằm mục đích phát triển một ứng dụng web trắc ng
 | 3   | Nguyễn Xuân Mạnh | 23010045     | xuanmanh-2110 |
 | 4   | Vũ Văn Sơn       | 23010060     | sunyn582      |
 
+##
+
+- [Architecture.md](Architecture.md)
+- [PlanAndTodo.md](PlanAndTodo.md)
+
 ## Developing
 
 ### Setup Environment
