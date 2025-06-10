@@ -14,7 +14,7 @@
 
 	const navigationItems: NavigationItem[] = [
 		{ name: "Dashboard", href: "/dashboard", icon: "🏠" },
-		{ name: "Create Quiz", href: "/create-quiz", icon: "➕" },
+		{ name: "Create Quiz", href: "/quiz/create", icon: "➕" },
 		{ name: "Library", href: "/library", icon: "📚" },
 		{ name: "Report", href: "/report", icon: "📊" },
 		{ name: "Profile", href: "/profile", icon: "👤" },

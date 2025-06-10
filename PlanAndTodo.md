@@ -24,8 +24,6 @@
 
 ## 🔧 nielpattin - Backend/Core Systems
 
-### Giai đoạn 1: Nền tảng
-
 #### Thiết lập dự án
 
 - [x] Thiết lập Auth.js với OAuth provider (Google, Github)
@@ -40,14 +38,10 @@
 - [x] Test auth flows với các providers khác nhau
 - [x] Triển khai protected routes
 
-### Giai đoạn 2: Quiz System Core
-
 #### Database Schema
 
 - [x] user, account, session
 - [x] Thiết kế quiz, question, question_option, quiz_session, session_participant, game_attempt, session_question, session_question_option, question_attempt
-
-### Giai đoạn 3: Quiz Playing & Results
 
 #### Quiz Player Logic
 
@@ -59,7 +53,6 @@
 
 #### Results & Integration
 
-- [ ] Tạo results API endpoints
 - [ ] Triển khai attempt history và comparison logic
 - [ ] Xây dựng basic analytics cho sessions
 - [ ] Kiểm thử backend cuối cùng và tối ưu hóa
@@ -69,41 +62,34 @@
 
 ## 🎨 akitosuref - Quiz Management UI
 
-#### Landing Pages
-
-- [ ] Cập nhật home page với hero section
-- [ ] Tạo navigation components
-- [ ] Xây dựng responsive layout và mobile navigation
-- [ ] Thêm loading states và error handling components
-- [ ] Tạo footer và cải thiện cấu trúc trang tổng thể
-- [ ] Xóa database testing content khỏi home page
-
 #### Quiz Editor
 
-- [ ] Xây dựng quiz creation form
-- [ ] Tạo question editor với drag-drop
-- [ ] Triển khai answer option management components
-- [ ] Thêm image upload component cho questions
-- [ ] Xây dựng quiz settings (time limits, points, question types)
-
-#### Hoàn thiện Quiz Editor
-
-- [ ] Thêm question type selection (Multiple choice, True/False)
-- [ ] Triển khai quiz preview functionality
-- [ ] Thêm comprehensive form validation và error handling
-- [ ] Tạo quiz duplication và template features
+- [x] Tạo question editor
+- [x] Quiz settings (time limits, points, question types)
+- [x] Thêm question type selection (Multiple choice, True/False)
 
 #### Quiz Player UI
 
-- [ ] Xây dựng self-paced quiz player
+- [ ] Quiz player
 - [ ] Tạo question display với timer component
 - [ ] Triển khai answer selection và submission interface
 - [ ] Thêm progress bar và question navigation
 - [ ] Xây dựng quiz completion và immediate feedback
 
+#### Quản lý Quiz
+
+- [ ] Tạo share link generation và copy functionality
+- [ ] Xây dựng session creation interface và modal
+- [ ] Thêm quiz actions (Start Session, Edit, Delete, Duplicate)
+- [ ] Triển khai quiz export và sharing options
+
 ---
 
 ## 🖥️ xuanmanh-2110 - Login & Join Page
+
+#### Landing Pages
+
+- [ ] Hero section, Footer, Features, FAQ
 
 #### Hệ thống Login
 
@@ -125,13 +111,6 @@
 - [ ] Triển khai quiz listing, filtering, và sorting
 - [ ] Thêm quiz detail view
 - [ ] Tạo quiz statistics và metadata display
-
-#### Quản lý Quiz
-
-- [ ] Tạo share link generation và copy functionality
-- [ ] Xây dựng session creation interface và modal
-- [ ] Thêm quiz actions (Start Session, Edit, Delete, Duplicate)
-- [ ] Triển khai quiz export và sharing options
 
 #### Results Interface
 
