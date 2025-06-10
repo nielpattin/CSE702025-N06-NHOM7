@@ -1,10 +1,16 @@
 <script lang="ts">
 	import { page } from "$app/state"
 	import { signOut } from "@auth/sveltekit/client"
+	import { goto } from "$app/navigation"
 	import { onMount } from "svelte"
+
+	// Props
+	let { showJoinCode = true } = $props()
 
 	let data = $derived(page.data)
 	let session = $derived(data.session)
+	let currentRoute = $derived(page.url.pathname)
+	let isDashboardPage = $derived(currentRoute === "/dashboard")
 
 	// State for burger menu
 	let showBurgerMenu = $state(false)
@@ -32,6 +38,10 @@
 		// TODO: Navigate to settings page
 		console.log("Settings clicked")
 		closeBurgerMenu()
+	}
+
+	function goToDashboard() {
+		goto("/dashboard")
 	}
 
 	// Close menu when clicking outside
@@ -63,11 +73,32 @@
 
 			<!-- Right Side Actions -->
 			<div class="flex items-center space-x-4">
+				<!-- Dashboard Button -->
+				{#if !isDashboardPage}
+					<button onclick={goToDashboard} class="rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white transition-all hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> Dashboard </button>
+				{/if}
+
 				<!-- Enter Code to Join Section -->
-				<div class="hidden items-center space-x-2 md:flex">
-					<input type="text" placeholder="Enter quiz code..." class="w-32 rounded-md border border-gray-600 bg-gray-700 px-3 py-1.5 text-sm text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none" />
-					<button class="rounded-md bg-gradient-to-r from-green-600 to-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition-all hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> Join </button>
-				</div>
+				{#if showJoinCode}
+					<div class="hidden items-center space-x-2 md:flex">
+						<input type="text" placeholder="Enter quiz code..." class="w-32 rounded-md border border-gray-600 bg-gray-700 px-3 py-1.5 text-sm text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none" />
+						<button class="rounded-md bg-gradient-to-r from-green-600 to-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition-all hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> Join </button>
+					</div>
+				{/if}
+
+				<!-- User Info -->
+				{#if session?.user && !isDashboardPage}
+					<div class="hidden items-center space-x-3 md:flex">
+						{#if session.user.image}
+							<img src={session.user.image} alt={session.user.name || "User"} class="h-8 w-8 rounded-full" />
+						{:else}
+							<div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-600 text-sm font-medium text-white">
+								{(session.user.name || session.user.email || "U").charAt(0).toUpperCase()}
+							</div>
+						{/if}
+						<span class="text-sm font-medium text-white">{session.user.name || session.user.email}</span>
+					</div>
+				{/if}
 
 				<!-- Burger Menu -->
 				<div class="burger-menu-container relative">
