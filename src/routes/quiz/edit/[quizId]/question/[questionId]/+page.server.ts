@@ -74,20 +74,11 @@ export const actions: Actions = {
 
 		const formData = await request.formData()
 
-		// Add logging for debugging
-		console.log("=== Form Submission Debug ===")
-		console.log("FormData entries:")
-		for (const [key, value] of formData.entries()) {
-			console.log(`  ${key}: ${value}`)
-		}
-
 		// Extract basic question details
 		const content = formData.get("content") as string
 		const type = formData.get("type") as QuestionType
 		const points = parseInt(formData.get("points") as string, 10)
 		const timeLimit = parseInt(formData.get("time_limit") as string, 10)
-
-		console.log("Parsed basic fields:", { content, type, points, timeLimit })
 
 		// Validate required fields
 		if (!content?.trim()) {
@@ -130,8 +121,6 @@ export const actions: Actions = {
 				})
 			}
 		}
-
-		console.log("Parsed options:", options)
 
 		// Validate options
 		if (options.length === 0) {
@@ -213,10 +202,7 @@ export const actions: Actions = {
 					return questionId
 				}
 			})
-
-			console.log("Question saved successfully, redirecting...")
 		} catch (err) {
-			console.error("Database error:", err)
 			return fail(500, { error: "Failed to save question" })
 		}
 

@@ -114,7 +114,7 @@
 				<div class="ml-4 flex flex-shrink-0 items-center space-x-2">
 					<!-- Conditional Action Button -->
 					{#if quiz.status === "published"}
-						<button class="cursor-pointer rounded-md bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none" onclick={handlePlayQuiz}> ▶ Play </button>
+						<button class="cursor-pointer rounded-md bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none" onclick={handlePlayQuiz}> ▶ Start </button>
 					{:else}
 						<form
 							method="POST"
