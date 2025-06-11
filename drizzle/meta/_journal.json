@@ -22,6 +22,20 @@
       "when": 1749541529901,
       "tag": "0002_pretty_rockslide",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1749654971881,
+      "tag": "0003_goofy_roulette",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1749667780922,
+      "tag": "0004_grey_captain_stacy",
+      "breakpoints": true
     }
   ]
 }

@@ -45,18 +45,7 @@
 
 #### Quiz Player Logic
 
-- [ ] Xây dựng attempt tracking
-- [ ] Triển khai answer submission và validation
-- [ ] Tạo scoring calculation và timing logic
-- [ ] Thêm progress saving và resume functionality
-- [ ] Xây dựng quiz completion và results calculation
-
 #### Results & Integration
-
-- [ ] Triển khai attempt history và comparison logic
-- [ ] Xây dựng basic analytics cho sessions
-- [ ] Kiểm thử backend cuối cùng và tối ưu hóa
-- [ ] Deploy và cấu hình production environment
 
 ---
 
@@ -67,10 +56,6 @@
 - [x] Tạo question editor
 - [x] Quiz settings (time limits, points, question types)
 - [x] Thêm question type selection (Multiple choice, True/False)
-
-#### Quiz Player UI
-
-- [ ] Quiz player
 - [ ] Tạo question display với timer component
 - [ ] Triển khai answer selection và submission interface
 - [ ] Thêm progress bar và question navigation
@@ -85,7 +70,7 @@
 
 ---
 
-## 🖥️ xuanmanh-2110 - Login & Join Page
+## 🖥️ xuanmanh-2110 - Login, Join, Library Page
 
 #### Landing Pages
 
@@ -106,11 +91,14 @@
 
 #### Library Interface
 
-- [ ] Xây dựng quiz library
-- [ ] Tạo quiz cards với actions (Edit, Delete, Share)
-- [ ] Triển khai quiz listing, filtering, và sorting
-- [ ] Thêm quiz detail view
-- [ ] Tạo quiz statistics và metadata display
+- [x] Xây dựng quiz library
+- [x] Tạo quiz cards với actions (Edit, Delete, Archive, Play, Publish)
+- [x] Triển khai quiz listing, filtering, và sorting
+  - [x] Tạo trang Library để quản lý quiz.
+  - [x] Phân loại quiz theo tab (Published, Drafts, Archived).
+  - [x] Thêm các hành động cho quiz (Publish, Archive, Delete, Edit).
+  - [x] Hiển thị thông tin chi tiết trên thẻ quiz (tác giả, số câu hỏi, thời gian tạo).
+- [x] Quiz statistics và metadata display
 
 #### Results Interface
 

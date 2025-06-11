@@ -6,6 +6,7 @@ export type QuizStatus = "draft" | "published" | "archived"
 export type QuizVisibility = "public" | "private" | "unlisted"
 export type QuestionType = "multiple_choice" | "true_false"
 export type AttemptStatus = "in_progress" | "completed" | "abandoned"
+export type SessionStatus = "active" | "inactive" | "expired"
 
 // Auth.js tables (with minimal additions)
 export const users = pgTable("user", {
@@ -60,7 +61,7 @@ export const quizzes = pgTable("quizzes", {
 	description: text("description"),
 	creatorId: text("creator_id").references(() => users.id),
 	status: varchar("status").$type<QuizStatus>(),
-	visibility: varchar("visibility").$type<QuizVisibility>(),
+	visibility: varchar("visibility").$type<QuizVisibility>().default("private").notNull(),
 	createdAt: timestamp("created_at").defaultNow(),
 	updatedAt: timestamp("updated_at").defaultNow()
 })
@@ -96,24 +97,21 @@ export const quizSessions = pgTable("quiz_sessions", {
 	hostId: text("host_id")
 		.notNull()
 		.references(() => users.id),
-	shareableCode: varchar("shareable_code", { length: 7 }).unique(),
-	settingsOverrides: jsonb("settings_overrides"),
+	code: varchar("code", { length: 8 }).unique().notNull(),
+	status: varchar("status").$type<SessionStatus>().notNull().default("inactive"),
+	expiresAt: timestamp("expires_at").notNull(),
 	createdAt: timestamp("created_at").defaultNow(),
-	updatedAt: timestamp("updated_at").defaultNow(),
-	endTime: timestamp("end_time")
+	updatedAt: timestamp("updated_at").defaultNow()
 })
 
-export const sessionParticipants = pgTable("session_participants", {
+export const sessionParticipants = pgTable("participants", {
 	id: serial("id").primaryKey(),
 	quizSessionId: integer("quiz_session_id")
 		.notNull()
 		.references(() => quizSessions.id, { onDelete: "cascade" }),
-	playerId: varchar("player_id").unique(),
-	userId: text("user_id").references(() => users.id), // NULL for guests
-	nickname: varchar("nickname"),
-	totalAttempts: integer("total_attempts"),
-	bestScore: integer("best_score"),
-	data: jsonb("data"),
+	userId: text("user_id").references(() => users.id), // nullable for guest users
+	name: varchar("name", { length: 100 }), // for guest users
+	data: jsonb("data"), // Report data: correct, incorrect, attempts, total_time_ms, questions_per_sec, best_score
 	createdAt: timestamp("created_at").defaultNow(),
 	updatedAt: timestamp("updated_at").defaultNow()
 })
@@ -123,7 +121,7 @@ export const gameAttempts = pgTable("game_attempts", {
 	quizSessionId: integer("quiz_session_id")
 		.notNull()
 		.references(() => quizSessions.id, { onDelete: "cascade" }),
-	playerId: varchar("player_id").references(() => sessionParticipants.playerId),
+	participantId: integer("participant_id").references(() => sessionParticipants.id, { onDelete: "cascade" }),
 	attemptNumber: integer("attempt_number"),
 	score: integer("score"),
 	status: varchar("status").$type<AttemptStatus>(),

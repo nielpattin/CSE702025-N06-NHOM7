@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { goto, invalidateAll } from "$app/navigation"
 	import { enhance, applyAction } from "$app/forms"
-	import type { QuizStatus } from "$lib/server/db/schema"
+	import { page } from "$app/stores"
+	import type { QuizStatus, QuizVisibility } from "$lib/server/db/schema"
 
 	interface Quiz {
 		id: number
 		title: string | null
 		description: string | null
 		status: QuizStatus | null
+		visibility: QuizVisibility | null
 		createdAt: Date | null
 		questionCount?: number
 		creatorName?: string
@@ -17,6 +19,7 @@
 
 	// State for dropdown menu visibility
 	let isDropdownOpen = $state(false)
+	let loading = $state(false)
 
 	// Toggle dropdown menu
 	function toggleDropdown(e: Event) {
@@ -67,13 +70,6 @@
 			return "Just now"
 		}
 	}
-
-	function handlePlayQuiz(e: Event) {
-		e.preventDefault()
-		e.stopPropagation()
-		// TODO: Implement play functionality
-		console.log("Play quiz:", quiz.id)
-	}
 </script>
 
 <div
@@ -114,7 +110,25 @@
 				<div class="ml-4 flex flex-shrink-0 items-center space-x-2">
 					<!-- Conditional Action Button -->
 					{#if quiz.status === "published"}
-						<button class="cursor-pointer rounded-md bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none" onclick={handlePlayQuiz}> ▶ Start </button>
+						<!-- Start Session Form -->
+						<form
+							method="POST"
+							action="?/startSession"
+							use:enhance={() => {
+								loading = true
+								return async ({ result }) => {
+									if (result.type === "redirect") {
+										await applyAction(result)
+									}
+									loading = false
+								}
+							}}
+						>
+							<input type="hidden" name="quizId" value={quiz.id} />
+							<button type="submit" class="cursor-pointer rounded-md bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none" disabled={loading}>
+								{loading ? "Starting..." : "▶ Start"}
+							</button>
+						</form>
 					{:else}
 						<form
 							method="POST"
@@ -128,6 +142,10 @@
 							<input type="hidden" name="quizId" value={quiz.id} />
 							<button type="submit" class="cursor-pointer rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> 📤 Publish </button>
 						</form>
+					{/if}
+
+					{#if $page.form?.error}
+						<p class="mt-2 text-sm text-red-500">{$page.form.error}</p>
 					{/if}
 
 					<!-- Three-dots Options Button and Dropdown Container -->
@@ -206,12 +224,20 @@
 						</span>
 					{/if}
 				</div>
-				<span
-					class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-					{quiz.status === 'published' ? 'bg-green-900 text-green-200' : quiz.status === 'draft' ? 'bg-yellow-900 text-yellow-200' : 'bg-gray-900 text-gray-200'}"
-				>
-					{quiz.status || "draft"}
-				</span>
+				<div class="flex items-center space-x-2">
+					<span
+						class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+						{quiz.status === 'published' ? 'bg-green-900 text-green-200' : quiz.status === 'draft' ? 'bg-yellow-900 text-yellow-200' : 'bg-gray-900 text-gray-200'}"
+					>
+						{quiz.status || "draft"}
+					</span>
+					<span
+						class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+						{quiz.visibility === 'public' ? 'bg-blue-900 text-blue-200' : quiz.visibility === 'unlisted' ? 'bg-purple-900 text-purple-200' : 'bg-gray-900 text-gray-200'}"
+					>
+						{quiz.visibility || "private"}
+					</span>
+				</div>
 			</div>
 		</div>
 	</div>

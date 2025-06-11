@@ -1,6 +1,6 @@
 <script lang="ts">
 	import LibraryQuizCard from "$lib/components/library/LibraryQuizCard.svelte"
-	import type { QuizStatus } from "$lib/server/db/schema"
+	import type { QuizStatus, QuizVisibility } from "$lib/server/db/schema"
 	import type { Session } from "@auth/sveltekit"
 
 	interface Quiz {
@@ -9,7 +9,7 @@
 		description: string | null
 		creatorId: string | null
 		status: QuizStatus | null
-		visibility: string | null
+		visibility: QuizVisibility | null
 		createdAt: Date | null
 		updatedAt: Date | null
 	}
