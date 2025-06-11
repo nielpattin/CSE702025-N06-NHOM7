@@ -16,7 +16,8 @@
 		{ name: "Dashboard", href: "/dashboard", icon: "🏠" },
 		{ name: "Create Quiz", href: "/quiz/create", icon: "➕" },
 		{ name: "Library", href: "/library", icon: "📚" },
-		{ name: "Report", href: "/report", icon: "📊" },
+		{ name: "Active Sessions", href: "/sessions", icon: "🎯" },
+		{ name: "Reports", href: "/reports", icon: "📊" },
 		{ name: "Profile", href: "/profile", icon: "👤" },
 		{ name: "Settings", href: "/settings", icon: "⚙️" },
 		{ name: "Admin Panel", href: "/admin", icon: "👑", adminOnly: true }

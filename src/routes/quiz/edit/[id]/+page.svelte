@@ -68,7 +68,7 @@
 	<meta name="description" content="Edit quiz details and manage questions" />
 </svelte:head>
 
-<QuizEditHeader quizId={data.quiz.id} />
+<QuizEditHeader quizId={data.quiz.id} quiz={data.quiz} />
 
 {#if form && "success" in form && form.success}
 	<AlertMessage type="success" message="Quiz title updated successfully!" />
