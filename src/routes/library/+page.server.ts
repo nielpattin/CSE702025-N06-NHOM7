@@ -1,5 +1,5 @@
 import { db } from "$lib/server/db"
-import { quizzes, questions, users, quizSessions } from "$lib/server/db/schema"
+import { quizzes, questions, users, quizSessions, questionOptions, sessionQuestions, sessionQuestionOptions } from "$lib/server/db/schema"
 import { redirect, fail } from "@sveltejs/kit"
 import { eq, count, and } from "drizzle-orm"
 import type { PageServerLoad, Actions } from "./$types"
@@ -218,6 +218,39 @@ export const actions: Actions = {
 					expiresAt: expiresAt
 				})
 				.returning()
+
+			// Snapshot questions and options from the quiz to the session
+			const quizQuestions = await db.select().from(questions).where(eq(questions.quizId, quizIdNum))
+
+			// Insert each question into sessionQuestions and its options into sessionQuestionOptions
+			for (const question of quizQuestions) {
+				// Insert the question into sessionQuestions
+				const [sessionQuestion] = await db
+					.insert(sessionQuestions)
+					.values({
+						quizSessionId: newSession.id,
+						originalQuestionId: question.id,
+						type: question.type,
+						content: question.content,
+						timeLimit: question.timeLimit,
+						points: question.points
+					})
+					.returning()
+
+				// Get all options for this question
+				const questionOptionsData = await db.select().from(questionOptions).where(eq(questionOptions.questionId, question.id))
+
+				// Insert each option into sessionQuestionOptions
+				for (const option of questionOptionsData) {
+					await db.insert(sessionQuestionOptions).values({
+						sessionQuestionId: sessionQuestion.id,
+						originalOptionId: option.id,
+						order: option.order,
+						content: option.content,
+						correct: option.correct
+					})
+				}
+			}
 		} catch (error) {
 			console.error("Error starting quiz session:", error)
 			return fail(500, { error: "Failed to start quiz session" })
