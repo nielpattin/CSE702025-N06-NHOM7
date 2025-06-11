@@ -162,37 +162,39 @@
 						{#if isDropdownOpen}
 							<div class="ring-opacity-5 absolute top-full right-0 z-10 mt-2 w-40 rounded-md bg-gray-800 shadow-lg ring-1 ring-black" role="menu" use:clickOutside={closeDropdown}>
 								<div class="py-1">
-									<!-- Archive Form -->
-									<form
-										method="POST"
-										action="?/archiveQuiz"
-										use:enhance={() => {
-											closeDropdown()
-											return async ({ result }) => {
-												await applyAction(result)
-												await invalidateAll()
-											}
-										}}
-									>
-										<input type="hidden" name="quizId" value={quiz.id} />
-										<button type="submit" class="block w-full cursor-pointer px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white" role="menuitem"> 📦 Archive </button>
-									</form>
-
-									<!-- Delete Form -->
-									<form
-										method="POST"
-										action="?/deleteQuiz"
-										use:enhance={() => {
-											closeDropdown()
-											return async ({ result }) => {
-												await applyAction(result)
-												await invalidateAll()
-											}
-										}}
-									>
-										<input type="hidden" name="quizId" value={quiz.id} />
-										<button type="submit" class="block w-full cursor-pointer px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700 hover:text-red-300" role="menuitem"> 🗑️ Delete </button>
-									</form>
+									{#if quiz.status === "published"}
+										<!-- Archive Form - Only for published quizzes -->
+										<form
+											method="POST"
+											action="?/archiveQuiz"
+											use:enhance={() => {
+												closeDropdown()
+												return async ({ result }) => {
+													await applyAction(result)
+													await invalidateAll()
+												}
+											}}
+										>
+											<input type="hidden" name="quizId" value={quiz.id} />
+											<button type="submit" class="block w-full cursor-pointer px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white" role="menuitem"> 📦 Archive </button>
+										</form>
+									{:else if quiz.status === "draft" || quiz.status === "archived"}
+										<!-- Delete Form - For draft and archived quizzes -->
+										<form
+											method="POST"
+											action="?/deleteQuiz"
+											use:enhance={() => {
+												closeDropdown()
+												return async ({ result }) => {
+													await applyAction(result)
+													await invalidateAll()
+												}
+											}}
+										>
+											<input type="hidden" name="quizId" value={quiz.id} />
+											<button type="submit" class="block w-full cursor-pointer px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700 hover:text-red-300" role="menuitem"> 🗑️ Delete </button>
+										</form>
+									{/if}
 								</div>
 							</div>
 						{/if}

@@ -5,7 +5,7 @@
 	import { onMount } from "svelte"
 
 	// Props
-	let { showJoinCode = true } = $props()
+	let { showJoinCode = true, title } = $props()
 
 	let data = $derived(page.data)
 	let session = $derived(data.session)
@@ -68,7 +68,7 @@
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg">
 					<img src="/quiz-learn-logo.png" alt="Quiz Learn Logo" class="h-8 w-8 object-contain" />
 				</div>
-				<span class="text-xl font-semibold text-white">Quiz Learn Dashboard</span>
+				<span class="text-xl font-semibold text-white">{title || "Quiz Learn Dashboard"}</span>
 			</div>
 
 			<!-- Right Side Actions -->

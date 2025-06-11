@@ -2,6 +2,7 @@
 	import { page } from "$app/state"
 	import { goto } from "$app/navigation"
 	import Sidebar from "$lib/components/Sidebar.svelte"
+	import DashboardHeader from "$lib/components/DashboardHeader.svelte"
 	import LibraryFilterPanel from "$lib/components/library/LibraryFilterPanel.svelte"
 	import LibraryContent from "$lib/components/library/LibraryContent.svelte"
 	import type { QuizStatus, QuizVisibility } from "$lib/server/db/schema"
@@ -100,22 +101,8 @@
 <Sidebar />
 
 <div class="ml-64 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-	<!-- Header -->
-	<header class="border-b border-gray-700 bg-gray-800/50 backdrop-blur">
-		<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-			<div class="flex items-center justify-between">
-				<div>
-					<h1 class="text-3xl font-bold text-white">Quiz Library</h1>
-					<p class="mt-2 text-gray-400">Manage and organize your quiz collection</p>
-				</div>
-				<div class="flex items-center space-x-4">
-					<span class="text-sm text-gray-400">
-						Total Quizzes: {quizzes.length}
-					</span>
-				</div>
-			</div>
-		</div>
-	</header>
+	<!-- Dashboard Header Component -->
+	<DashboardHeader title="Quiz Library" />
 
 	<!-- Main Content -->
 	<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
