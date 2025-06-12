@@ -110,6 +110,7 @@ export const sessionParticipants = pgTable("participants", {
 		.notNull()
 		.references(() => quizSessions.id, { onDelete: "cascade" }),
 	userId: text("user_id").references(() => users.id), // nullable for guest users
+	guestId: text("guest_id"), // unique identifier for guest users
 	name: varchar("name", { length: 100 }), // for guest users
 	data: jsonb("data"), // Report data: correct, incorrect, attempts, total_time_ms, questions_per_sec, best_score
 	createdAt: timestamp("created_at").defaultNow(),

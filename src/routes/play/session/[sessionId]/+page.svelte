@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance, applyAction } from "$app/forms"
 	import { invalidateAll } from "$app/navigation"
+	import { onMount } from "svelte"
 	import type { PageData } from "./$types"
 	import DashboardHeader from "$lib/components/DashboardHeader.svelte"
 
@@ -9,8 +10,25 @@
 	const { session: quizSession, participants } = data
 
 	// Form state
-	let guestName = $state("")
+	let participantName = $state("")
+	let guestId = $state("")
 	let isJoining = $state(false)
+	let isReattempting = $state(false)
+
+	// Generate and store guest ID on mount (only for non-authenticated users)
+	onMount(() => {
+		// Only generate guestId for users who are not logged in
+		if (!data.userSession?.user) {
+			const existingGuestId = localStorage.getItem("guestId")
+			if (existingGuestId) {
+				guestId = existingGuestId
+			} else {
+				const newGuestId = crypto.randomUUID()
+				guestId = newGuestId
+				localStorage.setItem("guestId", newGuestId)
+			}
+		}
+	})
 
 	// Check if current user has already joined
 	function hasUserJoined() {
@@ -24,10 +42,14 @@
 
 	// Format the participant display name
 	function getParticipantName(participant: (typeof participants)[0]) {
+		// Prioritize custom name from sessionParticipants, then user account name, then fallback
+		if (participant.name) {
+			return participant.name
+		}
 		if (participant.userId && participant.user?.name) {
 			return participant.user.name
 		}
-		return participant.name || "Anonymous"
+		return "Anonymous"
 	}
 
 	// Get participant avatar
@@ -49,7 +71,7 @@
 	<title>Session Lobby - {quizSession.quiz.title}</title>
 </svelte:head>
 
-<DashboardHeader />
+<DashboardHeader title="Session Lobby" />
 
 <div class="min-h-screen bg-gray-800">
 	<div class="container mx-auto px-4 py-8">
@@ -128,17 +150,108 @@
 			</div>
 		</div>
 
+		<!-- Join Form (only show if user hasn't joined) -->
+		{#if !hasUserJoined()}
+			<div class="mx-auto mt-8 max-w-md">
+				<div class="rounded-lg border border-gray-700 bg-gray-900/50 p-6 shadow-lg">
+					<h3 class="mb-4 text-center text-xl font-semibold text-white">Join the Quiz</h3>
+					<form
+						method="POST"
+						action="?/joinSession"
+						use:enhance={() => {
+							isJoining = true
+							return async ({ result }) => {
+								isJoining = false
+								if (result.type === "success") {
+									participantName = ""
+									await invalidateAll()
+								}
+								await applyAction(result)
+							}
+						}}
+					>
+						<div class="mb-4">
+							<label for="name" class="mb-2 block text-sm font-medium text-gray-300">
+								{data.userSession?.user ? "Enter your display name (optional)" : "Enter your name"}
+							</label>
+							<input type="text" id="name" name="name" bind:value={participantName} required={!data.userSession?.user} placeholder={data.userSession?.user ? "Display name for this session" : "Your name"} disabled={isJoining} class="w-full rounded-lg border border-gray-600 bg-gray-800 px-4 py-3 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50" />
+						</div>
+						{#if !data.userSession?.user}
+							<!-- Only include guestId for non-authenticated users -->
+							<input type="hidden" name="guestId" value={guestId} />
+						{/if}
+						<button type="submit" disabled={isJoining || (!data.userSession?.user && !participantName.trim())} class="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50">
+							{#if isJoining}
+								<div class="flex items-center justify-center gap-2">
+									<svg class="h-4 w-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+									</svg>
+									Joining...
+								</div>
+							{:else}
+								Join Game
+							{/if}
+						</button>
+					</form>
+				</div>
+			</div>
+		{/if}
+
 		<!-- Instructions -->
 		<div class="mx-auto mt-8 max-w-2xl">
 			<div class="rounded-lg border border-blue-700 bg-blue-900/20 p-6">
-				<h3 class="mb-2 text-lg font-semibold text-blue-300">Waiting for Quiz to Start</h3>
-				<p class="mb-4 text-blue-200">The quiz host will start the session once all participants have joined.</p>
-				<div class="text-sm text-blue-200">
-					<p class="mb-1">• Share the session code <strong class="font-mono text-blue-400">{quizSession.code}</strong> with others to join</p>
-					<p class="mb-1">• Make sure you have a stable internet connection</p>
-					<p>• The quiz will begin automatically when the host starts it</p>
-				</div>
+				<h3 class="mb-2 text-lg font-semibold text-blue-300">
+					{hasUserJoined() ? "Waiting for Quiz to Start" : "How to Join"}
+				</h3>
+				{#if hasUserJoined()}
+					<p class="mb-4 text-blue-200">The quiz host will start the session once all participants have joined.</p>
+					<div class="text-sm text-blue-200">
+						<p class="mb-1">• Make sure you have a stable internet connection</p>
+						<p>• The quiz will begin automatically when the host starts it</p>
+					</div>
+				{:else}
+					<p class="mb-4 text-blue-200">Join the quiz session to participate in the game.</p>
+					<div class="text-sm text-blue-200">
+						<p class="mb-1">• {data.userSession?.user ? 'Enter a display name (optional) and click "Join Game"' : 'Enter your name and click "Join Game"'}</p>
+						<p class="mb-1">• Share the session code <strong class="font-mono text-blue-400">{quizSession.code}</strong> with others to join</p>
+						<p>• Make sure you have a stable internet connection</p>
+					</div>
+				{/if}
 			</div>
 		</div>
+
+		<!-- Reattempt Button (only show if user has joined) -->
+		{#if hasUserJoined() && data.userSession?.user}
+			<div class="mx-auto mt-8 max-w-md">
+				<div class="rounded-lg border border-gray-700 bg-gray-900/50 p-6 shadow-lg">
+					<h3 class="mb-4 text-center text-xl font-semibold text-white">Start New Attempt</h3>
+					<p class="mb-4 text-center text-sm text-gray-400">Create a new attempt to retake this quiz</p>
+					<form
+						method="POST"
+						action="?/reattempt"
+						use:enhance={() => {
+							isReattempting = true
+							return async ({ result }) => {
+								isReattempting = false
+								await applyAction(result)
+							}
+						}}
+					>
+						<button type="submit" disabled={isReattempting} class="w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50">
+							{#if isReattempting}
+								<div class="flex items-center justify-center gap-2">
+									<svg class="h-4 w-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+									</svg>
+									Starting...
+								</div>
+							{:else}
+								🔄 Reattempt Quiz
+							{/if}
+						</button>
+					</form>
+				</div>
+			</div>
+		{/if}
 	</div>
 </div>

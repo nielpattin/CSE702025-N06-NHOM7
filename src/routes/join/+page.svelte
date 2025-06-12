@@ -6,6 +6,14 @@
 
 	let data = $derived(page.data)
 	let session = $derived(data.session)
+	let code = $state("")
+
+	function handleSubmit(event: Event) {
+		event.preventDefault()
+		if (code.trim()) {
+			goto(`/join?code=${encodeURIComponent(code.trim())}`)
+		}
+	}
 </script>
 
 <svelte:head>
@@ -14,7 +22,7 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-	<DashboardHeader showJoinCode={false} />
+	<DashboardHeader title="Join Quiz" showJoinCode={false} />
 
 	<!-- Main Content -->
 	<main class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -31,10 +39,10 @@
 						<p class="text-sm text-gray-400">Enter the code provided by your quiz host</p>
 					</div>
 
-					<div class="space-y-4">
-						<input type="text" placeholder="Enter quiz code" class="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-3 text-center text-lg tracking-wider text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-						<button class="w-full rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-3 text-lg font-medium text-white transition-all hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> Join Quiz </button>
-					</div>
+					<form onsubmit={handleSubmit} class="space-y-4">
+						<input type="text" bind:value={code} placeholder="Enter quiz code" class="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-3 text-center text-lg tracking-wider text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" required />
+						<button type="submit" class="w-full rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-3 text-lg font-medium text-white transition-all hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> Join Quiz </button>
+					</form>
 
 					<div class="mt-6 border-t border-gray-700 pt-6">
 						<p class="text-sm text-gray-400">

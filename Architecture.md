@@ -270,7 +270,7 @@ Dự án này nhằm mục đích phát triển một ứng dụng web trắc ng
     - Ranking players by best score
     - Anonymous cho guest players (chỉ hiện nickname)
 
-#### 2.9.3. Quiz Attempt Interface (`/play/attempt/:attemptId`)
+#### 2.9.3. Quiz Attempt Interface (`/play/session/:sessionId/:attemptId`)
 
 **Question View:**
 
