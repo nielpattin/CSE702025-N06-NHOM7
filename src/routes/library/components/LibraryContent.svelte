@@ -1,5 +1,5 @@
 <script lang="ts">
-	import LibraryQuizCard from "$lib/components/library/LibraryQuizCard.svelte"
+	import LibraryQuizCard from "./LibraryQuizCard.svelte"
 	import type { QuizStatus, QuizVisibility } from "$lib/server/db/schema"
 	import type { Session } from "@auth/sveltekit"
 

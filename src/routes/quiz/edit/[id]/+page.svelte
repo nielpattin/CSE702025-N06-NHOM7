@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PageData, ActionData } from "./$types"
-	import QuizEditHeader from "$lib/components/quiz/QuizEditHeader.svelte"
-	import AlertMessage from "$lib/components/quiz/AlertMessage.svelte"
-	import QuizDetailsForm from "$lib/components/quiz/QuizDetailsForm.svelte"
-	import AddQuestionButton from "$lib/components/quiz/AddQuestionButton.svelte"
-	import QuestionsList from "$lib/components/quiz/QuestionsList.svelte"
+	import AddQuestionButton from "../../components/AddQuestionButton.svelte"
+	import AlertMessage from "../../components/AlertMessage.svelte"
+	import QuestionsList from "../../components/QuestionsList.svelte"
+	import QuizDetailsForm from "../../components/QuizDetailsForm.svelte"
+	import QuizEditHeader from "../../components/QuizEditHeader.svelte"
 
 	interface Question {
 		id: number

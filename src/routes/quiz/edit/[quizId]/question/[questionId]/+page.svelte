@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PageData, ActionData } from "./$types"
 	import { enhance } from "$app/forms"
-	import AlertMessage from "$lib/components/quiz/AlertMessage.svelte"
-	import QuestionEditHeader from "$lib/components/quiz/QuestionEditHeader.svelte"
-	import QuestionContentForm from "$lib/components/quiz/QuestionContentForm.svelte"
-	import AnswerOptionsContainer from "$lib/components/quiz/AnswerOptionsContainer.svelte"
+	import AlertMessage from "../../../../components/AlertMessage.svelte"
+	import AnswerOptionsContainer from "../../../../components/AnswerOptionsContainer.svelte"
+	import QuestionContentForm from "../../../../components/QuestionContentForm.svelte"
+	import QuestionEditHeader from "../../../../components/QuestionEditHeader.svelte"
 
 	type QuestionOption = {
 		id?: number

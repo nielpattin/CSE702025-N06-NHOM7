@@ -3,8 +3,7 @@
 	import { goto } from "$app/navigation"
 	import Sidebar from "$lib/components/Sidebar.svelte"
 	import DashboardHeader from "$lib/components/DashboardHeader.svelte"
-	import LibraryFilterPanel from "$lib/components/library/LibraryFilterPanel.svelte"
-	import LibraryContent from "$lib/components/library/LibraryContent.svelte"
+	import { LibraryFilterPanel, LibraryContent } from "./components"
 	import type { QuizStatus, QuizVisibility } from "$lib/server/db/schema"
 
 	// Type for quiz data returned from the server

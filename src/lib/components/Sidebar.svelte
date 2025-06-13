@@ -2,6 +2,7 @@
 	import { page } from "$app/state"
 	import { signOut } from "@auth/sveltekit/client"
 	import { goto } from "$app/navigation"
+	import { enhance } from "$app/forms"
 
 	let data = $derived(page.data)
 	let session = $derived(data.session)
@@ -81,18 +82,31 @@
 		<nav class="flex-1 px-4 py-6">
 			<div class="space-y-2">
 				{#each filteredNavigation as item (item.href)}
-					<a
-						href={item.href}
-						class="group flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200
-							{currentPath === item.href ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}
-							{item.adminOnly ? 'ring-1 ring-red-500/20' : ''}"
-					>
-						<span class="mr-3 text-lg">{item.icon}</span>
-						{item.name}
-						{#if item.adminOnly}
-							<span class="ml-auto text-xs text-red-400">ADMIN</span>
-						{/if}
-					</a>
+					{#if item.name === "Create Quiz"}
+						<form method="POST" action={item.href} use:enhance>
+							<button
+								type="submit"
+								class="group flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200
+									{currentPath === item.href ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}"
+							>
+								<span class="mr-3 text-lg">{item.icon}</span>
+								{item.name}
+							</button>
+						</form>
+					{:else}
+						<a
+							href={item.href}
+							class="group flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200
+								{currentPath === item.href ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}
+								{item.adminOnly ? 'ring-1 ring-red-500/20' : ''}"
+						>
+							<span class="mr-3 text-lg">{item.icon}</span>
+							{item.name}
+							{#if item.adminOnly}
+								<span class="ml-auto text-xs text-red-400">ADMIN</span>
+							{/if}
+						</a>
+					{/if}
 				{/each}
 			</div>
 		</nav>
