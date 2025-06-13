@@ -12,9 +12,22 @@ export const load: PageServerLoad = async (event) => {
 		redirect(302, "/signin")
 	}
 
+	// CTE to get the latest game attempt for each participant
+	const latestGameAttempts = db
+		.select({
+			id: gameAttempts.id,
+			participantId: gameAttempts.participantId,
+			sessionId: sql<number>`${sessionParticipants.quizSessionId}`.as("sessionId"),
+			rowNumber: sql<number>`ROW_NUMBER() OVER (PARTITION BY ${gameAttempts.participantId} ORDER BY ${gameAttempts.id} DESC)`.mapWith(Number).as("rn")
+		})
+		.from(gameAttempts)
+		.innerJoin(sessionParticipants, eq(gameAttempts.participantId, sessionParticipants.id))
+		.as("latest_game_attempts")
+
 	// Fetch all sessions where the current user is the host
-	// Include related quiz data, participant count, and accuracy
+	// Include related quiz data, participant count, and accuracy based on latest attempts only
 	const sessionReports = await db
+		.with(latestGameAttempts)
 		.select({
 			id: quizSessions.id,
 			sessionName: quizzes.title,
@@ -30,7 +43,8 @@ export const load: PageServerLoad = async (event) => {
 		.from(quizSessions)
 		.leftJoin(quizzes, eq(quizSessions.quizId, quizzes.id))
 		.leftJoin(sessionParticipants, eq(quizSessions.id, sessionParticipants.quizSessionId))
-		.leftJoin(gameAttempts, eq(sessionParticipants.id, gameAttempts.participantId))
+		.leftJoin(latestGameAttempts, sql`${sessionParticipants.id} = ${latestGameAttempts.participantId} AND ${latestGameAttempts.rowNumber} = 1`)
+		.leftJoin(gameAttempts, eq(latestGameAttempts.id, gameAttempts.id))
 		.leftJoin(questionAttempts, eq(gameAttempts.id, questionAttempts.gameAttemptId))
 		.where(eq(quizSessions.hostId, session.user.id))
 		.groupBy(quizSessions.id, quizzes.title, quizSessions.createdAt)

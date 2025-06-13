@@ -66,7 +66,7 @@
 							<span class="font-medium text-white">{report.participantCount}</span> participants
 						</div>
 						<div class="text-sm">
-							<span class="text-gray-400">Accuracy: </span>
+							<span class="text-gray-400">Avg. Accuracy: </span>
 							<span class="font-bold {getAccuracyColor(report.accuracy)}">{report.accuracy}%</span>
 						</div>
 					</div>

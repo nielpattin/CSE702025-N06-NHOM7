@@ -1,30 +1,13 @@
 <script lang="ts">
 	import CircularProgress from "./CircularProgress.svelte"
-	import ParticipantModal from "./ParticipantModal.svelte"
 	import { page } from "$app/state"
 
 	let { participants, getAccuracyStrokeColor } = $props()
 
-	let isModalOpen = $state(false)
-	let selectedParticipantId = $state<number | null>(null)
 	let dropdownOpen = $state<number | null>(null)
-
-	function openParticipantModal(participantId: number) {
-		selectedParticipantId = participantId
-		isModalOpen = true
-	}
-
-	function closeModal() {
-		isModalOpen = false
-		selectedParticipantId = null
-	}
 
 	function toggleDropdown(participantId: number) {
 		dropdownOpen = dropdownOpen === participantId ? null : participantId
-	}
-
-	function handleCardClick(participantId: number) {
-		openParticipantModal(participantId)
 	}
 
 	function handlePrint(participantId: number) {
@@ -34,11 +17,6 @@
 
 	function handleDelete(participantId: number) {
 		console.log("Delete participant:", participantId)
-		dropdownOpen = null
-	}
-
-	function handleExpand(participantId: number) {
-		openParticipantModal(participantId)
 		dropdownOpen = null
 	}
 
@@ -53,7 +31,7 @@
 			<div class="flex items-center justify-center text-center text-sm font-medium tracking-wider text-gray-300 uppercase">Name</div>
 			<div class="flex items-center justify-center text-center text-sm font-medium tracking-wider text-gray-300 uppercase">Accuracy</div>
 			<div class="flex items-center justify-center text-center text-sm font-medium tracking-wider text-gray-300 uppercase">Attempt Times</div>
-			<div class="flex items-center justify-center text-center text-sm font-medium tracking-wider text-gray-300 uppercase">Points</div>
+			<div class="flex items-center justify-center text-center text-sm font-medium tracking-wider text-gray-300 uppercase">Correct Answers</div>
 			<div class="flex items-center justify-center text-center text-sm font-medium tracking-wider text-gray-300 uppercase">Scores</div>
 			<div class="flex items-center justify-center text-center text-sm font-medium tracking-wider text-gray-300 uppercase"></div>
 		</div>
@@ -61,19 +39,8 @@
 		<!-- Participant Cards -->
 		<div class="divide-y divide-gray-600 bg-gray-800">
 			{#each participants as participant, index (participant.id)}
-				<div
-					class="relative grid cursor-pointer grid-cols-6 gap-4 px-6 py-4 transition-colors hover:bg-gray-700"
-					onclick={() => handleCardClick(participant.id)}
-					onkeydown={(e) => {
-						if (e.key === "Enter" || e.key === " ") {
-							e.preventDefault()
-							handleCardClick(participant.id)
-						}
-					}}
-					role="button"
-					tabindex="0"
-					aria-label="View details for {participant.displayName}"
-				>
+				{@const accuracy = participant.totalQuestions > 0 ? (participant.correctAnswers / participant.totalQuestions) * 100 : 0}
+				<a href="/reports/{sessionId()}/players/{participant.id}/attempts" class="relative grid grid-cols-6 gap-4 px-6 py-4 transition-colors hover:bg-gray-700" aria-label="View details for {participant.displayName}">
 					<!-- Name -->
 					<div class="flex items-center justify-center space-x-4">
 						<div class="flex-shrink-0">
@@ -95,13 +62,13 @@
 						</div>
 					</div>
 
-					<!-- Accuracy -->
-					<div class="flex items-center justify-center">
-						<CircularProgress percentage={participant.accuracy} size={60} strokeWidth={6} {getAccuracyStrokeColor} />
+					<!-- Correct Answers -->
+					<div class="flex flex-col items-center justify-center">
+						<CircularProgress percentage={accuracy} size={60} strokeWidth={6} color={getAccuracyStrokeColor(accuracy)} />
 					</div>
 					<!-- Attempt Times (number of game attempts) -->
 					<div class="flex items-center justify-center">
-						<span class="text-lg font-bold text-white"> 1 </span>
+						<span class="text-lg font-bold text-white"> {participant.attemptTimes} </span>
 					</div>
 					<!-- Points -->
 					<div class="flex items-center justify-center">
@@ -122,6 +89,7 @@
 						<div class="relative">
 							<button
 								onclick={(e) => {
+									e.preventDefault()
 									e.stopPropagation()
 									toggleDropdown(participant.id)
 								}}
@@ -161,24 +129,12 @@
 											</svg>
 											Delete
 										</button>
-										<button
-											onclick={(e) => {
-												e.stopPropagation()
-												handleExpand(participant.id)
-											}}
-											class="flex w-full cursor-pointer items-center px-4 py-2 text-sm text-gray-300 transition-colors hover:bg-gray-600 hover:text-white"
-										>
-											<svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4a1 1 0 011-1h4m0 0l-3 3m3-3v3m8-3h4a1 1 0 011 1v4m0 0l-3-3m3 3h-3m-3 8h3m3 0v4a1 1 0 01-1 1h-4m0 0l3-3m-3 3v-3M8 16H5a1 1 0 01-1-1v-4m0 0l3 3m-3-3h3" />
-											</svg>
-											Expand
-										</button>
 									</div>
 								</div>
 							{/if}
 						</div>
 					</div>
-				</div>
+				</a>
 			{/each}
 		</div>
 	</div>
@@ -199,6 +155,3 @@
 		aria-label="Close dropdown"
 	></div>
 {/if}
-
-<!-- Participant Modal -->
-<ParticipantModal bind:isOpen={isModalOpen} sessionId={sessionId()} participantId={selectedParticipantId} onClose={closeModal} {getAccuracyStrokeColor} />

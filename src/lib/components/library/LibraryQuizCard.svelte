@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from "$app/navigation"
 	import { enhance, applyAction } from "$app/forms"
-	import { page } from "$app/stores"
+	import { page } from "$app/state"
 	import type { QuizStatus, QuizVisibility } from "$lib/server/db/schema"
 
 	interface Quiz {
@@ -144,8 +144,8 @@
 						</form>
 					{/if}
 
-					{#if $page.form?.error}
-						<p class="mt-2 text-sm text-red-500">{$page.form.error}</p>
+					{#if page.form?.error}
+						<p class="mt-2 text-sm text-red-500">{page.form.error}</p>
 					{/if}
 
 					<!-- Three-dots Options Button and Dropdown Container -->

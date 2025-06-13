@@ -1,5 +1,36 @@
 <script lang="ts">
-	let { quizSession, stats, formatDate, getAccuracyColor } = $props()
+	type Breadcrumb = {
+		label: string
+		href?: string
+	}
+
+	type QuizSession = {
+		createdAt: Date | string | null
+		status: "active" | "inactive" | "ended" | "expired"
+		code: string
+	}
+
+	type Stats = {
+		accuracy: number
+		totalParticipants: number
+		totalQuestions: number
+	}
+
+	let {
+		quizSession,
+		stats,
+		formatDate,
+		getAccuracyColor,
+		title,
+		breadcrumbs = []
+	} = $props<{
+		quizSession: QuizSession
+		stats: Stats
+		formatDate: (date: Date | string) => string
+		getAccuracyColor: (accuracy: number) => string
+		title: string
+		breadcrumbs: Breadcrumb[]
+	}>()
 
 	const sessionAccuracyColor = $derived(getAccuracyColor(stats.accuracy))
 </script>
@@ -7,22 +38,28 @@
 <!-- Header Section -->
 <div class="mb-8">
 	<nav class="mb-4 flex" aria-label="Breadcrumb">
-		<ol class="flex items-center space-x-4">
-			<li>
-				<a href="/reports" class="text-gray-400 transition-colors hover:text-white">Reports</a>
-			</li>
-			<li>
-				<span class="text-gray-500">/</span>
-			</li>
-			<li>
-				<span class="font-medium text-white">Session Details</span>
-			</li>
+		<ol class="flex items-center space-x-2">
+			{#each breadcrumbs as breadcrumb, index (breadcrumb.label)}
+				<li>
+					{#if breadcrumb.href && index < breadcrumbs.length - 1}
+						<a href={breadcrumb.href} class="text-gray-400 transition-colors hover:text-white">
+							{breadcrumb.label}
+						</a>
+					{:else}
+						<span class="font-medium text-white">{breadcrumb.label}</span>
+					{/if}
+				</li>
+				{#if index < breadcrumbs.length - 1}
+					<li>
+						<span class="text-gray-500">/</span>
+					</li>
+				{/if}
+			{/each}
 		</ol>
 	</nav>
-
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold text-white">{quizSession.quiz.title}</h1>
+			<h1 class="text-3xl font-bold text-white">{title}</h1>
 			<p class="mt-2 text-gray-300">Session created on {formatDate(quizSession.createdAt)}</p>
 		</div>
 		<div class="flex items-center space-x-2">
@@ -46,7 +83,7 @@
 				</div>
 			</div>
 			<div class="ml-4">
-				<p class="text-sm font-medium text-gray-400">Accuracy</p>
+				<p class="text-sm font-medium text-gray-400">Avg. Accuracy</p>
 				<p class="text-2xl font-bold {sessionAccuracyColor}">{stats.accuracy}%</p>
 			</div>
 		</div>

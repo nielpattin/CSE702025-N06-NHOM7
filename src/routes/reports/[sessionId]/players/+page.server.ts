@@ -1,13 +1,12 @@
 import { db } from "$lib/server/db"
-import { quizSessions, quizzes, sessionParticipants, gameAttempts, questionAttempts, sessionQuestions, users } from "$lib/server/db/schema"
+import { quizSessions, quizzes, sessionParticipants, gameAttempts, questionAttempts, sessionQuestions, users, questions as questionsTable } from "$lib/server/db/schema"
 import { redirect, error } from "@sveltejs/kit"
-import { eq, and, sql, desc, count } from "drizzle-orm"
+import { eq, sql, and } from "drizzle-orm"
 import type { PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async (event) => {
 	const session = await event.locals.auth()
 
-	// Redirect if not authenticated
 	if (!session?.user) {
 		redirect(302, "/signin")
 	}
@@ -17,7 +16,6 @@ export const load: PageServerLoad = async (event) => {
 		throw error(400, "Invalid session ID")
 	}
 
-	// Fetch session details with quiz information
 	const sessionResult = await db
 		.select({
 			id: quizSessions.id,
@@ -42,33 +40,41 @@ export const load: PageServerLoad = async (event) => {
 
 	const sessionData = sessionResult[0]
 
-	// Check if user has access to this session
 	if (sessionData.hostId !== session.user.id) {
 		throw error(403, "Access denied")
 	}
 
-	// Get session statistics
-	const sessionStats = await db
+	const quizQuestionStats = await db
 		.select({
-			totalParticipants: sql<number>`COUNT(DISTINCT ${sessionParticipants.id})`,
-			totalQuestions: sql<number>`COUNT(DISTINCT ${sessionQuestions.id})`,
-			accuracy: sql<number>`
-				CASE
-					WHEN COUNT(${questionAttempts.id}) = 0 THEN 0
-					ELSE ROUND((SUM(CASE WHEN ${questionAttempts.correct} = true THEN 1 ELSE 0 END) * 100.0) / COUNT(${questionAttempts.id}))
-				END
-			`
+			totalQuestions: sql<number>`COUNT(${questionsTable.id})`.mapWith(Number),
+			totalPoints: sql<number>`SUM(${questionsTable.points})`.mapWith(Number)
 		})
-		.from(quizSessions)
-		.leftJoin(sessionParticipants, eq(quizSessions.id, sessionParticipants.quizSessionId))
-		.leftJoin(sessionQuestions, eq(quizSessions.id, sessionQuestions.quizSessionId))
-		.leftJoin(gameAttempts, eq(sessionParticipants.id, gameAttempts.participantId))
-		.leftJoin(questionAttempts, eq(gameAttempts.id, questionAttempts.gameAttemptId))
-		.where(eq(quizSessions.id, sessionId))
-		.groupBy(quizSessions.id)
+		.from(questionsTable)
+		.where(eq(questionsTable.quizId, sessionData.quiz.id))
 
-	// Get participant details with their performance
-	const participants = await db
+	const totalQuestionsInQuiz = quizQuestionStats[0]?.totalQuestions || 0
+	const totalPossiblePoints = quizQuestionStats[0]?.totalPoints || 0
+
+	const attemptCounts = db
+		.select({
+			participantId: gameAttempts.participantId,
+			count: sql<number>`count(${gameAttempts.id})`.mapWith(Number).as("count")
+		})
+		.from(gameAttempts)
+		.groupBy(gameAttempts.participantId)
+		.as("attempt_counts")
+
+	const latestGameAttempts = db
+		.select({
+			id: gameAttempts.id,
+			participantId: gameAttempts.participantId,
+			rowNumber: sql<number>`ROW_NUMBER() OVER (PARTITION BY ${gameAttempts.participantId} ORDER BY ${gameAttempts.id} DESC)`.mapWith(Number).as("rn")
+		})
+		.from(gameAttempts)
+		.as("latest_game_attempts")
+
+	const participantsWithStats = await db
+		.with(latestGameAttempts, attemptCounts)
 		.select({
 			id: sessionParticipants.id,
 			name: sessionParticipants.name,
@@ -78,25 +84,21 @@ export const load: PageServerLoad = async (event) => {
 				name: users.name,
 				image: users.image
 			},
-			totalQuestions: sql<number>`COUNT(DISTINCT ${questionAttempts.sessionQuestionId})`,
-			correctAnswers: sql<number>`SUM(CASE WHEN ${questionAttempts.correct} = true THEN 1 ELSE 0 END)`,
-			totalScore: sql<number>`COALESCE(SUM(${questionAttempts.pointsAwarded}), 0)`,
-			accuracy: sql<number>`
-				CASE
-					WHEN COUNT(${questionAttempts.id}) = 0 THEN 0
-					ELSE ROUND((SUM(CASE WHEN ${questionAttempts.correct} = true THEN 1 ELSE 0 END) * 100.0) / COUNT(${questionAttempts.id}))
-				END
-			`
+			attemptTimes: attemptCounts.count,
+			correctAnswers: sql<number>`SUM(CASE WHEN ${questionAttempts.correct} = true THEN 1 ELSE 0 END)`.mapWith(Number),
+			totalScore: sql<number>`COALESCE(SUM(${questionAttempts.pointsAwarded}), 0)`.mapWith(Number)
 		})
 		.from(sessionParticipants)
 		.leftJoin(users, eq(sessionParticipants.userId, users.id))
-		.leftJoin(gameAttempts, eq(sessionParticipants.id, gameAttempts.participantId))
+		.leftJoin(attemptCounts, eq(sessionParticipants.id, attemptCounts.participantId))
+		.leftJoin(latestGameAttempts, and(eq(sessionParticipants.id, latestGameAttempts.participantId), eq(latestGameAttempts.rowNumber, 1)))
+		.leftJoin(gameAttempts, eq(latestGameAttempts.id, gameAttempts.id))
 		.leftJoin(questionAttempts, eq(gameAttempts.id, questionAttempts.gameAttemptId))
 		.where(eq(sessionParticipants.quizSessionId, sessionId))
-		.groupBy(sessionParticipants.id, sessionParticipants.name, sessionParticipants.userId, sessionParticipants.createdAt, users.name, users.image)
-		.orderBy(desc(sql`COALESCE(SUM(${questionAttempts.pointsAwarded}), 0)`))
+		.groupBy(sessionParticipants.id, users.name, users.image, attemptCounts.count)
 
-	// Get questions for this session
+	const participants = participantsWithStats.sort((a, b) => (b.totalScore ?? 0) - (a.totalScore ?? 0))
+
 	const questions = await db
 		.select({
 			id: sessionQuestions.id,
@@ -110,20 +112,25 @@ export const load: PageServerLoad = async (event) => {
 		.where(eq(sessionQuestions.quizSessionId, sessionId))
 		.orderBy(sessionQuestions.id)
 
-	// Transform participant data
 	const transformedParticipants = participants.map((participant) => ({
 		...participant,
 		displayName: participant.name || participant.user?.name || "Anonymous",
-		points: `${participant.correctAnswers}/${participant.totalQuestions}`,
-		accuracy: Math.round(participant.accuracy || 0)
+		points: `${participant.correctAnswers || 0}/${totalQuestionsInQuiz}`,
+		accuracy: totalQuestionsInQuiz > 0 ? Math.round(((participant.correctAnswers || 0) * 100) / totalQuestionsInQuiz) : 0,
+		totalQuestions: totalQuestionsInQuiz
 	}))
+
+	const totalParticipants = transformedParticipants.length
+	const totalCorrectAnswers = transformedParticipants.reduce((sum, p) => sum + (p.correctAnswers || 0), 0)
+	const totalQuestionsAttempted = totalParticipants * totalQuestionsInQuiz
+	const averageAccuracy = totalQuestionsAttempted > 0 ? (totalCorrectAnswers / totalQuestionsAttempted) * 100 : 0
 
 	return {
 		quizSession: sessionData,
 		stats: {
-			accuracy: Math.round(sessionStats[0]?.accuracy || 0),
-			totalParticipants: sessionStats[0]?.totalParticipants || 0,
-			totalQuestions: sessionStats[0]?.totalQuestions || 0
+			accuracy: Math.round(averageAccuracy),
+			totalParticipants: totalParticipants,
+			totalQuestions: totalQuestionsInQuiz
 		},
 		participants: transformedParticipants,
 		questions

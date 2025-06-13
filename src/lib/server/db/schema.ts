@@ -142,7 +142,7 @@ export const sessionQuestions = pgTable("session_questions", {
 	type: varchar("type"),
 	content: text("content"),
 	timeLimit: integer("time_limit"),
-	points: integer("points")
+	points: integer("points") // points for the question
 })
 
 export const sessionQuestionOptions = pgTable("session_question_options", {
@@ -169,5 +169,5 @@ export const questionAttempts = pgTable("question_attempts", {
 	selectedSessionOptionId: integer("selected_session_option_id").references(() => sessionQuestionOptions.id), // NULL if no answer
 	correct: boolean("correct"),
 	timeTakenMs: integer("time_taken_ms"),
-	pointsAwarded: integer("points_awarded")
+	pointsAwarded: integer("points_awarded") // points awarded for this attempt
 })
