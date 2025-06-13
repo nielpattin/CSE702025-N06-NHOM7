@@ -1,5 +1,6 @@
 <script lang="ts">
 	import "../app.css"
+	import { page } from "$app/stores"
 
 	let { children } = $props()
 </script>
@@ -9,9 +10,11 @@
 		{@render children()}
 	</main>
 
-	<footer>
-		<p>&copy; 2025 Quiz Learn</p>
-	</footer>
+	{#if $page.url.pathname === "/"}
+		<footer>
+			<p>&copy; 2025 Quiz Learn</p>
+		</footer>
+	{/if}
 </div>
 
 <style>
