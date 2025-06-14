@@ -15,40 +15,37 @@ export const load: PageServerLoad = async (event) => {
 		throw error(400, "Invalid participant ID")
 	}
 
-	const participantResult = await db
-		.select({
-			id: sessionParticipants.id,
-			name: sessionParticipants.name,
-			userId: sessionParticipants.userId,
-			quizSessionId: sessionParticipants.quizSessionId,
-			createdAt: sessionParticipants.createdAt,
+	const participant = await db.query.sessionParticipants.findFirst({
+		where: eq(sessionParticipants.id, participantId),
+		with: {
 			user: {
-				name: users.name,
-				image: users.image
+				columns: {
+					name: true,
+					image: true
+				}
+			},
+			quizSession: {
+				with: {
+					quiz: {
+						columns: {
+							title: true
+						}
+					}
+				}
 			}
-		})
-		.from(sessionParticipants)
-		.leftJoin(users, eq(sessionParticipants.userId, users.id))
-		.where(eq(sessionParticipants.id, participantId))
-		.limit(1)
+		}
+	})
 
-	if (participantResult.length === 0) {
+	if (!participant) {
 		throw error(404, "Participant not found")
 	}
-	const participant = participantResult[0]
 
-	const quizResult = await db
-		.select({
-			title: quizzes.title
-		})
-		.from(quizSessions)
-		.innerJoin(quizzes, eq(quizSessions.quizId, quizzes.id))
-		.where(eq(quizSessions.id, participant.quizSessionId))
-		.limit(1)
+	const quiz = participant.quizSession?.quiz || { title: "Unknown Quiz" }
 
-	const quiz = quizResult[0] || { title: "Unknown Quiz" }
-
-	const attemptsRaw = await db.select().from(gameAttempts).where(eq(gameAttempts.participantId, participantId)).orderBy(desc(gameAttempts.startedAt))
+	const attemptsRaw = await db.query.gameAttempts.findMany({
+		where: eq(gameAttempts.participantId, participantId),
+		orderBy: desc(gameAttempts.startedAt)
+	})
 
 	const attempts = await Promise.all(
 		attemptsRaw.map(async (attempt) => {

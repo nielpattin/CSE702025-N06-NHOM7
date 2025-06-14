@@ -1,7 +1,7 @@
 import { db } from "$lib/server/db"
-import { quizSessions, quizzes, sessionParticipants, gameAttempts, questionAttempts, sessionQuestions, users, questions as questionsTable } from "$lib/server/db/schema"
+import { quizSessions, sessionQuestions, questions as questionsTable } from "$lib/server/db/schema"
 import { redirect, error } from "@sveltejs/kit"
-import { eq, sql, and } from "drizzle-orm"
+import { eq, sql, desc } from "drizzle-orm"
 import type { PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async (event) => {
@@ -16,29 +16,16 @@ export const load: PageServerLoad = async (event) => {
 		throw error(400, "Invalid session ID")
 	}
 
-	const sessionResult = await db
-		.select({
-			id: quizSessions.id,
-			code: quizSessions.code,
-			status: quizSessions.status,
-			createdAt: quizSessions.createdAt,
-			hostId: quizSessions.hostId,
-			quiz: {
-				id: quizzes.id,
-				title: quizzes.title,
-				description: quizzes.description
-			}
-		})
-		.from(quizSessions)
-		.innerJoin(quizzes, eq(quizSessions.quizId, quizzes.id))
-		.where(eq(quizSessions.id, sessionId))
-		.limit(1)
+	const sessionData = await db.query.quizSessions.findFirst({
+		where: eq(quizSessions.id, sessionId),
+		with: {
+			quiz: true
+		}
+	})
 
-	if (sessionResult.length === 0) {
+	if (!sessionData) {
 		throw error(404, "Session not found")
 	}
-
-	const sessionData = sessionResult[0]
 
 	if (sessionData.hostId !== session.user.id) {
 		throw error(403, "Access denied")
@@ -55,49 +42,46 @@ export const load: PageServerLoad = async (event) => {
 	const totalQuestionsInQuiz = quizQuestionStats[0]?.totalQuestions || 0
 	const totalPossiblePoints = quizQuestionStats[0]?.totalPoints || 0
 
-	const attemptCounts = db
-		.select({
-			participantId: gameAttempts.participantId,
-			count: sql<number>`count(${gameAttempts.id})`.mapWith(Number).as("count")
-		})
-		.from(gameAttempts)
-		.groupBy(gameAttempts.participantId)
-		.as("attempt_counts")
+	const participantsData = await db.query.quizSessions.findFirst({
+		where: eq(quizSessions.id, sessionId),
+		with: {
+			participants: {
+				with: {
+					user: {
+						columns: {
+							name: true,
+							image: true
+						}
+					},
+					gameAttempts: {
+						with: {
+							questionAttempts: true
+						},
+						orderBy: (gameAttempts, { desc }) => [desc(gameAttempts.id)]
+					}
+				}
+			}
+		}
+	})
 
-	const latestGameAttempts = db
-		.select({
-			id: gameAttempts.id,
-			participantId: gameAttempts.participantId,
-			rowNumber: sql<number>`ROW_NUMBER() OVER (PARTITION BY ${gameAttempts.participantId} ORDER BY ${gameAttempts.id} DESC)`.mapWith(Number).as("rn")
-		})
-		.from(gameAttempts)
-		.as("latest_game_attempts")
+	const participants = (participantsData?.participants || [])
+		.map((participant) => {
+			const latestAttempt = participant.gameAttempts[0]
+			const correctAnswers = latestAttempt?.questionAttempts.filter((qa) => qa.correct).length || 0
+			const totalScore = latestAttempt?.questionAttempts.reduce((sum, qa) => sum + (qa.pointsAwarded || 0), 0) || 0
 
-	const participantsWithStats = await db
-		.with(latestGameAttempts, attemptCounts)
-		.select({
-			id: sessionParticipants.id,
-			name: sessionParticipants.name,
-			userId: sessionParticipants.userId,
-			createdAt: sessionParticipants.createdAt,
-			user: {
-				name: users.name,
-				image: users.image
-			},
-			attemptTimes: attemptCounts.count,
-			correctAnswers: sql<number>`SUM(CASE WHEN ${questionAttempts.correct} = true THEN 1 ELSE 0 END)`.mapWith(Number),
-			totalScore: sql<number>`COALESCE(SUM(${questionAttempts.pointsAwarded}), 0)`.mapWith(Number)
+			return {
+				id: participant.id,
+				name: participant.name,
+				userId: participant.userId,
+				createdAt: participant.createdAt,
+				user: participant.user,
+				attemptTimes: participant.gameAttempts.length,
+				correctAnswers,
+				totalScore
+			}
 		})
-		.from(sessionParticipants)
-		.leftJoin(users, eq(sessionParticipants.userId, users.id))
-		.leftJoin(attemptCounts, eq(sessionParticipants.id, attemptCounts.participantId))
-		.leftJoin(latestGameAttempts, and(eq(sessionParticipants.id, latestGameAttempts.participantId), eq(latestGameAttempts.rowNumber, 1)))
-		.leftJoin(gameAttempts, eq(latestGameAttempts.id, gameAttempts.id))
-		.leftJoin(questionAttempts, eq(gameAttempts.id, questionAttempts.gameAttemptId))
-		.where(eq(sessionParticipants.quizSessionId, sessionId))
-		.groupBy(sessionParticipants.id, users.name, users.image, attemptCounts.count)
-
-	const participants = participantsWithStats.sort((a, b) => (b.totalScore ?? 0) - (a.totalScore ?? 0))
+		.sort((a, b) => (b.totalScore ?? 0) - (a.totalScore ?? 0))
 
 	const questions = await db
 		.select({

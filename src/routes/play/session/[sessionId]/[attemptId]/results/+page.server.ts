@@ -1,8 +1,8 @@
 import { error, fail, redirect } from "@sveltejs/kit"
-import { db } from "$lib/server/db/index.js"
-import { gameAttempts, quizSessions, sessionParticipants, sessionQuestions, sessionQuestionOptions, questionAttempts, quizzes } from "$lib/server/db/schema.js"
+import { db } from "$lib/server/db"
+import { gameAttempts, quizSessions, sessionParticipants, sessionQuestions, sessionQuestionOptions, questionAttempts, quizzes } from "$lib/server/db/schema"
 import { eq, and, asc } from "drizzle-orm"
-import type { PageServerLoad, Actions } from "./$types.js"
+import type { PageServerLoad, Actions } from "./$types"
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const sessionId = parseInt(params.sessionId)
@@ -14,7 +14,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	const authSession = await locals.auth()
 
-	// Fetch the completed game attempt with session, participant, and quiz details
 	const attemptResult = await db
 		.select({
 			attempt: {
@@ -58,15 +57,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	const { attempt, session, participant, quiz } = attemptResult[0]
 
-	// Verify user ownership of this attempt
 	if (authSession?.user) {
-		// Authenticated user - check if they own this participant record
 		if (participant.userId !== authSession.user.id) {
 			throw error(403, "Access denied")
 		}
 	}
 
-	// Fetch all questions and answers for this attempt
 	const questionsWithAnswers = await db
 		.select({
 			question: {
@@ -90,7 +86,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.where(eq(sessionQuestions.quizSessionId, sessionId))
 		.orderBy(asc(sessionQuestions.id))
 
-	// Fetch all options for the questions
 	const allOptions = await db
 		.select({
 			id: sessionQuestionOptions.id,
@@ -105,7 +100,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.where(eq(sessionQuestions.quizSessionId, sessionId))
 		.orderBy(asc(sessionQuestionOptions.sessionQuestionId), asc(sessionQuestionOptions.order))
 
-	// Group options by question
 	const questionOptionsMap = new Map<number, typeof allOptions>()
 	for (const option of allOptions) {
 		if (!questionOptionsMap.has(option.sessionQuestionId)) {
@@ -114,7 +108,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		questionOptionsMap.get(option.sessionQuestionId)!.push(option)
 	}
 
-	// Combine questions with their options and answers
 	const questionsWithResults = questionsWithAnswers.map(({ question, attempt: questionAttempt }) => ({
 		...question,
 		options: questionOptionsMap.get(question.id) || [],
@@ -123,7 +116,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		correctOption: (questionOptionsMap.get(question.id) || []).find((opt) => opt.correct)
 	}))
 
-	// Calculate summary statistics
 	const totalQuestions = questionsWithResults.length
 	const answeredQuestions = questionsWithResults.filter((q) => q.attempt).length
 	const correctAnswers = questionsWithResults.filter((q) => q.attempt?.correct).length
@@ -160,7 +152,6 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Check if session exists and is active
 			const sessionResult = await db.select({ id: quizSessions.id, status: quizSessions.status }).from(quizSessions).where(eq(quizSessions.id, sessionId)).limit(1)
 
 			if (sessionResult.length === 0) {
@@ -177,7 +168,6 @@ export const actions: Actions = {
 				return fail(401, { error: "Authentication required" })
 			}
 
-			// Find the participant record for this user
 			const participantResult = await db
 				.select({ id: sessionParticipants.id })
 				.from(sessionParticipants)
@@ -190,7 +180,6 @@ export const actions: Actions = {
 
 			const participantId = participantResult[0].id
 
-			// Get the current attempt number for this participant
 			const lastAttemptResult = await db
 				.select({ attemptNumber: gameAttempts.attemptNumber })
 				.from(gameAttempts)
@@ -199,7 +188,6 @@ export const actions: Actions = {
 
 			const nextAttemptNumber = lastAttemptResult.length > 0 ? Math.max(...lastAttemptResult.map((a) => a.attemptNumber || 1)) + 1 : 1
 
-			// Create a new game attempt
 			const newAttempt = await db
 				.insert(gameAttempts)
 				.values({
@@ -211,10 +199,8 @@ export const actions: Actions = {
 				})
 				.returning({ id: gameAttempts.id })
 
-			// Redirect to the new attempt
 			throw redirect(302, `/play/session/${sessionId}/${newAttempt[0].id}`)
 		} catch (err) {
-			// Re-throw redirect errors (they're not actual errors)
 			if (err && typeof err === "object" && "status" in err && "location" in err) {
 				throw err
 			}

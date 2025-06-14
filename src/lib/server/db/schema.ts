@@ -1,4 +1,5 @@
 import { timestamp, pgTable, text, primaryKey, integer, boolean, jsonb, varchar, serial } from "drizzle-orm/pg-core"
+import { relations } from "drizzle-orm"
 import type { AdapterAccountType } from "@auth/sveltekit/adapters"
 
 export type UserRole = "Admin" | "User"
@@ -171,3 +172,70 @@ export const questionAttempts = pgTable("question_attempts", {
 	timeTakenMs: integer("time_taken_ms"),
 	pointsAwarded: integer("points_awarded") // points awarded for this attempt
 })
+
+export const usersRelations = relations(users, ({ many }) => ({
+	accounts: many(accounts),
+	sessions: many(sessions),
+	quizzes: many(quizzes),
+	quizSessions: many(quizSessions),
+	sessionParticipants: many(sessionParticipants)
+}))
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+	user: one(users, { fields: [accounts.userId], references: [users.id] })
+}))
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+	user: one(users, { fields: [sessions.userId], references: [users.id] })
+}))
+
+export const quizzesRelations = relations(quizzes, ({ many, one }) => ({
+	questions: many(questions),
+	creator: one(users, { fields: [quizzes.creatorId], references: [users.id] })
+}))
+
+export const questionsRelations = relations(questions, ({ one, many }) => ({
+	quiz: one(quizzes, { fields: [questions.quizId], references: [quizzes.id] }),
+	options: many(questionOptions)
+}))
+
+export const questionOptionsRelations = relations(questionOptions, ({ one }) => ({
+	question: one(questions, { fields: [questionOptions.questionId], references: [questions.id] })
+}))
+
+export const quizSessionsRelations = relations(quizSessions, ({ one, many }) => ({
+	quiz: one(quizzes, { fields: [quizSessions.quizId], references: [quizzes.id] }),
+	host: one(users, { fields: [quizSessions.hostId], references: [users.id] }),
+	participants: many(sessionParticipants),
+	sessionQuestions: many(sessionQuestions)
+}))
+
+export const sessionParticipantsRelations = relations(sessionParticipants, ({ one, many }) => ({
+	quizSession: one(quizSessions, { fields: [sessionParticipants.quizSessionId], references: [quizSessions.id] }),
+	user: one(users, { fields: [sessionParticipants.userId], references: [users.id] }),
+	gameAttempts: many(gameAttempts)
+}))
+
+export const gameAttemptsRelations = relations(gameAttempts, ({ one, many }) => ({
+	quizSession: one(quizSessions, { fields: [gameAttempts.quizSessionId], references: [quizSessions.id] }),
+	participant: one(sessionParticipants, { fields: [gameAttempts.participantId], references: [sessionParticipants.id] }),
+	questionAttempts: many(questionAttempts)
+}))
+
+export const sessionQuestionsRelations = relations(sessionQuestions, ({ one, many }) => ({
+	quizSession: one(quizSessions, { fields: [sessionQuestions.quizSessionId], references: [quizSessions.id] }),
+	originalQuestion: one(questions, { fields: [sessionQuestions.originalQuestionId], references: [questions.id] }),
+	options: many(sessionQuestionOptions),
+	questionAttempts: many(questionAttempts)
+}))
+
+export const sessionQuestionOptionsRelations = relations(sessionQuestionOptions, ({ one }) => ({
+	sessionQuestion: one(sessionQuestions, { fields: [sessionQuestionOptions.sessionQuestionId], references: [sessionQuestions.id] }),
+	originalOption: one(questionOptions, { fields: [sessionQuestionOptions.originalOptionId], references: [questionOptions.id] })
+}))
+
+export const questionAttemptsRelations = relations(questionAttempts, ({ one }) => ({
+	gameAttempt: one(gameAttempts, { fields: [questionAttempts.gameAttemptId], references: [gameAttempts.id] }),
+	sessionQuestion: one(sessionQuestions, { fields: [questionAttempts.sessionQuestionId], references: [sessionQuestions.id] }),
+	selectedSessionOption: one(sessionQuestionOptions, { fields: [questionAttempts.selectedSessionOptionId], references: [sessionQuestionOptions.id] })
+}))

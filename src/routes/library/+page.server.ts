@@ -13,23 +13,26 @@ export const load: PageServerLoad = async (event) => {
 	}
 
 	// Fetch all quizzes with creator names and question counts
-	const allQuizzes = await db
-		.select({
-			id: quizzes.id,
-			title: quizzes.title,
-			description: quizzes.description,
-			creatorId: quizzes.creatorId,
-			status: quizzes.status,
-			visibility: quizzes.visibility,
-			createdAt: quizzes.createdAt,
-			updatedAt: quizzes.updatedAt,
-			creatorName: users.name,
-			questionCount: count(questions.id)
-		})
-		.from(quizzes)
-		.leftJoin(users, eq(quizzes.creatorId, users.id))
-		.leftJoin(questions, eq(quizzes.id, questions.quizId))
-		.groupBy(quizzes.id, users.name)
+	const allQuizzes = await db.query.quizzes.findMany({
+		with: {
+			creator: {
+				columns: {
+					name: true
+				}
+			},
+			questions: {
+				columns: {
+					id: true
+				}
+			}
+		}
+	})
+
+	const quizzesWithCounts = allQuizzes.map((quiz) => ({
+		...quiz,
+		creatorName: quiz.creator?.name || "Unknown",
+		questionCount: quiz.questions.length
+	}))
 
 	// Get count of quizzes created by the current user
 	const userQuizzesCount = await db
@@ -38,7 +41,7 @@ export const load: PageServerLoad = async (event) => {
 		.where(eq(quizzes.creatorId, session.user.id))
 
 	return {
-		quizzes: allQuizzes,
+		quizzes: quizzesWithCounts,
 		userQuizzesCount: userQuizzesCount[0]?.count || 0
 	}
 }
@@ -171,8 +174,17 @@ export const actions: Actions = {
 		let newSession: typeof quizSessions.$inferSelect
 
 		try {
-			// Fetch the quiz to verify it exists and is published
-			const [quiz] = await db.select().from(quizzes).where(eq(quizzes.id, quizIdNum)).limit(1)
+			// Fetch the quiz with its questions and options to verify it exists and is published
+			const quiz = await db.query.quizzes.findFirst({
+				where: eq(quizzes.id, quizIdNum),
+				with: {
+					questions: {
+						with: {
+							options: true
+						}
+					}
+				}
+			})
 
 			if (!quiz) {
 				return fail(404, { error: "Quiz not found" })
@@ -193,7 +205,7 @@ export const actions: Actions = {
 				code = Math.random().toString(36).substring(2, 8).toUpperCase()
 
 				// Check if code already exists
-				const [existingSession] = await db.select().from(quizSessions).where(eq(quizSessions.code, code)).limit(1)
+				const existingSession = await db.query.quizSessions.findFirst({ where: eq(quizSessions.code, code) })
 
 				isUnique = !existingSession
 				attempts++
@@ -220,10 +232,7 @@ export const actions: Actions = {
 				.returning()
 
 			// Snapshot questions and options from the quiz to the session
-			const quizQuestions = await db.select().from(questions).where(eq(questions.quizId, quizIdNum))
-
-			// Insert each question into sessionQuestions and its options into sessionQuestionOptions
-			for (const question of quizQuestions) {
+			for (const question of quiz.questions) {
 				// Insert the question into sessionQuestions
 				const [sessionQuestion] = await db
 					.insert(sessionQuestions)
@@ -237,11 +246,8 @@ export const actions: Actions = {
 					})
 					.returning()
 
-				// Get all options for this question
-				const questionOptionsData = await db.select().from(questionOptions).where(eq(questionOptions.questionId, question.id))
-
 				// Insert each option into sessionQuestionOptions
-				for (const option of questionOptionsData) {
+				for (const option of question.options) {
 					await db.insert(sessionQuestionOptions).values({
 						sessionQuestionId: sessionQuestion.id,
 						originalOptionId: option.id,

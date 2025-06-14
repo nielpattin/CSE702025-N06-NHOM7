@@ -13,7 +13,16 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	const quizId = parseInt(params.quizId, 10)
 
-	const [quiz] = await db.select().from(quizzes).where(eq(quizzes.id, quizId))
+	const quiz = await db.query.quizzes.findFirst({
+		where: eq(quizzes.id, quizId),
+		with: {
+			questions: {
+				with: {
+					options: true
+				}
+			}
+		}
+	})
 
 	if (!quiz) {
 		throw error(404, "Quiz not found")
@@ -24,30 +33,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(403, "You don't have permission to edit this quiz")
 	}
 
-	const quizQuestions = await db.select().from(questions).where(eq(questions.quizId, quizId))
-
-	// Fetch all question options for these questions
-	const questionIds = quizQuestions.map((q) => q.id)
-	// Fetch options for all questions
-	const optionsMap: Record<number, (typeof questionOptions.$inferSelect)[]> = {}
-
-	if (questionIds.length > 0) {
-		// Fetch options for all questions
-		for (const questionId of questionIds) {
-			const options = await db.select().from(questionOptions).where(eq(questionOptions.questionId, questionId))
-			optionsMap[questionId] = options
-		}
-	}
-
-	// Combine questions with their options
-	const questionsWithOptions = quizQuestions.map((question) => ({
-		...question,
-		options: optionsMap[question.id] || []
-	}))
-
 	return {
 		quiz,
-		questions: questionsWithOptions
+		questions: quiz.questions
 	}
 }
 
@@ -62,7 +50,7 @@ export const actions: Actions = {
 		const quizId = parseInt(params.quizId, 10)
 
 		// Verify quiz exists and user has permission
-		const [quiz] = await db.select().from(quizzes).where(eq(quizzes.id, quizId))
+		const quiz = await db.query.quizzes.findFirst({ where: eq(quizzes.id, quizId) })
 
 		if (!quiz) {
 			return fail(404, { error: "Quiz not found" })

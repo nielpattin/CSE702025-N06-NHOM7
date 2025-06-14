@@ -4,7 +4,13 @@ import { quizzes, questions, questionOptions, type QuestionType } from "$lib/ser
 import { eq } from "drizzle-orm"
 import type { PageServerLoad, Actions } from "./$types"
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
+	const session = await locals.auth()
+
+	if (!session?.user) {
+		throw error(401, "You must be signed in to edit questions")
+	}
+
 	const quizId = parseInt(params.quizId, 10)
 
 	const quiz = await db.query.quizzes.findFirst({
@@ -13,6 +19,10 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	if (!quiz) {
 		throw error(404, "Quiz not found")
+	}
+
+	if (quiz.creatorId !== session.user.id) {
+		throw error(403, "You don't have permission to edit this quiz")
 	}
 
 	if (params.questionId === "new") {

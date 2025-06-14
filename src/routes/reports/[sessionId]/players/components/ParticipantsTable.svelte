@@ -39,7 +39,6 @@
 		<!-- Participant Cards -->
 		<div class="divide-y divide-gray-600 bg-gray-800">
 			{#each participants as participant, index (participant.id)}
-				{@const accuracy = participant.totalQuestions > 0 ? (participant.correctAnswers / participant.totalQuestions) * 100 : 0}
 				<a href="/reports/{sessionId()}/players/{participant.id}/attempts" class="relative grid grid-cols-6 gap-4 px-6 py-4 transition-colors hover:bg-gray-700" aria-label="View details for {participant.displayName}">
 					<!-- Name -->
 					<div class="flex items-center justify-center space-x-4">
@@ -64,7 +63,7 @@
 
 					<!-- Correct Answers -->
 					<div class="flex flex-col items-center justify-center">
-						<CircularProgress percentage={accuracy} size={60} strokeWidth={6} color={getAccuracyStrokeColor(accuracy)} />
+						<CircularProgress percentage={participant.accuracy} size={60} strokeWidth={6} color={getAccuracyStrokeColor(participant.accuracy)} />
 					</div>
 					<!-- Attempt Times (number of game attempts) -->
 					<div class="flex items-center justify-center">

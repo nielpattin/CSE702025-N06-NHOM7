@@ -1,62 +1,62 @@
 import { db } from "$lib/server/db"
-import { quizSessions, quizzes, sessionParticipants, gameAttempts, questionAttempts } from "$lib/server/db/schema"
+import { quizSessions } from "$lib/server/db/schema"
 import { redirect } from "@sveltejs/kit"
-import { eq, count, avg, sql } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 import type { PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async (event) => {
 	const session = await event.locals.auth()
 
-	// Redirect if not authenticated
 	if (!session?.user) {
 		redirect(302, "/signin")
 	}
 
-	// CTE to get the latest game attempt for each participant
-	const latestGameAttempts = db
-		.select({
-			id: gameAttempts.id,
-			participantId: gameAttempts.participantId,
-			sessionId: sql<number>`${sessionParticipants.quizSessionId}`.as("sessionId"),
-			rowNumber: sql<number>`ROW_NUMBER() OVER (PARTITION BY ${gameAttempts.participantId} ORDER BY ${gameAttempts.id} DESC)`.mapWith(Number).as("rn")
-		})
-		.from(gameAttempts)
-		.innerJoin(sessionParticipants, eq(gameAttempts.participantId, sessionParticipants.id))
-		.as("latest_game_attempts")
+	const sessionReports = await db.query.quizSessions.findMany({
+		where: eq(quizSessions.hostId, session.user.id),
+		with: {
+			quiz: true,
+			participants: {
+				with: {
+					gameAttempts: {
+						with: {
+							questionAttempts: true
+						}
+					}
+				}
+			}
+		},
+		orderBy: quizSessions.createdAt
+	})
 
-	// Fetch all sessions where the current user is the host
-	// Include related quiz data, participant count, and accuracy based on latest attempts only
-	const sessionReports = await db
-		.with(latestGameAttempts)
-		.select({
-			id: quizSessions.id,
-			sessionName: quizzes.title,
-			createdDate: quizSessions.createdAt,
-			participantCount: sql<number>`COUNT(DISTINCT ${sessionParticipants.id})`,
-			accuracy: sql<number>`
-				CASE
-					WHEN COUNT(${questionAttempts.id}) = 0 THEN 0
-					ELSE ROUND((SUM(CASE WHEN ${questionAttempts.correct} = true THEN 1 ELSE 0 END) * 100.0) / COUNT(${questionAttempts.id}))
-				END
-			`
-		})
-		.from(quizSessions)
-		.leftJoin(quizzes, eq(quizSessions.quizId, quizzes.id))
-		.leftJoin(sessionParticipants, eq(quizSessions.id, sessionParticipants.quizSessionId))
-		.leftJoin(latestGameAttempts, sql`${sessionParticipants.id} = ${latestGameAttempts.participantId} AND ${latestGameAttempts.rowNumber} = 1`)
-		.leftJoin(gameAttempts, eq(latestGameAttempts.id, gameAttempts.id))
-		.leftJoin(questionAttempts, eq(gameAttempts.id, questionAttempts.gameAttemptId))
-		.where(eq(quizSessions.hostId, session.user.id))
-		.groupBy(quizSessions.id, quizzes.title, quizSessions.createdAt)
-		.orderBy(sql`${quizSessions.createdAt} DESC`)
-
-	// Transform the data
 	const transformedReports = sessionReports.map((report) => {
-		const accuracy = Math.round(report.accuracy)
+		const participantAccuracies: number[] = []
+
+		report.participants.forEach((participant) => {
+			if (participant.gameAttempts.length === 0) {
+				return
+			}
+
+			const latestAttempt = participant.gameAttempts.reduce((latest, current) => {
+				const latestTime = latest.startedAt ? new Date(latest.startedAt).getTime() : 0
+				const currentTime = current.startedAt ? new Date(current.startedAt).getTime() : 0
+				return currentTime > latestTime ? current : latest
+			})
+
+			const totalQuestions = latestAttempt.questionAttempts.length
+			if (totalQuestions > 0) {
+				const correctQuestions = latestAttempt.questionAttempts.filter((qa) => qa.correct).length
+				const participantAccuracy = (correctQuestions / totalQuestions) * 100
+				participantAccuracies.push(participantAccuracy)
+			}
+		})
+
+		const accuracy = participantAccuracies.length > 0 ? Math.round(participantAccuracies.reduce((sum, acc) => sum + acc, 0) / participantAccuracies.length) : 0
 
 		return {
-			...report,
-			sessionName: report.sessionName || "Untitled Session",
+			id: report.id,
+			sessionName: report.quiz?.title || "Untitled Session",
+			createdDate: report.createdAt,
+			participantCount: report.participants.length,
 			accuracy
 		}
 	})

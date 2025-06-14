@@ -10,7 +10,7 @@ export const load: PageServerLoad = async (event) => {
 	if (!session || !isAdmin(session)) {
 		redirect(302, "/")
 	}
-	const allUsers = await db.select().from(users)
+	const allUsers = await db.query.users.findMany()
 	return {
 		users: allUsers
 	}
