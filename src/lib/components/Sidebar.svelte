@@ -86,7 +86,7 @@
 						<form method="POST" action={item.href} use:enhance>
 							<button
 								type="submit"
-								class="group flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200
+								class="group flex w-full cursor-pointer items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200
 									{currentPath === item.href ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}"
 							>
 								<span class="mr-3 text-lg">{item.icon}</span>

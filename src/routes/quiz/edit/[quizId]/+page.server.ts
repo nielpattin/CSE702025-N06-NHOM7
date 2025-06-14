@@ -11,11 +11,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(401, "You must be signed in to edit quizzes")
 	}
 
-	const quizId = parseInt(params.id, 10)
-
-	if (isNaN(quizId)) {
-		throw error(400, "Invalid quiz ID")
-	}
+	const quizId = parseInt(params.quizId, 10)
 
 	const [quiz] = await db.select().from(quizzes).where(eq(quizzes.id, quizId))
 
@@ -63,11 +59,7 @@ export const actions: Actions = {
 			return fail(401, { error: "You must be signed in to edit quizzes" })
 		}
 
-		const quizId = parseInt(params.id, 10)
-
-		if (isNaN(quizId)) {
-			return fail(400, { error: "Invalid quiz ID" })
-		}
+		const quizId = parseInt(params.quizId, 10)
 
 		// Verify quiz exists and user has permission
 		const [quiz] = await db.select().from(quizzes).where(eq(quizzes.id, quizId))

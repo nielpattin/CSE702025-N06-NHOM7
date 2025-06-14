@@ -1,10 +1,8 @@
 <script lang="ts">
 	import type { PageData, ActionData } from "./$types"
-	import AddQuestionButton from "../../components/AddQuestionButton.svelte"
-	import AlertMessage from "../../components/AlertMessage.svelte"
-	import QuestionsList from "../../components/QuestionsList.svelte"
-	import QuizDetailsForm from "../../components/QuizDetailsForm.svelte"
-	import QuizEditHeader from "../../components/QuizEditHeader.svelte"
+	import { Toast } from "flowbite-svelte"
+	import { slide } from "svelte/transition"
+	import { AddQuestionButton, QuizDetailsForm, QuestionsList } from "./components"
 
 	interface Question {
 		id: number
@@ -25,6 +23,24 @@
 	}>()
 
 	let questions: Question[] = $state(data.questions)
+	let toastStatus = $state(false)
+	let toastMessage = $state("")
+
+	$effect(() => {
+		if (form && "success" in form && form.success) {
+			toastMessage = "Quiz title updated successfully!"
+			toastStatus = true
+			setTimeout(() => {
+				toastStatus = false
+			}, 3000)
+		} else if (form && "error" in form && form.error) {
+			toastMessage = form.error
+			toastStatus = true
+			setTimeout(() => {
+				toastStatus = false
+			}, 3000)
+		}
+	})
 
 	// Time limit options in seconds with labels
 	const timeOptions = [
@@ -68,15 +84,9 @@
 	<meta name="description" content="Edit quiz details and manage questions" />
 </svelte:head>
 
-<QuizEditHeader quizId={data.quiz.id} quiz={data.quiz} />
-
-{#if form && "success" in form && form.success}
-	<AlertMessage type="success" message="Quiz title updated successfully!" />
-{/if}
-
-{#if form && "error" in form && form.error}
-	<AlertMessage type="error" message={form.error} />
-{/if}
+<Toast color={form && "success" in form && form.success ? "green" : "red"} class={form && "success" in form && form.success ? "!border !border-emerald-500 !bg-emerald-600 !text-emerald-50 !shadow-lg !shadow-emerald-500/20" : "!border !border-red-500 !bg-red-600 !text-red-50 !shadow-lg !shadow-red-500/20"} transition={slide} position="bottom-right" bind:toastStatus>
+	{toastMessage}
+</Toast>
 
 <QuizDetailsForm quizTitle={data.quiz.title} />
 

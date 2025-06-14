@@ -84,14 +84,6 @@
 							No archived quizzes found. Archive completed quizzes to organize your library.
 						{/if}
 					</p>
-					{#if activeTab === "draft" || activeTab === "published"}
-						<div class="mt-6">
-							<a href="/quiz/create" class="inline-flex items-center rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-none">
-								<span class="mr-2">➕</span>
-								Create New Quiz
-							</a>
-						</div>
-					{/if}
 				</div>
 			{/if}
 		</div>
