@@ -3,7 +3,7 @@
 	import { invalidateAll } from "$app/navigation"
 	import { onMount } from "svelte"
 	import type { PageData } from "./$types"
-	import DashboardHeader from "$lib/components/DashboardHeader.svelte"
+	import AppHeader from "$lib/components/AppHeader.svelte"
 
 	let { data }: { data: PageData } = $props()
 
@@ -71,7 +71,7 @@
 	<title>Session Lobby - {quizSession.quiz.title}</title>
 </svelte:head>
 
-<DashboardHeader title="Session Lobby" />
+<AppHeader title="Session Lobby" />
 
 <div class="min-h-screen bg-gray-800">
 	<div class="container mx-auto px-4 py-8">

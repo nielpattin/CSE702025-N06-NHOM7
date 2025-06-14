@@ -67,7 +67,7 @@
 </script>
 
 {#if session?.user}
-	<aside class="fixed top-0 left-0 z-40 flex h-screen w-64 flex-col border-r border-gray-700 bg-gray-900 shadow-lg">
+	<aside class="fixed top-0 left-0 z-40 flex h-screen w-64 flex-col border-r border-gray-700 bg-gray-900 shadow-lg select-none">
 		<!-- Sidebar Header -->
 		<div class="flex h-16 items-center border-b border-gray-700 bg-gray-800 px-4">
 			<div class="flex items-center space-x-3">

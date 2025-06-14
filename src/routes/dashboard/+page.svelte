@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state"
 	import Sidebar from "$lib/components/Sidebar.svelte"
-	import DashboardHeader from "$lib/components/DashboardHeader.svelte"
+	import AppHeader from "$lib/components/AppHeader.svelte"
 	import TrendingQuizzes from "$lib/components/TrendingQuizzes.svelte"
 
 	let data = $derived(page.data)
@@ -29,7 +29,7 @@
 
 <div class="ml-64 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
 	<!-- Dashboard Header Component -->
-	<DashboardHeader title="Dashboard" />
+	<AppHeader title="Dashboard" />
 
 	<!-- Main Content -->
 	<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

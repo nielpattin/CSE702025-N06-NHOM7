@@ -7,7 +7,7 @@
 </script>
 
 <!-- Left Section: User Statistics (40% width) -->
-<div class="w-2/5">
+<div class="min-w-1/4">
 	<div class="rounded-lg bg-gray-800/50 p-6 shadow-lg backdrop-blur">
 		<h2 class="mb-6 text-xl font-semibold text-white">My Quiz Statistics</h2>
 		<div class="space-y-4">
@@ -22,7 +22,6 @@
 					</div>
 					<div>
 						<p class="font-medium text-white">Created by me</p>
-						<p class="text-sm text-gray-400">Total quizzes created</p>
 					</div>
 				</div>
 				<span class="text-2xl font-bold text-blue-400">{userQuizzesCount}</span>
@@ -39,7 +38,6 @@
 					</div>
 					<div>
 						<p class="font-medium text-white">Liked by me</p>
-						<p class="text-sm text-gray-400">Quizzes I liked</p>
 					</div>
 				</div>
 				<span class="text-2xl font-bold text-red-400">15</span>
@@ -56,7 +54,6 @@
 					</div>
 					<div>
 						<p class="font-medium text-white">Shared with me</p>
-						<p class="text-sm text-gray-400">Quizzes shared by others</p>
 					</div>
 				</div>
 				<span class="text-2xl font-bold text-green-400">5</span>

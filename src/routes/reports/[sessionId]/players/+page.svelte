@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Sidebar from "$lib/components/Sidebar.svelte"
-	import DashboardHeader from "$lib/components/DashboardHeader.svelte"
+	import AppHeader from "$lib/components/AppHeader.svelte"
 	import { ReportHeader, ParticipantsTable, QuestionsList } from "./components"
 	import { getAccuracyStrokeColor } from "$lib/report-utils"
 
@@ -37,7 +37,7 @@
 
 <Sidebar />
 <div class="ml-64 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-	<DashboardHeader title="Session Report" />
+	<AppHeader title="Session Report" />
 
 	<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 		<ReportHeader quizSession={data.quizSession} stats={data.stats} {formatDate} {getAccuracyColor} title={data.quizSession.quiz.title || "Unknown Quiz"} breadcrumbs={[{ label: "Report", href: "/reports" }, { label: data.quizSession.quiz.title || "Unknown Quiz" }]} />

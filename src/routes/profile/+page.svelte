@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Sidebar from "$lib/components/Sidebar.svelte"
-	import DashboardHeader from "$lib/components/DashboardHeader.svelte"
+	import AppHeader from "$lib/components/AppHeader.svelte"
 
 	let { data } = $props()
 </script>
@@ -13,7 +13,7 @@
 <Sidebar />
 
 <div class="ml-64 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-	<DashboardHeader title="Profile" />
+	<AppHeader title="Profile" />
 	<main class="mx-auto max-w-6xl px-6 py-12">
 		<div class="rounded-2xl border border-gray-600 bg-gray-800 p-8 shadow-2xl">
 			<div class="flex items-center justify-between">

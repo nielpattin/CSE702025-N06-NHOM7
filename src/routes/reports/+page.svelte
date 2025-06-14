@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Sidebar from "$lib/components/Sidebar.svelte"
-	import DashboardHeader from "$lib/components/DashboardHeader.svelte"
+	import AppHeader from "$lib/components/AppHeader.svelte"
 	import type { PageData } from "./$types"
 
 	let { data }: { data: PageData } = $props()
@@ -30,7 +30,7 @@
 
 <Sidebar />
 <div class="ml-64 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-	<DashboardHeader title="Reports" />
+	<AppHeader title="Reports" />
 
 	<!-- Search Bar -->
 	<div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">

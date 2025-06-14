@@ -9,8 +9,8 @@
 </script>
 
 <!-- Header -->
-<header class="border-b border-gray-700 bg-gray-900 shadow-lg">
-	<nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+<header class="sticky top-0 z-50 border-b border-gray-700 bg-gray-900 shadow-lg select-none">
+	<nav class="mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex h-16 items-center justify-between">
 			<!-- Logo Section -->
 			<div class="flex items-center space-x-3">
@@ -28,6 +28,11 @@
 						<input type="text" placeholder="Enter quiz code..." class="w-32 rounded-md border border-gray-600 bg-gray-700 px-3 py-1.5 text-sm text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none" />
 						<button class="rounded-md bg-gradient-to-r from-green-600 to-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition-all hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> Join </button>
 					</div>
+				{/if}
+
+				<!-- Dashboard Button -->
+				{#if session?.user}
+					<a href="/dashboard" class="rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white transition-all hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> Dashboard </a>
 				{/if}
 
 				<!-- User Info -->

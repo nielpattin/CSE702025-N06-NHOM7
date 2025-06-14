@@ -43,6 +43,13 @@
       "when": 1749677432739,
       "tag": "0005_misty_killmonger",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1749889082628,
+      "tag": "0006_normal_mikhail_rasputin",
+      "breakpoints": true
     }
   ]
 }

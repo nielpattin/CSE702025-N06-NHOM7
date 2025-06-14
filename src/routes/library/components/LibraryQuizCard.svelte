@@ -2,6 +2,7 @@
 	import { goto, invalidateAll } from "$app/navigation"
 	import { enhance, applyAction } from "$app/forms"
 	import { page } from "$app/state"
+	import { GlobeOutline, LockSolid } from "flowbite-svelte-icons"
 	import type { QuizStatus, QuizVisibility } from "$lib/server/db/schema"
 
 	interface Quiz {
@@ -73,7 +74,7 @@
 </script>
 
 <div
-	class="block cursor-pointer rounded-lg border border-gray-700 bg-gray-900/50 p-4 transition-all duration-200 hover:border-gray-600 hover:bg-gray-900/70 hover:shadow-lg"
+	class="block cursor-pointer rounded-lg border border-gray-700 bg-gray-700/50 p-3 transition-all duration-200 select-none hover:border-gray-600 hover:bg-gray-900/50 hover:shadow-lg"
 	onclick={(e) => {
 		// Navigate to edit if not clicking on form or dropdown elements
 		if (!(e.target as HTMLElement).closest("form") && !(e.target as HTMLElement).closest('[role="menu"]') && !(e.target as HTMLElement).closest('button[aria-label="More options"]')) {
@@ -160,8 +161,33 @@
 
 						<!-- Dropdown Menu -->
 						{#if isDropdownOpen}
-							<div class="ring-opacity-5 absolute top-full right-0 z-10 mt-2 w-40 rounded-md bg-gray-800 shadow-lg ring-1 ring-black" role="menu" use:clickOutside={closeDropdown}>
+							<div class="ring-opacity-5 absolute top-full right-0 z-10 mt-2 w-48 rounded-md bg-gray-800 shadow-lg ring-1 ring-black" role="menu" use:clickOutside={closeDropdown}>
 								<div class="py-1">
+									<!-- Visibility Toggle Form -->
+									<form
+										method="POST"
+										action="?/toggleVisibility"
+										use:enhance={() => {
+											closeDropdown()
+											return async ({ result }) => {
+												await applyAction(result)
+												await invalidateAll()
+											}
+										}}
+									>
+										<input type="hidden" name="quizId" value={quiz.id} />
+										<input type="hidden" name="visibility" value={quiz.visibility === "public" ? "private" : "public"} />
+										<button type="submit" class="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white" role="menuitem">
+											{#if quiz.visibility === "private"}
+												<GlobeOutline class="mr-2 h-4 w-4" />
+												Make Public
+											{:else}
+												<LockSolid class="mr-2 h-4 w-4" />
+												Make Private
+											{/if}
+										</button>
+									</form>
+
 									{#if quiz.status === "published"}
 										<!-- Archive Form - Only for published quizzes -->
 										<form

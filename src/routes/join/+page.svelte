@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state"
 	import { goto } from "$app/navigation"
-	import DashboardHeader from "$lib/components/DashboardHeader.svelte"
+	import AppHeader from "$lib/components/AppHeader.svelte"
 	import RecentActivity from "$lib/components/RecentActivity.svelte"
 
 	let data = $derived(page.data)
@@ -22,7 +22,7 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-	<DashboardHeader title="Join Quiz" showJoinCode={false} />
+	<AppHeader title="Join Quiz" showJoinCode={false} />
 
 	<!-- Main Content -->
 	<main class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">

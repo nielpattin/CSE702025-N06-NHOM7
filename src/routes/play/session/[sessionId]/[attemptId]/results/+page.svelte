@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from "./$types"
-	import DashboardHeader from "$lib/components/DashboardHeader.svelte"
+	import AppHeader from "$lib/components/AppHeader.svelte"
 
 	let { data }: { data: PageData } = $props()
 
@@ -38,7 +38,7 @@
 	<title>Quiz Results - {quiz.title}</title>
 </svelte:head>
 
-<DashboardHeader title="Quiz Complete" />
+<AppHeader title="Quiz Complete" />
 
 <div class="min-h-screen bg-gray-800">
 	<div class="container mx-auto px-4 py-8">

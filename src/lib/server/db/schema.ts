@@ -1,6 +1,8 @@
-import { timestamp, pgTable, text, primaryKey, integer, boolean, jsonb, varchar, serial } from "drizzle-orm/pg-core"
+import { timestamp, pgTable, text, primaryKey, integer, boolean, jsonb, varchar, serial, pgEnum } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
 import type { AdapterAccountType } from "@auth/sveltekit/adapters"
+
+export const visibilityEnum = pgEnum("visibility", ["public", "private"])
 
 export type UserRole = "Admin" | "User"
 export type QuizStatus = "draft" | "published" | "archived"
@@ -62,7 +64,7 @@ export const quizzes = pgTable("quizzes", {
 	description: text("description"),
 	creatorId: text("creator_id").references(() => users.id),
 	status: varchar("status").$type<QuizStatus>(),
-	visibility: varchar("visibility").$type<QuizVisibility>().default("private").notNull(),
+	visibility: visibilityEnum("visibility").default("private").notNull(),
 	createdAt: timestamp("created_at").defaultNow(),
 	updatedAt: timestamp("updated_at").defaultNow()
 })

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from "./$types"
 	import { SessionCard } from "./components"
-	import DashboardHeader from "$lib/components/DashboardHeader.svelte"
+	import AppHeader from "$lib/components/AppHeader.svelte"
 	import Sidebar from "$lib/components/Sidebar.svelte"
 	import { goto } from "$app/navigation"
 
@@ -18,7 +18,7 @@
 
 <div class="ml-64 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
 	<!-- Dashboard Header Component -->
-	<DashboardHeader title="My Sessions" showJoinCode={false} />
+	<AppHeader title="My Sessions" showJoinCode={false} />
 
 	<!-- Main Content -->
 	<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

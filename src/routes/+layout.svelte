@@ -26,14 +26,8 @@
 	}
 
 	.app {
-		min-height: 100vh;
 		display: flex;
 		flex-direction: column;
-		background-color: #1a202c; /* Gray-800 */
-	}
-
-	.content {
-		flex: 1;
 	}
 
 	footer {

@@ -1,7 +1,7 @@
 import { db } from "$lib/server/db"
 import { quizzes, questions, users, quizSessions, questionOptions, sessionQuestions, sessionQuestionOptions } from "$lib/server/db/schema"
 import { redirect, fail } from "@sveltejs/kit"
-import { eq, count, and } from "drizzle-orm"
+import { eq, count, and, asc, desc } from "drizzle-orm"
 import type { PageServerLoad, Actions } from "./$types"
 
 export const load: PageServerLoad = async (event) => {
@@ -11,6 +11,10 @@ export const load: PageServerLoad = async (event) => {
 	if (!session?.user) {
 		redirect(302, "/signin")
 	}
+
+	// Get sortOrder from query parameters
+	const sortOrder = event.url.searchParams.get("sortOrder")
+	const validSortOrder = sortOrder === "asc" || sortOrder === "desc" ? sortOrder : "desc"
 
 	// Fetch all quizzes with creator names and question counts
 	const allQuizzes = await db.query.quizzes.findMany({
@@ -25,7 +29,8 @@ export const load: PageServerLoad = async (event) => {
 					id: true
 				}
 			}
-		}
+		},
+		orderBy: validSortOrder === "asc" ? asc(quizzes.createdAt) : desc(quizzes.createdAt)
 	})
 
 	const quizzesWithCounts = allQuizzes.map((quiz) => ({
@@ -264,5 +269,68 @@ export const actions: Actions = {
 
 		// Redirect immediately to the new session page (outside try-catch)
 		throw redirect(303, `/sessions/${newSession.id}`)
+	},
+
+	toggleVisibility: async (event) => {
+		const session = await event.locals.auth()
+
+		// Redirect if not authenticated
+		if (!session?.user) {
+			redirect(302, "/signin")
+		}
+
+		const data = await event.request.formData()
+		const quizId = data.get("quizId")
+		const visibility = data.get("visibility")
+
+		if (!quizId || typeof quizId !== "string") {
+			return fail(400, { error: "Quiz ID is required" })
+		}
+
+		if (!visibility || typeof visibility !== "string") {
+			return fail(400, { error: "Visibility status is required" })
+		}
+
+		const quizIdNum = parseInt(quizId, 10)
+		if (isNaN(quizIdNum)) {
+			return fail(400, { error: "Invalid quiz ID" })
+		}
+
+		if (visibility !== "public" && visibility !== "private") {
+			return fail(400, { error: "Invalid visibility status" })
+		}
+
+		try {
+			// Verify quiz exists and user has permission to modify it
+			const quiz = await db.query.quizzes.findFirst({
+				where: eq(quizzes.id, quizIdNum),
+				columns: {
+					id: true,
+					creatorId: true
+				}
+			})
+
+			if (!quiz) {
+				return fail(404, { error: "Quiz not found" })
+			}
+
+			if (quiz.creatorId !== session.user.id) {
+				return fail(403, { error: "You don't have permission to modify this quiz" })
+			}
+
+			// Update the quiz visibility
+			await db
+				.update(quizzes)
+				.set({
+					visibility: visibility as "public" | "private",
+					updatedAt: new Date()
+				})
+				.where(eq(quizzes.id, quizIdNum))
+
+			return { success: true, message: `Quiz visibility updated to ${visibility}` }
+		} catch (error) {
+			console.error("Error updating quiz visibility:", error)
+			return fail(500, { error: "Failed to update quiz visibility" })
+		}
 	}
 }

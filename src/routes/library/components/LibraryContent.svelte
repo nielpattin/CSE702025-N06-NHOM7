@@ -2,6 +2,7 @@
 	import LibraryQuizCard from "./LibraryQuizCard.svelte"
 	import type { QuizStatus, QuizVisibility } from "$lib/server/db/schema"
 	import type { Session } from "@auth/sveltekit"
+	import { ChevronDoubleUpOutline, ChevronDoubleDownOutline } from "flowbite-svelte-icons"
 
 	interface Quiz {
 		id: number
@@ -21,14 +22,26 @@
 		quizzes: Quiz[]
 		filteredQuizzes: Quiz[]
 		session: Session | null
+		sortKey: "createdAt" | "title"
+		sortOrder: "asc" | "desc"
 		onTabChange: (tabId: QuizStatus) => void
+		onSortChange: (sortKey: "createdAt" | "title") => void
+		onSortOrderChange: () => void
 	}
 
-	let { activeFilter, activeTab, tabs, quizzes, filteredQuizzes, session, onTabChange }: Props = $props()
+	let { activeFilter, activeTab, tabs, quizzes, filteredQuizzes, session, sortKey, sortOrder, onTabChange, onSortChange, onSortOrderChange }: Props = $props()
+
+	function handleSort(key: "createdAt" | "title") {
+		if (sortKey === key) {
+			onSortOrderChange()
+		} else {
+			onSortChange(key)
+		}
+	}
 </script>
 
 <!-- Right Section: Tab Navigation and Quiz List (60% width) -->
-<div class="w-3/5">
+<div class="w-full">
 	{#if activeFilter === "createdByMe"}
 		<!-- Tab Navigation for Created by Me -->
 		<div class="mb-8">
@@ -36,7 +49,7 @@
 				{#each tabs as tab (tab.id)}
 					<button
 						onclick={() => onTabChange(tab.id)}
-						class="flex items-center space-x-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200
+						class="flex cursor-pointer items-center space-x-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200
 							{activeTab === tab.id ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-700 hover:text-white'}"
 					>
 						<span>{tab.icon}</span>
@@ -51,15 +64,40 @@
 
 		<!-- Content Area for Created by Me -->
 		<div class="rounded-lg bg-gray-800/50 p-6 shadow-lg backdrop-blur">
-			<div class="mb-4 flex items-center justify-between">
-				<h2 class="text-xl font-semibold text-white">
-					{tabs.find((t) => t.id === activeTab)?.label || "Published"} Quizzes
-				</h2>
-				<span class="text-sm text-gray-400">
-					{filteredQuizzes.length} quiz{filteredQuizzes.length === 1 ? "" : "es"}
-				</span>
+			<!-- Sort Controls -->
+			<div class="mb-6 flex justify-end">
+				<div class="flex items-center space-x-3">
+					<span class="text-sm font-medium text-gray-400">Sort by:</span>
+					<button
+						onclick={() => handleSort("createdAt")}
+						class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors
+						{sortKey === 'createdAt' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}"
+					>
+						Date Created
+						{#if sortKey === "createdAt"}
+							{#if sortOrder === "asc"}
+								<ChevronDoubleUpOutline class="h-4 w-4" />
+							{:else}
+								<ChevronDoubleDownOutline class="h-4 w-4" />
+							{/if}
+						{/if}
+					</button>
+					<button
+						onclick={() => handleSort("title")}
+						class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors
+						{sortKey === 'title' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}"
+					>
+						Title
+						{#if sortKey === "title"}
+							{#if sortOrder === "asc"}
+								<ChevronDoubleUpOutline class="h-4 w-4" />
+							{:else}
+								<ChevronDoubleDownOutline class="h-4 w-4" />
+							{/if}
+						{/if}
+					</button>
+				</div>
 			</div>
-
 			<!-- Quiz List -->
 			{#if filteredQuizzes.length > 0}
 				<div class="space-y-4">
