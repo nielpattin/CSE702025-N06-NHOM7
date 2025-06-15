@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from "$app/navigation"
+
 	let { quiz } = $props()
 
 	function getDifficultyColor(difficulty: string) {
@@ -13,9 +15,25 @@
 				return "text-gray-400 bg-gray-900/30"
 		}
 	}
+
+	function handleQuizClick() {
+		goto(`/quiz/${quiz.id}`)
+	}
+
+	function handleTakeQuiz(event: Event) {
+		event.stopPropagation()
+		goto(`/quiz/${quiz.id}`)
+	}
+
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === "Enter" || event.key === " ") {
+			event.preventDefault()
+			handleQuizClick()
+		}
+	}
 </script>
 
-<div class="group cursor-pointer rounded-lg border border-gray-700 bg-gray-700/50 p-4 transition-all hover:border-blue-500 hover:bg-gray-700">
+<div class="group cursor-pointer rounded-lg border border-gray-700 bg-gray-700/50 p-4 transition-all hover:border-blue-500 hover:bg-gray-700" onclick={handleQuizClick} onkeydown={handleKeydown} role="button" tabindex="0">
 	<div class="mb-3 flex items-start justify-between">
 		<div class="flex-1">
 			<h3 class="font-semibold text-white group-hover:text-blue-300">
@@ -44,6 +62,6 @@
 		<span class="text-sm text-gray-400">
 			{quiz.participants.toLocaleString()} participants
 		</span>
-		<button class="rounded-md bg-gradient-to-r from-purple-600 to-pink-600 px-3 py-1 text-sm font-medium text-white transition-all hover:from-purple-700 hover:to-pink-700"> Take Quiz </button>
+		<button onclick={handleTakeQuiz} class="rounded-md bg-gradient-to-r from-purple-600 to-pink-600 px-3 py-1 text-sm font-medium text-white transition-all hover:from-purple-700 hover:to-pink-700"> Take Quiz </button>
 	</div>
 </div>

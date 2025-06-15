@@ -6,7 +6,6 @@
 
 	let data = $derived(page.data)
 	let session = $derived(data.session)
-	let { userRole } = $derived(data)
 
 	// State for search
 	let searchQuery = $state("")
