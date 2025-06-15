@@ -68,7 +68,7 @@ export const quizzes = pgTable("quizzes", {
 	status: varchar("status").$type<QuizStatus>(),
 	visibility: visibilityEnum("visibility").default("private").notNull(),
 	difficulty: difficultyEnum("difficulty").default("medium").notNull(),
-	duration: integer("duration"),
+	duration: integer("duration").default(0),
 	rating: real("rating").default(0.0).notNull(),
 	participants: integer("participants").default(0).notNull(),
 	imageUrl: text("image_url"), // Add imageUrl column

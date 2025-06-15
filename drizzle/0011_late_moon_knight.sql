@@ -1,0 +1,1 @@
+ALTER TABLE "quizzes" ALTER COLUMN "duration" SET DEFAULT 0;

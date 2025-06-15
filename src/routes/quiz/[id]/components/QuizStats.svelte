@@ -4,7 +4,7 @@
 	let { quiz } = $props<{ quiz: PageData["quiz"] }>()
 
 	function formatDuration(minutes: number | null) {
-		if (!minutes) return "No time limit"
+		if (!minutes || minutes === 0) return "Unlimited"
 		if (minutes < 60) return `${minutes} min`
 		const hours = Math.floor(minutes / 60)
 		const remainingMinutes = minutes % 60

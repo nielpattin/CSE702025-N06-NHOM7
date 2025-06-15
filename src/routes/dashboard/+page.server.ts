@@ -32,7 +32,7 @@ export async function load({ locals }) {
 			participants: quiz.participants || 0,
 			difficulty: quiz.difficulty === "easy" ? "Beginner" : quiz.difficulty === "medium" ? "Intermediate" : "Advanced",
 			rating: Number(quiz.rating?.toFixed(1)) || 0.0,
-			duration: quiz.duration ? `${quiz.duration} min` : "N/A",
+			duration: quiz.duration === 0 ? "Unlimited" : quiz.duration ? `${quiz.duration} min` : "N/A",
 			imageUrl: quiz.imageUrl
 		}))
 
