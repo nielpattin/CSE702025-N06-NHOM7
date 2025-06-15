@@ -3,6 +3,8 @@
 	import type { QuizStatus, QuizVisibility } from "$lib/server/db/schema"
 	import type { Session } from "@auth/sveltekit"
 	import { ChevronDoubleUpOutline, ChevronDoubleDownOutline } from "flowbite-svelte-icons"
+	import * as Tabs from "$lib/components/ui/tabs"
+	import { Star, FileText, Archive } from "@lucide/svelte"
 
 	interface Quiz {
 		id: number
@@ -18,7 +20,6 @@
 	interface Props {
 		activeFilter: string
 		activeTab: QuizStatus
-		tabs: Array<{ id: QuizStatus; label: string; icon: string }>
 		quizzes: Quiz[]
 		filteredQuizzes: Quiz[]
 		session: Session | null
@@ -29,7 +30,13 @@
 		onSortOrderChange: () => void
 	}
 
-	let { activeFilter, activeTab, tabs, quizzes, filteredQuizzes, session, sortKey, sortOrder, onTabChange, onSortChange, onSortOrderChange }: Props = $props()
+	let { activeFilter, activeTab, quizzes, filteredQuizzes, session, sortKey, sortOrder, onTabChange, onSortChange, onSortOrderChange }: Props = $props()
+
+	const tabs = [
+		{ id: "published" as const, label: "Published", icon: Star, color: "text-yellow-400", activeColor: "text-yellow-300" },
+		{ id: "draft" as const, label: "Drafts", icon: FileText, color: "text-blue-400", activeColor: "text-blue-300" },
+		{ id: "archived" as const, label: "Archived", icon: Archive, color: "text-gray-400", activeColor: "text-gray-300" }
+	]
 
 	function handleSort(key: "createdAt" | "title") {
 		if (sortKey === key) {
@@ -45,85 +52,92 @@
 	{#if activeFilter === "createdByMe"}
 		<!-- Tab Navigation for Created by Me -->
 		<div class="mb-8">
-			<nav class="flex space-x-1 rounded-lg bg-gray-800 p-1">
-				{#each tabs as tab (tab.id)}
-					<button
-						onclick={() => onTabChange(tab.id)}
-						class="flex cursor-pointer items-center space-x-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200
-							{activeTab === tab.id ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-700 hover:text-white'}"
-					>
-						<span>{tab.icon}</span>
-						<span>{tab.label}</span>
-						<span class="ml-1 rounded-full bg-gray-600 px-2 py-0.5 text-xs text-gray-300">
-							{quizzes.filter((quiz) => quiz.creatorId === session?.user?.id && quiz.status === tab.id).length}
-						</span>
-					</button>
-				{/each}
-			</nav>
-		</div>
-
-		<!-- Content Area for Created by Me -->
-		<div class="rounded-lg bg-gray-800/50 p-6 shadow-lg backdrop-blur">
-			<!-- Sort Controls -->
-			<div class="mb-6 flex justify-end">
-				<div class="flex items-center space-x-3">
-					<span class="text-sm font-medium text-gray-400">Sort by:</span>
-					<button
-						onclick={() => handleSort("createdAt")}
-						class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors
-						{sortKey === 'createdAt' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}"
-					>
-						Date Created
-						{#if sortKey === "createdAt"}
-							{#if sortOrder === "asc"}
-								<ChevronDoubleUpOutline class="h-4 w-4" />
-							{:else}
-								<ChevronDoubleDownOutline class="h-4 w-4" />
-							{/if}
-						{/if}
-					</button>
-					<button
-						onclick={() => handleSort("title")}
-						class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors
-						{sortKey === 'title' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}"
-					>
-						Title
-						{#if sortKey === "title"}
-							{#if sortOrder === "asc"}
-								<ChevronDoubleUpOutline class="h-4 w-4" />
-							{:else}
-								<ChevronDoubleDownOutline class="h-4 w-4" />
-							{/if}
-						{/if}
-					</button>
-				</div>
-			</div>
-			<!-- Quiz List -->
-			{#if filteredQuizzes.length > 0}
-				<div class="space-y-4">
-					{#each filteredQuizzes as quiz (quiz.id)}
-						<LibraryQuizCard {quiz} />
+			<Tabs.Root value={activeTab} onValueChange={(value) => onTabChange(value as QuizStatus)} class="w-full">
+				<Tabs.List class="flex h-auto w-fit space-x-2 rounded-lg bg-gray-800 p-2">
+					{#each tabs as tab (tab.id)}
+						<Tabs.Trigger
+							value={tab.id}
+							class="flex cursor-pointer items-center rounded-md border-transparent px-6 py-1 text-base font-medium transition-all duration-200 hover:bg-gray-700
+								data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white
+								data-[state=active]:shadow-lg {activeTab === tab.id ? 'text-white' : tab.color}"
+						>
+							<tab.icon class="mr-2 h-4 w-4 {activeTab === tab.id ? tab.activeColor : tab.color}" />
+							<span class={activeTab === tab.id ? "text-white" : tab.color}>{tab.label}</span>
+							<span class="ml-1 rounded-full bg-gray-600 px-3 py-1 text-xs text-gray-300">
+								{quizzes.filter((quiz) => quiz.creatorId === session?.user?.id && quiz.status === tab.id).length}
+							</span>
+						</Tabs.Trigger>
 					{/each}
-				</div>
-			{:else}
-				<div class="py-12 text-center">
-					<div class="mx-auto h-24 w-24 text-6xl opacity-50">
-						{tabs.find((t) => t.id === activeTab)?.icon || "📚"}
-					</div>
-					<h3 class="mt-4 text-lg font-medium text-white">
-						No {tabs.find((t) => t.id === activeTab)?.label.toLowerCase()} quizzes
-					</h3>
-					<p class="mt-2 text-gray-400">
-						{#if activeTab === "published"}
-							You haven't published any quizzes yet. Create and publish your first quiz to see it here.
-						{:else if activeTab === "draft"}
-							No draft quizzes found. Start creating a new quiz to see drafts here.
-						{:else}
-							No archived quizzes found. Archive completed quizzes to organize your library.
-						{/if}
-					</p>
-				</div>
-			{/if}
+				</Tabs.List>
+
+				{#each tabs as tab (tab.id)}
+					<Tabs.Content value={tab.id} class="">
+						<!-- Content Area for Created by Me -->
+						<div class="rounded-lg bg-gray-800/50 p-3 shadow-lg backdrop-blur">
+							<!-- Sort Controls -->
+							<div class="mb-3 flex justify-end">
+								<div class="flex items-center space-x-3">
+									<span class="text-sm font-medium text-gray-400">Sort by:</span>
+									<button
+										onclick={() => handleSort("createdAt")}
+										class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors
+										{sortKey === 'createdAt' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}"
+									>
+										Date Created
+										{#if sortKey === "createdAt"}
+											{#if sortOrder === "asc"}
+												<ChevronDoubleUpOutline class="h-4 w-4" />
+											{:else}
+												<ChevronDoubleDownOutline class="h-4 w-4" />
+											{/if}
+										{/if}
+									</button>
+									<button
+										onclick={() => handleSort("title")}
+										class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors
+										{sortKey === 'title' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}"
+									>
+										Title
+										{#if sortKey === "title"}
+											{#if sortOrder === "asc"}
+												<ChevronDoubleUpOutline class="h-4 w-4" />
+											{:else}
+												<ChevronDoubleDownOutline class="h-4 w-4" />
+											{/if}
+										{/if}
+									</button>
+								</div>
+							</div>
+							<!-- Quiz List -->
+							{#if filteredQuizzes.length > 0}
+								<div class="space-y-4">
+									{#each filteredQuizzes as quiz (quiz.id)}
+										<LibraryQuizCard {quiz} />
+									{/each}
+								</div>
+							{:else}
+								<div class="py-12 text-center">
+									<div class="mx-auto flex h-24 w-24 items-center justify-center opacity-50">
+										<tab.icon class="h-16 w-16 {tab.color}" />
+									</div>
+									<h3 class="mt-4 text-lg font-medium text-white">
+										No {tab.label.toLowerCase()} quizzes
+									</h3>
+									<p class="mt-2 text-gray-400">
+										{#if tab.id === "published"}
+											You haven't published any quizzes yet. Create and publish your first quiz to see it here.
+										{:else if tab.id === "draft"}
+											No draft quizzes found. Start creating a new quiz to see drafts here.
+										{:else}
+											No archived quizzes found. Archive completed quizzes to organize your library.
+										{/if}
+									</p>
+								</div>
+							{/if}
+						</div>
+					</Tabs.Content>
+				{/each}
+			</Tabs.Root>
 		</div>
 	{:else}
 		<!-- Empty state for Liked by Me and Shared with Me -->

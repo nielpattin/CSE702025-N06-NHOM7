@@ -1,35 +1,20 @@
 <script lang="ts">
 	import "../app.css"
-	import { page } from "$app/stores"
-
+	import { page } from "$app/state"
+	import { ModeWatcher } from "mode-watcher"
 	let { children } = $props()
 </script>
 
-<div class="app">
-	<main class="content">
-		{@render children()}
-	</main>
+<ModeWatcher track={false} defaultMode="dark" />
+{@render children()}
 
-	{#if $page.url.pathname === "/"}
-		<footer>
-			<p>&copy; 2025 Quiz Learn</p>
-		</footer>
-	{/if}
-</div>
+{#if page.url.pathname === "/"}
+	<footer>
+		<p>&copy; 2025 Quiz Learn</p>
+	</footer>
+{/if}
 
 <style>
-	:global(html, body) {
-		height: 100%;
-		margin: 0;
-		padding: 0;
-		background-color: #1a202c; /* Gray-800 - same as footer */
-	}
-
-	.app {
-		display: flex;
-		flex-direction: column;
-	}
-
 	footer {
 		padding: 1rem;
 		text-align: center;

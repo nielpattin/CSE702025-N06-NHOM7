@@ -2,7 +2,10 @@
 	import { goto, invalidateAll } from "$app/navigation"
 	import { enhance, applyAction } from "$app/forms"
 	import { page } from "$app/state"
-	import { GlobeOutline, LockSolid, PenOutline } from "flowbite-svelte-icons"
+	import { Globe, Lock, Edit, MoreVertical, Archive, Trash2, Send } from "@lucide/svelte"
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js"
+	import { Button } from "$lib/components/ui/button"
+	import { Badge } from "$lib/components/ui/badge"
 	import type { QuizStatus, QuizVisibility } from "$lib/server/db/schema"
 
 	interface Quiz {
@@ -17,39 +20,6 @@
 	}
 
 	let { quiz }: { quiz: Quiz } = $props()
-
-	// State for dropdown menu visibility
-	let isDropdownOpen = $state(false)
-	let loading = $state(false)
-
-	// Toggle dropdown menu
-	function toggleDropdown(e: Event) {
-		e.preventDefault()
-		e.stopPropagation()
-		isDropdownOpen = !isDropdownOpen
-	}
-
-	// Close dropdown when clicking outside
-	function closeDropdown() {
-		isDropdownOpen = false
-	}
-
-	// Svelte action for handling click outside
-	function clickOutside(node: HTMLElement, callback: () => void) {
-		const handleClick = (event: MouseEvent) => {
-			if (node && !node.contains(event.target as Node) && !event.defaultPrevented) {
-				callback()
-			}
-		}
-
-		document.addEventListener("click", handleClick, true)
-
-		return {
-			destroy() {
-				document.removeEventListener("click", handleClick, true)
-			}
-		}
-	}
 
 	// Calculate time elapsed since creation
 	function getTimeElapsed(date: Date | null): string {
@@ -77,7 +47,7 @@
 	class="block cursor-pointer rounded-lg border border-gray-700 bg-gray-700/50 p-3 px-4 transition-all duration-200 select-none hover:border-gray-600 hover:bg-gray-900/50 hover:shadow-lg"
 	onclick={(e) => {
 		// Navigate to quiz if not clicking on form or dropdown elements
-		if (!(e.target as HTMLElement).closest("form") && !(e.target as HTMLElement).closest('[role="menu"]') && !(e.target as HTMLElement).closest('button[aria-label="More options"]')) {
+		if (!(e.target as HTMLElement).closest("form") && !(e.target as HTMLElement).closest("[data-dropdown-menu-content]") && !(e.target as HTMLElement).closest('button[aria-haspopup="menu"]')) {
 			goto(`/quiz/${quiz.id}`)
 		}
 	}}
@@ -86,9 +56,6 @@
 	onkeydown={(e) => {
 		if (e.key === "Enter" || e.key === " ") {
 			goto(`/quiz/${quiz.id}`)
-		}
-		if (e.key === "Escape" && isDropdownOpen) {
-			closeDropdown()
 		}
 	}}
 >
@@ -104,15 +71,30 @@
 		<div class="relative min-w-0 flex-1">
 			<!-- Row 1: Quiz Title -->
 			<div class="flex items-start justify-between">
-				<h3 class="truncate pr-24 text-lg font-semibold text-white">
-					{quiz.title || "Untitled Quiz"}
-				</h3>
+				<div class="flex items-center space-x-2">
+					<h3 class="truncate pr-2 text-lg font-semibold text-white">
+						{quiz.title || "Untitled Quiz"}
+					</h3>
+					<div class="flex-shrink-0">
+						{#if quiz.visibility === "public"}
+							<Badge variant="default" class="bg-green-100 text-green-800 hover:bg-green-200">
+								<Globe class="mr-1 h-3 w-3" />
+								Public
+							</Badge>
+						{:else if quiz.visibility === "private"}
+							<Badge variant="secondary">
+								<Lock class="mr-1 h-3 w-3" />
+								Private
+							</Badge>
+						{/if}
+					</div>
+				</div>
 			</div>
 
 			<!-- Action Buttons Container - Positioned absolutely to center-right -->
 			<div class="absolute top-1/2 right-0 flex flex-shrink-0 -translate-y-1/2 items-center space-x-2">
 				<!-- Conditional Action Button -->
-				{#if quiz.status === "draft"}
+				{#if quiz.status === "draft" || quiz.status === "archived"}
 					<form
 						method="POST"
 						action="?/publishQuiz"
@@ -123,7 +105,10 @@
 						}}
 					>
 						<input type="hidden" name="quizId" value={quiz.id} />
-						<button type="submit" class="cursor-pointer rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> 📤 Publish </button>
+						<Button type="submit" class="hover:bg-primary-hover cursor-pointer">
+							<Send class="me-2 h-4 w-4 " />
+							Publish
+						</Button>
 					</form>
 				{/if}
 
@@ -132,8 +117,8 @@
 				{/if}
 
 				<!-- Edit Button -->
-				<button
-					class="flex h-8 cursor-pointer items-center justify-center rounded-md border border-gray-600 bg-gray-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none"
+				<Button
+					class="hover:bg-primary-hover cursor-pointer"
 					onclick={(e) => {
 						e.preventDefault()
 						e.stopPropagation()
@@ -141,86 +126,107 @@
 					}}
 					aria-label="Edit quiz"
 				>
-					<PenOutline class="me-2 h-4 w-4" />
+					<Edit class="me-2 h-4 w-4" />
 					Edit
-				</button>
+				</Button>
 
-				<!-- Three-dots Options Button and Dropdown Container -->
-				<div class="relative">
-					<button class="flex h-8 cursor-pointer items-center justify-center rounded-md border border-gray-600 bg-gray-900 px-3 py-2 text-white transition-colors hover:bg-gray-800 focus:outline-none" onclick={toggleDropdown} aria-label="More options">
-						<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-							<circle cx="8" cy="3" r="1.5"></circle>
-							<circle cx="8" cy="8" r="1.5"></circle>
-							<circle cx="8" cy="13" r="1.5"></circle>
-						</svg>
-					</button>
+				<!-- 3 dot dropdown-menu -->
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger>
+						{#snippet child({ props }: { props: Record<string, unknown> })}
+							<Button
+								{...props}
+								class="hover:bg-primary-hover cursor-pointer"
+								aria-label="More options"
+								onclick={(e: MouseEvent) => {
+									e.preventDefault()
+									e.stopPropagation()
+								}}
+							>
+								<MoreVertical class="h-4 w-4" />
+							</Button>
+						{/snippet}
+					</DropdownMenu.Trigger>
 
-					<!-- Dropdown Menu -->
-					{#if isDropdownOpen}
-						<div class="ring-opacity-5 absolute top-full right-0 z-10 mt-2 w-48 rounded-md bg-gray-800 shadow-lg ring-1 ring-black" role="menu" use:clickOutside={closeDropdown}>
-							<div class="py-1">
-								<!-- Visibility Toggle Form -->
-								<form
-									method="POST"
-									action="?/toggleVisibility"
-									use:enhance={() => {
-										closeDropdown()
-										return async ({ result }) => {
-											await applyAction(result)
-											await invalidateAll()
-										}
+					<DropdownMenu.Content class="w-48" align="end">
+						<!-- Visibility Toggle Form -->
+						<form
+							method="POST"
+							action="?/toggleVisibility"
+							use:enhance={() => {
+								return async ({ result }) => {
+									await applyAction(result)
+									await invalidateAll()
+								}
+							}}
+						>
+							<input type="hidden" name="quizId" value={quiz.id} />
+							<input type="hidden" name="visibility" value={quiz.visibility === "public" ? "private" : "public"} />
+							<DropdownMenu.Item
+								class="cursor-pointer"
+								onclick={(e: MouseEvent) => {
+									;(e.currentTarget as HTMLElement).closest("form")?.requestSubmit()
+								}}
+							>
+								{#if quiz.visibility === "private"}
+									<Globe class="mr-2 h-4 w-4 text-white" />
+									Make Public
+								{:else}
+									<Lock class="mr-2 h-4 w-4 text-white" />
+									Make Private
+								{/if}
+							</DropdownMenu.Item>
+						</form>
+
+						{#if quiz.status === "published"}
+							<!-- Archive Form - Only for published quizzes -->
+							<form
+								method="POST"
+								action="?/archiveQuiz"
+								use:enhance={() => {
+									return async ({ result }) => {
+										await applyAction(result)
+										await invalidateAll()
+									}
+								}}
+							>
+								<input type="hidden" name="quizId" value={quiz.id} />
+								<DropdownMenu.Item
+									class="cursor-pointer"
+									onclick={(e: MouseEvent) => {
+										;(e.currentTarget as HTMLElement).closest("form")?.requestSubmit()
 									}}
 								>
-									<input type="hidden" name="quizId" value={quiz.id} />
-									<input type="hidden" name="visibility" value={quiz.visibility === "public" ? "private" : "public"} />
-									<button type="submit" class="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white" role="menuitem">
-										{#if quiz.visibility === "private"}
-											<GlobeOutline class="mr-2 h-4 w-4" />
-											Make Public
-										{:else}
-											<LockSolid class="mr-2 h-4 w-4" />
-											Make Private
-										{/if}
-									</button>
-								</form>
-
-								{#if quiz.status === "published"}
-									<!-- Archive Form - Only for published quizzes -->
-									<form
-										method="POST"
-										action="?/archiveQuiz"
-										use:enhance={() => {
-											closeDropdown()
-											return async ({ result }) => {
-												await applyAction(result)
-												await invalidateAll()
-											}
-										}}
-									>
-										<input type="hidden" name="quizId" value={quiz.id} />
-										<button type="submit" class="block w-full cursor-pointer px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white" role="menuitem"> 📦 Archive </button>
-									</form>
-								{:else if quiz.status === "draft" || quiz.status === "archived"}
-									<!-- Delete Form - For draft and archived quizzes -->
-									<form
-										method="POST"
-										action="?/deleteQuiz"
-										use:enhance={() => {
-											closeDropdown()
-											return async ({ result }) => {
-												await applyAction(result)
-												await invalidateAll()
-											}
-										}}
-									>
-										<input type="hidden" name="quizId" value={quiz.id} />
-										<button type="submit" class="block w-full cursor-pointer px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700 hover:text-red-300" role="menuitem"> 🗑️ Delete </button>
-									</form>
-								{/if}
-							</div>
-						</div>
-					{/if}
-				</div>
+									<Archive class="mr-2 h-4 w-4 text-white" />
+									Archive
+								</DropdownMenu.Item>
+							</form>
+						{:else if quiz.status === "draft" || quiz.status === "archived"}
+							<!-- Delete Form - For draft and archived quizzes -->
+							<form
+								method="POST"
+								action="?/deleteQuiz"
+								use:enhance={() => {
+									return async ({ result }) => {
+										await applyAction(result)
+										await invalidateAll()
+									}
+								}}
+							>
+								<input type="hidden" name="quizId" value={quiz.id} />
+								<DropdownMenu.Item
+									class="cursor-pointer"
+									onclick={(e: MouseEvent) => {
+										;(e.currentTarget as HTMLElement).closest("form")?.requestSubmit()
+									}}
+								>
+									<Trash2 class="mr-2 h-4 w-4 text-red-400" />
+									Delete
+								</DropdownMenu.Item>
+							</form>
+						{/if}
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
 			</div>
 
 			<!-- Row 2: Creator and Time -->
@@ -242,7 +248,7 @@
 					</span>
 					{#if quiz.description}
 						<span>•</span>
-						<span class="max-w-xs truncate" title={quiz.description}>
+						<span class="max-w-md truncate" title={quiz.description}>
 							{quiz.description}
 						</span>
 					{/if}

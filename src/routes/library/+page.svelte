@@ -101,13 +101,6 @@
 		}
 	})
 
-	// Tab configuration
-	const tabs = [
-		{ id: "published" as const, label: "Published", icon: "🌟" },
-		{ id: "draft" as const, label: "Drafts", icon: "📝" },
-		{ id: "archived" as const, label: "Archived", icon: "📦" }
-	]
-
 	function setActiveFilter(filterId: "createdByMe" | "likedByMe" | "sharedWithMe") {
 		// Update URL to reflect the active filter
 		const url = new URL(page.url)
@@ -188,7 +181,7 @@
 			<LibraryFilterPanel {activeFilter} {userQuizzesCount} onFilterChange={setActiveFilter} />
 
 			<!-- Right Section: Content Area (60% width) -->
-			<LibraryContent {activeFilter} {activeTab} {tabs} {quizzes} {filteredQuizzes} {session} {sortKey} {sortOrder} onTabChange={setActiveTab} onSortChange={setSortKey} onSortOrderChange={toggleSortOrder} />
+			<LibraryContent {activeFilter} {activeTab} {quizzes} {filteredQuizzes} {session} {sortKey} {sortOrder} onTabChange={setActiveTab} onSortChange={setSortKey} onSortOrderChange={toggleSortOrder} />
 		</div>
 	</main>
 </div>

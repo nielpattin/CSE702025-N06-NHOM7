@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Edit, Heart, Share } from "@lucide/svelte"
+
 	let { userQuizzesCount, activeFilter, onFilterChange } = $props<{
 		userQuizzesCount: number
 		activeFilter: "createdByMe" | "likedByMe" | "sharedWithMe"
@@ -18,7 +20,7 @@
 			>
 				<div class="flex items-center space-x-3">
 					<div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600/20">
-						<span class="text-lg text-blue-400">📝</span>
+						<Edit class="h-5 w-5 text-blue-400" />
 					</div>
 					<div>
 						<p class="font-medium text-white">Created by me</p>
@@ -34,7 +36,7 @@
 			>
 				<div class="flex items-center space-x-3">
 					<div class="flex h-10 w-10 items-center justify-center rounded-full bg-red-600/20">
-						<span class="text-lg text-red-400">❤️</span>
+						<Heart class="h-5 w-5 text-red-400" />
 					</div>
 					<div>
 						<p class="font-medium text-white">Liked by me</p>
@@ -50,7 +52,7 @@
 			>
 				<div class="flex items-center space-x-3">
 					<div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-600/20">
-						<span class="text-lg text-green-400">📤</span>
+						<Share class="h-5 w-5 text-green-400" />
 					</div>
 					<div>
 						<p class="font-medium text-white">Shared with me</p>

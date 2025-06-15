@@ -147,8 +147,42 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Delete the quiz from the database
-			await db.delete(quizzes).where(eq(quizzes.id, quizIdNum))
+			await db.transaction(async (tx) => {
+				// First, find all questions for this quiz using relational query
+				const quiz = await tx.query.quizzes.findFirst({
+					where: eq(quizzes.id, quizIdNum),
+					with: {
+						questions: {
+							columns: {
+								id: true
+							}
+						}
+					}
+				})
+
+				if (!quiz) {
+					throw new Error("Quiz not found")
+				}
+
+				const questionIds = quiz.questions.map((q) => q.id)
+
+				if (questionIds.length > 0) {
+					// Delete session question options that reference these questions through session questions
+					for (const questionId of questionIds) {
+						const sessionQuestionsForQuestion = await tx.select({ id: sessionQuestions.id }).from(sessionQuestions).where(eq(sessionQuestions.originalQuestionId, questionId))
+
+						for (const sessionQuestion of sessionQuestionsForQuestion) {
+							await tx.delete(sessionQuestionOptions).where(eq(sessionQuestionOptions.sessionQuestionId, sessionQuestion.id))
+						}
+
+						// Delete session questions that reference these questions
+						await tx.delete(sessionQuestions).where(eq(sessionQuestions.originalQuestionId, questionId))
+					}
+				}
+
+				// Now delete the quiz (this will cascade to delete questions and their options)
+				await tx.delete(quizzes).where(eq(quizzes.id, quizIdNum))
+			})
 
 			return { success: true, message: "Quiz deleted" }
 		} catch (error) {
