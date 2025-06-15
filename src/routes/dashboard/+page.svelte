@@ -2,7 +2,7 @@
 	import { page } from "$app/state"
 	import Sidebar from "$lib/components/Sidebar.svelte"
 	import AppHeader from "$lib/components/AppHeader.svelte"
-	import TrendingQuizzes from "$lib/components/TrendingQuizzes.svelte"
+	import { TrendingQuizzes } from "./components"
 
 	let data = $derived(page.data)
 	let session = $derived(data.session)

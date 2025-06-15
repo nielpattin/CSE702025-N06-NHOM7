@@ -1,8 +1,9 @@
-import { timestamp, pgTable, text, primaryKey, integer, boolean, jsonb, varchar, serial, pgEnum } from "drizzle-orm/pg-core"
+import { timestamp, pgTable, text, primaryKey, integer, boolean, jsonb, varchar, serial, pgEnum, real } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
 import type { AdapterAccountType } from "@auth/sveltekit/adapters"
 
 export const visibilityEnum = pgEnum("visibility", ["public", "private"])
+export const difficultyEnum = pgEnum("difficulty", ["easy", "medium", "hard"])
 
 export type UserRole = "Admin" | "User"
 export type QuizStatus = "draft" | "published" | "archived"
@@ -10,8 +11,9 @@ export type QuizVisibility = "public" | "private" | "unlisted"
 export type QuestionType = "multiple_choice" | "true_false"
 export type AttemptStatus = "in_progress" | "completed" | "abandoned"
 export type SessionStatus = "active" | "inactive" | "expired"
+export type QuizDifficulty = "easy" | "medium" | "hard"
 
-// Auth.js tables (with minimal additions)
+// Auth.js tables
 export const users = pgTable("user", {
 	id: text("id")
 		.primaryKey()
@@ -65,6 +67,11 @@ export const quizzes = pgTable("quizzes", {
 	creatorId: text("creator_id").references(() => users.id),
 	status: varchar("status").$type<QuizStatus>(),
 	visibility: visibilityEnum("visibility").default("private").notNull(),
+	difficulty: difficultyEnum("difficulty").default("medium").notNull(),
+	duration: integer("duration"),
+	rating: real("rating").default(0.0).notNull(),
+	participants: integer("participants").default(0).notNull(),
+	imageUrl: text("image_url"), // Add imageUrl column
 	createdAt: timestamp("created_at").defaultNow(),
 	updatedAt: timestamp("updated_at").defaultNow()
 })

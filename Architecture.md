@@ -159,8 +159,11 @@ Dự án này nhằm mục đích phát triển một ứng dụng web trắc ng
   - Active Sessions (em các self-paced sessions đang hoạt động)
   - Reports (thống kê về các quiz đã tạo)
 - Main container:
+
   - Search bar để tìm quiz
   - Trending Quizzes: Danh sách các quiz đang hot
+    - Khi ấn vô một quiz sẽ chuyển đến `/quiz/:id`
+
 - Góc phải:
   - Enter code để join quiz
   - Burger menu với:

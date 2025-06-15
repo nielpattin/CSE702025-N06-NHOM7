@@ -50,6 +50,34 @@
       "when": 1749889082628,
       "tag": "0006_normal_mikhail_rasputin",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1749902982893,
+      "tag": "0007_hot_yellow_claw",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1749907199328,
+      "tag": "0008_overjoyed_sunspot",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1749907416405,
+      "tag": "0009_overrated_young_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1749922340594,
+      "tag": "0010_messy_mojo",
+      "breakpoints": true
     }
   ]
 }

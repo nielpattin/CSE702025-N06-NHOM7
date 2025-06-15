@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { PageData, ActionData } from "./$types"
-	import { Toast } from "flowbite-svelte"
+	import { Toast, Button } from "flowbite-svelte"
 	import { slide } from "svelte/transition"
+	import { ArrowLeftOutline } from "flowbite-svelte-icons"
 	import { AddQuestionButton, QuizDetailsForm, QuestionsList } from "./components"
 
 	interface Question {
@@ -87,6 +88,13 @@
 <Toast color={form && "success" in form && form.success ? "green" : "red"} class={form && "success" in form && form.success ? "!border !border-emerald-500 !bg-emerald-600 !text-emerald-50 !shadow-lg !shadow-emerald-500/20" : "!border !border-red-500 !bg-red-600 !text-red-50 !shadow-lg !shadow-red-500/20"} transition={slide} position="bottom-right" bind:toastStatus>
 	{toastMessage}
 </Toast>
+
+<div class="mb-6">
+	<Button href="/quiz/{data.quiz.id}" class="!border-0 !bg-gradient-to-r !from-gray-600 !to-gray-700 !text-white !shadow-md hover:!from-gray-700 hover:!to-gray-800 focus:!ring-0 focus:!outline-none">
+		<ArrowLeftOutline class="me-2 h-4 w-4" />
+		Back to Quiz
+	</Button>
+</div>
 
 <QuizDetailsForm quizTitle={data.quiz.title} />
 
