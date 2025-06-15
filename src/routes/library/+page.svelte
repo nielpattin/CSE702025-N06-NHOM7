@@ -1,30 +1,24 @@
 <script lang="ts">
 	import { page } from "$app/state"
-	import { goto } from "$app/navigation"
+	import { goto, invalidateAll } from "$app/navigation"
 	import Sidebar from "$lib/components/Sidebar.svelte"
 	import AppHeader from "$lib/components/AppHeader.svelte"
 	import { LibraryFilterPanel, LibraryContent } from "./components"
-	import type { QuizStatus, QuizVisibility } from "$lib/server/db/schema"
+	import type { QuizStatus } from "$lib/server/db/schema"
+	import * as Pagination from "$lib/components/ui/pagination"
 
 	let showBackToTop = $state(false)
 
-	// Type for quiz data returned from the server
-	type QuizWithDetails = {
-		id: number
-		title: string | null
-		description: string | null
-		creatorId: string | null
-		status: QuizStatus | null
-		visibility: QuizVisibility | null
-		createdAt: Date | null
-		updatedAt: Date | null
-		creatorName: string | null
-		questionCount: number
-	}
-
 	let data = $derived(page.data)
 	let session = $derived(data.session ?? null)
-	let { quizzes, userQuizzesCount } = $derived(data)
+	let { quizzes, userQuizzesCount, pagination } = $derived(data)
+	let currentPage = $derived(pagination.currentPage)
+
+	let searchInput = $state("")
+
+	$effect(() => {
+		searchInput = data.search || ""
+	})
 
 	// Read filter query parameter from URL and set active filter
 	let activeFilter = $derived<"createdByMe" | "likedByMe" | "sharedWithMe">(
@@ -58,40 +52,6 @@
 		})()
 	)
 
-	// Filter and sort quizzes based on active filter, tab, sortKey, and sortOrder
-	let filteredQuizzes = $derived(
-		(() => {
-			let filtered: QuizWithDetails[] = []
-
-			if (activeFilter === "createdByMe") {
-				filtered = quizzes.filter((quiz: QuizWithDetails) => quiz.creatorId === session?.user?.id && quiz.status === activeTab)
-			} else if (activeFilter === "likedByMe") {
-				// For now, return empty array as this functionality isn't implemented yet
-				filtered = []
-			} else if (activeFilter === "sharedWithMe") {
-				// For now, return empty array as this functionality isn't implemented yet
-				filtered = []
-			}
-
-			// Sort the filtered quizzes
-			return filtered.sort((a, b) => {
-				let comparison = 0
-
-				if (sortKey === "createdAt") {
-					const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0
-					const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0
-					comparison = aDate - bDate
-				} else if (sortKey === "title") {
-					const aTitle = a.title || ""
-					const bTitle = b.title || ""
-					comparison = aTitle.localeCompare(bTitle)
-				}
-
-				return sortOrder === "asc" ? comparison : -comparison
-			})
-		})()
-	)
-
 	// Navigate to default filter if none is set
 	$effect(() => {
 		if (!page.url.searchParams.get("filter")) {
@@ -112,11 +72,14 @@
 		goto(url.toString(), { replaceState: true, noScroll: true })
 	}
 
-	function setActiveTab(tabId: QuizStatus) {
-		// Update URL to reflect the active tab - activeTab will update automatically via $derived
+	async function setActiveTab(tabId: QuizStatus) {
 		const url = new URL(page.url)
 		url.searchParams.set("tab", tabId)
-		goto(url.toString(), { replaceState: true, noScroll: true })
+		url.searchParams.delete("page") // Reset to first page when tab changes
+		await goto(url.toString(), {
+			invalidateAll: true,
+			noScroll: true
+		})
 	}
 
 	function toggleSortOrder() {
@@ -131,6 +94,45 @@
 		const url = new URL(page.url)
 		url.searchParams.set("sortBy", newSortKey)
 		goto(url.toString(), { replaceState: true, noScroll: true })
+	}
+
+	async function handlePageChange(newPageNumber: number) {
+		const newUrl = new URL(page.url)
+
+		if (newPageNumber > 1) {
+			newUrl.searchParams.set("page", newPageNumber.toString())
+		} else {
+			newUrl.searchParams.delete("page")
+		}
+
+		await goto(newUrl.toString(), {
+			invalidateAll: true,
+			noScroll: true
+		})
+	}
+
+	function handleSearchChange(value: string) {
+		searchInput = value
+	}
+
+	function clearSearch() {
+		searchInput = ""
+		handleSearch()
+	}
+
+	async function handleSearch() {
+		const newUrl = new URL(page.url)
+
+		if (searchInput.trim()) {
+			newUrl.searchParams.set("search", searchInput.trim())
+		} else {
+			newUrl.searchParams.delete("search")
+		}
+
+		newUrl.searchParams.delete("page")
+
+		await goto(newUrl.toString())
+		await invalidateAll()
 	}
 
 	function scrollToTop() {
@@ -163,26 +165,44 @@
 
 	<!-- Main Content -->
 	<main class="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8">
-		<!-- Search Bar -->
-		<div class="mb-8">
-			<div class="relative">
-				<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-					<svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-					</svg>
-				</div>
-				<input type="text" placeholder="Search your quizzes..." class="block w-full rounded-lg border border-gray-600 bg-gray-800/50 py-3 pr-3 pl-10 text-white placeholder-gray-400 backdrop-blur focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-			</div>
-		</div>
-
 		<!-- Two-Column Layout -->
 		<div class="flex gap-8">
 			<!-- Left Section: Filter Panel (40% width) -->
 			<LibraryFilterPanel {activeFilter} {userQuizzesCount} onFilterChange={setActiveFilter} />
 
 			<!-- Right Section: Content Area (60% width) -->
-			<LibraryContent {activeFilter} {activeTab} {quizzes} {filteredQuizzes} {session} {sortKey} {sortOrder} onTabChange={setActiveTab} onSortChange={setSortKey} onSortOrderChange={toggleSortOrder} />
+			<LibraryContent {activeFilter} {activeTab} {quizzes} {userQuizzesCount} {session} {sortKey} {sortOrder} {searchInput} search={data.search || ""} onTabChange={setActiveTab} onSortChange={setSortKey} onSortOrderChange={toggleSortOrder} onSearchChange={handleSearchChange} onSearchSubmit={handleSearch} onSearchClear={clearSearch} />
 		</div>
+		<!-- Pagination -->
+		{#if pagination && pagination.totalQuizzes > pagination.perPage}
+			<div class="mt-8 flex justify-center">
+				<Pagination.Root count={pagination.totalQuizzes} perPage={pagination.perPage} page={currentPage} onPageChange={handlePageChange}>
+					{#snippet children({ pages, currentPage: paginationCurrentPage })}
+						<Pagination.Content>
+							<Pagination.Item class="cursor-pointer">
+								<Pagination.PrevButton />
+							</Pagination.Item>
+							{#each pages as page (page.key)}
+								{#if page.type === "ellipsis"}
+									<Pagination.Item>
+										<Pagination.Ellipsis />
+									</Pagination.Item>
+								{:else}
+									<Pagination.Item>
+										<Pagination.Link class="cursor-pointer" {page} isActive={paginationCurrentPage === page.value}>
+											{page.value}
+										</Pagination.Link>
+									</Pagination.Item>
+								{/if}
+							{/each}
+							<Pagination.Item>
+								<Pagination.NextButton class="cursor-pointer" />
+							</Pagination.Item>
+						</Pagination.Content>
+					{/snippet}
+				</Pagination.Root>
+			</div>
+		{/if}
 	</main>
 </div>
 

@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/node-postgres"
 import { Pool } from "pg"
 import { eq } from "drizzle-orm"
 import "dotenv/config"
-import * as schema from "../src/lib/server/db/schema.js"
+import * as schema from "../src/lib/server/db/schema"
 
 const { users, quizzes, questions, questionOptions, quizSessions, sessionParticipants, gameAttempts, sessionQuestions, sessionQuestionOptions, questionAttempts } = schema
 
@@ -16,13 +16,13 @@ const pool = new Pool({
 
 const db = drizzle(pool, { schema })
 
-const ADMIN_EMAIL = "test@gmail.com"
-const QUIZ_COUNT = 10
+const ADMIN_EMAIL = process.env.DEFAULT_EMAIL_SEED || "test@example.com"
+const QUIZ_COUNT = 1000
 const QUESTIONS_PER_QUIZ = 30
-const SESSION_COUNT = 50
-const PARTICIPANTS_PER_SESSION = 10
-const ATTEMPTS_PER_PARTICIPANT = 5
-const BATCH_SIZE = 100
+const SESSION_COUNT = 200
+const PARTICIPANTS_PER_SESSION = 100
+const ATTEMPTS_PER_PARTICIPANT = 3
+const BATCH_SIZE = 1000
 
 function generateRandomString(length: number): string {
 	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"

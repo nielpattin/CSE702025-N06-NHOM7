@@ -1,53 +1,113 @@
 import { db } from "$lib/server/db"
-import { quizzes, questions, users, quizSessions, questionOptions, sessionQuestions, sessionQuestionOptions, questionAttempts } from "$lib/server/db/schema"
+import { quizzes, questions, users, quizSessions, sessionQuestions, sessionQuestionOptions, questionAttempts, type QuizStatus } from "$lib/server/db/schema"
 import { redirect, fail } from "@sveltejs/kit"
-import { eq, count, and, asc, desc } from "drizzle-orm"
+import { eq, count, and, asc, desc, sql, ilike, type SQL } from "drizzle-orm"
 import type { PageServerLoad, Actions } from "./$types"
 
 export const load: PageServerLoad = async (event) => {
 	const session = await event.locals.auth()
 
-	// Redirect if not authenticated
 	if (!session?.user) {
 		redirect(302, "/signin")
 	}
 
-	// Get sortOrder from query parameters
-	const sortOrder = event.url.searchParams.get("sortOrder")
-	const validSortOrder = sortOrder === "asc" || sortOrder === "desc" ? sortOrder : "desc"
+	const url = new URL(event.request.url)
+	const page = parseInt(url.searchParams.get("page") || "1")
+	const search = url.searchParams.get("search") || ""
+	const perPage = 6
 
-	// Fetch all quizzes with creator names and question counts
-	const allQuizzes = await db.query.quizzes.findMany({
-		with: {
-			creator: {
-				columns: {
-					name: true
-				}
-			},
-			questions: {
-				columns: {
-					id: true
-				}
-			}
-		},
-		orderBy: validSortOrder === "asc" ? asc(quizzes.createdAt) : desc(quizzes.createdAt)
-	})
+	const filter = url.searchParams.get("filter") || "createdByMe"
+	const tab = (url.searchParams.get("tab") || "published") as QuizStatus
+	const sortBy = url.searchParams.get("sortBy") || "createdAt"
+	const sortOrder = url.searchParams.get("sortOrder") || "desc"
 
-	const quizzesWithCounts = allQuizzes.map((quiz) => ({
+	let whereCondition: SQL | undefined
+	if (filter === "createdByMe") {
+		const baseCondition = and(eq(quizzes.creatorId, session.user.id), eq(quizzes.status, tab))
+
+		if (search) {
+			whereCondition = and(baseCondition, ilike(quizzes.title, `%${search}%`))
+		} else {
+			whereCondition = baseCondition
+		}
+	} else {
+		whereCondition = and(eq(quizzes.id, -1))
+	}
+
+	const orderByColumn = sortBy === "title" ? quizzes.title : quizzes.createdAt
+	const orderByDirection = sortOrder === "asc" ? asc : desc
+
+	const [paginatedQuizzes, totalCountResult, userQuizzesCountResult] = await Promise.all([
+		db
+			.select({
+				id: quizzes.id,
+				title: quizzes.title,
+				description: quizzes.description,
+				creatorId: quizzes.creatorId,
+				status: quizzes.status,
+				visibility: quizzes.visibility,
+				difficulty: quizzes.difficulty,
+				duration: quizzes.duration,
+				rating: quizzes.rating,
+				participants: quizzes.participants,
+				imageUrl: quizzes.imageUrl,
+				createdAt: quizzes.createdAt,
+				updatedAt: quizzes.updatedAt,
+				creatorName: users.name,
+				questionCount: sql<number>`cast(count(${questions.id}) as int)`
+			})
+			.from(quizzes)
+			.leftJoin(users, eq(quizzes.creatorId, users.id))
+			.leftJoin(questions, eq(quizzes.id, questions.quizId))
+			.where(whereCondition)
+			.groupBy(quizzes.id, quizzes.title, quizzes.description, quizzes.creatorId, quizzes.status, quizzes.visibility, quizzes.difficulty, quizzes.duration, quizzes.rating, quizzes.participants, quizzes.imageUrl, quizzes.createdAt, quizzes.updatedAt, users.name)
+			.orderBy(orderByDirection(orderByColumn))
+			.limit(perPage)
+			.offset((page - 1) * perPage),
+
+		db.select({ count: count() }).from(quizzes).where(whereCondition),
+
+		Promise.all([
+			db
+				.select({ count: count(quizzes.id) })
+				.from(quizzes)
+				.where(and(eq(quizzes.creatorId, session.user.id), eq(quizzes.status, "published"))),
+			db
+				.select({ count: count(quizzes.id) })
+				.from(quizzes)
+				.where(and(eq(quizzes.creatorId, session.user.id), eq(quizzes.status, "draft"))),
+			db
+				.select({ count: count(quizzes.id) })
+				.from(quizzes)
+				.where(and(eq(quizzes.creatorId, session.user.id), eq(quizzes.status, "archived")))
+		])
+	])
+
+	const totalQuizzes = totalCountResult[0]?.count || 0
+	const totalPages = Math.ceil(totalQuizzes / perPage)
+
+	const quizzesWithCounts = paginatedQuizzes.map((quiz) => ({
 		...quiz,
-		creatorName: quiz.creator?.name || "Unknown",
-		questionCount: quiz.questions.length
+		creatorName: quiz.creatorName || "Unknown",
+		questionCount: quiz.questionCount || 0
 	}))
 
-	// Get count of quizzes created by the current user
-	const userQuizzesCount = await db
-		.select({ count: count(quizzes.id) })
-		.from(quizzes)
-		.where(eq(quizzes.creatorId, session.user.id))
+	const [publishedResult, draftResult, archivedResult] = userQuizzesCountResult
 
 	return {
 		quizzes: quizzesWithCounts,
-		userQuizzesCount: userQuizzesCount[0]?.count || 0
+		userQuizzesCount: {
+			published: publishedResult[0]?.count || 0,
+			draft: draftResult[0]?.count || 0,
+			archived: archivedResult[0]?.count || 0
+		},
+		pagination: {
+			currentPage: page,
+			perPage,
+			totalQuizzes,
+			totalPages
+		},
+		search
 	}
 }
 

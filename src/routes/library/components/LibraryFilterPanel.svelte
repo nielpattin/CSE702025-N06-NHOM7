@@ -2,10 +2,16 @@
 	import { Edit, Heart, Share } from "@lucide/svelte"
 
 	let { userQuizzesCount, activeFilter, onFilterChange } = $props<{
-		userQuizzesCount: number
+		userQuizzesCount: {
+			published: number
+			draft: number
+			archived: number
+		}
 		activeFilter: "createdByMe" | "likedByMe" | "sharedWithMe"
 		onFilterChange: (filterId: "createdByMe" | "likedByMe" | "sharedWithMe") => void
 	}>()
+
+	let totalQuizzes = $derived(userQuizzesCount.published + userQuizzesCount.draft + userQuizzesCount.archived)
 </script>
 
 <!-- Left Section: User Statistics (40% width) -->
@@ -26,7 +32,7 @@
 						<p class="font-medium text-white">Created by me</p>
 					</div>
 				</div>
-				<span class="text-2xl font-bold text-blue-400">{userQuizzesCount}</span>
+				<span class="text-2xl font-bold text-blue-400">{totalQuizzes}</span>
 			</button>
 
 			<button

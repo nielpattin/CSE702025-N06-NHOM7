@@ -7,7 +7,6 @@
 	import { goto, invalidateAll } from "$app/navigation"
 	import { page } from "$app/state"
 	import type { PageData } from "./$types"
-	import type { TransformedReport } from "./+page.server"
 
 	let { data }: { data: PageData } = $props()
 

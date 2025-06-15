@@ -4,7 +4,9 @@
 	import type { Session } from "@auth/sveltekit"
 	import { ChevronDoubleUpOutline, ChevronDoubleDownOutline } from "flowbite-svelte-icons"
 	import * as Tabs from "$lib/components/ui/tabs"
-	import { Star, FileText, Archive } from "@lucide/svelte"
+	import { Button } from "$lib/components/ui/button"
+	import { Input } from "$lib/components/ui/input"
+	import { Star, FileText, Archive, Search, X } from "@lucide/svelte"
 
 	interface Quiz {
 		id: number
@@ -21,16 +23,25 @@
 		activeFilter: string
 		activeTab: QuizStatus
 		quizzes: Quiz[]
-		filteredQuizzes: Quiz[]
+		userQuizzesCount: {
+			published: number
+			draft: number
+			archived: number
+		}
 		session: Session | null
 		sortKey: "createdAt" | "title"
 		sortOrder: "asc" | "desc"
+		searchInput: string
+		search: string
 		onTabChange: (tabId: QuizStatus) => void
 		onSortChange: (sortKey: "createdAt" | "title") => void
 		onSortOrderChange: () => void
+		onSearchChange: (value: string) => void
+		onSearchSubmit: () => void
+		onSearchClear: () => void
 	}
 
-	let { activeFilter, activeTab, quizzes, filteredQuizzes, session, sortKey, sortOrder, onTabChange, onSortChange, onSortOrderChange }: Props = $props()
+	let { activeFilter, activeTab, quizzes, userQuizzesCount, session, sortKey, sortOrder, searchInput, search, onTabChange, onSortChange, onSortOrderChange, onSearchChange, onSearchSubmit, onSearchClear }: Props = $props()
 
 	const tabs = [
 		{ id: "published" as const, label: "Published", icon: Star, color: "text-yellow-400", activeColor: "text-yellow-300" },
@@ -52,7 +63,7 @@
 	{#if activeFilter === "createdByMe"}
 		<!-- Tab Navigation for Created by Me -->
 		<div class="mb-8">
-			<Tabs.Root value={activeTab} onValueChange={(value) => onTabChange(value as QuizStatus)} class="w-full">
+			<Tabs.Root value={activeTab} onValueChange={(value: string) => onTabChange(value as QuizStatus)} class="w-full">
 				<Tabs.List class="flex h-auto w-fit space-x-2 rounded-lg bg-gray-800 p-2">
 					{#each tabs as tab (tab.id)}
 						<Tabs.Trigger
@@ -64,11 +75,49 @@
 							<tab.icon class="mr-2 h-4 w-4 {activeTab === tab.id ? tab.activeColor : tab.color}" />
 							<span class={activeTab === tab.id ? "text-white" : tab.color}>{tab.label}</span>
 							<span class="ml-1 rounded-full bg-gray-600 px-3 py-1 text-xs text-gray-300">
-								{quizzes.filter((quiz) => quiz.creatorId === session?.user?.id && quiz.status === tab.id).length}
+								{userQuizzesCount[tab.id]}
 							</span>
 						</Tabs.Trigger>
 					{/each}
 				</Tabs.List>
+
+				<!-- Search Bar -->
+				<div class="mt-4 mb-4">
+					<div class="relative flex items-center space-x-2">
+						<div class="relative flex-1">
+							<Search class="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+							<Input
+								value={searchInput}
+								oninput={(e) => onSearchChange(e.currentTarget.value)}
+								onkeydown={(e) => {
+									if (e.key === "Enter") onSearchSubmit()
+									if (e.key === "Escape") onSearchClear()
+								}}
+								placeholder="Search your quizzes..."
+								class="pr-10 pl-10"
+							/>
+							{#if searchInput}
+								<Button variant="ghost" size="sm" onclick={onSearchClear} class="text-muted-foreground hover:text-foreground absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 cursor-pointer p-0 hover:bg-transparent">
+									<X class="h-4 w-4" />
+									<span class="sr-only">Clear search</span>
+								</Button>
+							{/if}
+						</div>
+
+						<Button onclick={onSearchSubmit} variant="default" size="sm" class="cursor-pointer">
+							<Search class="mr-2 h-4 w-4" />
+							Enter
+						</Button>
+					</div>
+
+					{#if search}
+						<div class="mt-3 flex items-center justify-between">
+							<p class="text-muted-foreground text-sm">
+								Showing results for: <span class="text-foreground font-medium">"{search}"</span>
+							</p>
+						</div>
+					{/if}
+				</div>
 
 				{#each tabs as tab (tab.id)}
 					<Tabs.Content value={tab.id} class="">
@@ -109,9 +158,9 @@
 								</div>
 							</div>
 							<!-- Quiz List -->
-							{#if filteredQuizzes.length > 0}
+							{#if quizzes.length > 0}
 								<div class="space-y-4">
-									{#each filteredQuizzes as quiz (quiz.id)}
+									{#each quizzes as quiz (quiz.id)}
 										<LibraryQuizCard {quiz} />
 									{/each}
 								</div>
