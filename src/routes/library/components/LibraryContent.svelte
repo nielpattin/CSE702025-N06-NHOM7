@@ -49,11 +49,37 @@
 		{ id: "archived" as const, label: "Archived", icon: Archive, color: "text-gray-400", activeColor: "text-gray-300" }
 	]
 
+	let currentSortKey = $state<"createdAt" | "title">("createdAt")
+	let currentSortOrder = $state<"asc" | "desc">("desc")
+
+	let sortedQuizzes = $derived.by(() => {
+		const quizzesToSort = [...quizzes]
+
+		quizzesToSort.sort((a, b) => {
+			let comparison = 0
+
+			if (currentSortKey === "title") {
+				const titleA = (a.title || "").toLowerCase()
+				const titleB = (b.title || "").toLowerCase()
+				comparison = titleA.localeCompare(titleB)
+			} else {
+				const dateA = new Date(a.createdAt || 0).getTime()
+				const dateB = new Date(b.createdAt || 0).getTime()
+				comparison = dateA - dateB
+			}
+
+			return currentSortOrder === "asc" ? comparison : -comparison
+		})
+
+		return quizzesToSort
+	})
+
 	function handleSort(key: "createdAt" | "title") {
-		if (sortKey === key) {
-			onSortOrderChange()
+		if (currentSortKey === key) {
+			currentSortOrder = currentSortOrder === "asc" ? "desc" : "asc"
 		} else {
-			onSortChange(key)
+			currentSortKey = key
+			currentSortOrder = "desc"
 		}
 	}
 </script>
@@ -130,11 +156,11 @@
 									<button
 										onclick={() => handleSort("createdAt")}
 										class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors
-										{sortKey === 'createdAt' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}"
+										{currentSortKey === 'createdAt' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}"
 									>
 										Date Created
-										{#if sortKey === "createdAt"}
-											{#if sortOrder === "asc"}
+										{#if currentSortKey === "createdAt"}
+											{#if currentSortOrder === "asc"}
 												<ChevronDoubleUpOutline class="h-4 w-4" />
 											{:else}
 												<ChevronDoubleDownOutline class="h-4 w-4" />
@@ -144,11 +170,11 @@
 									<button
 										onclick={() => handleSort("title")}
 										class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors
-										{sortKey === 'title' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}"
+										{currentSortKey === 'title' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}"
 									>
 										Title
-										{#if sortKey === "title"}
-											{#if sortOrder === "asc"}
+										{#if currentSortKey === "title"}
+											{#if currentSortOrder === "asc"}
 												<ChevronDoubleUpOutline class="h-4 w-4" />
 											{:else}
 												<ChevronDoubleDownOutline class="h-4 w-4" />
@@ -158,9 +184,9 @@
 								</div>
 							</div>
 							<!-- Quiz List -->
-							{#if quizzes.length > 0}
+							{#if sortedQuizzes.length > 0}
 								<div class="space-y-4">
-									{#each quizzes as quiz (quiz.id)}
+									{#each sortedQuizzes as quiz (quiz.id)}
 										<LibraryQuizCard {quiz} />
 									{/each}
 								</div>
