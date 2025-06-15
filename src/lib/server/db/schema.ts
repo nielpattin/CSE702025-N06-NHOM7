@@ -1,4 +1,4 @@
-import { timestamp, pgTable, text, primaryKey, integer, boolean, jsonb, varchar, serial, pgEnum, real } from "drizzle-orm/pg-core"
+import { timestamp, pgTable, text, primaryKey, integer, boolean, jsonb, varchar, serial, pgEnum, real, index } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
 import type { AdapterAccountType } from "@auth/sveltekit/adapters"
 
@@ -60,21 +60,25 @@ export const sessions = pgTable("session", {
 })
 
 // Application tables
-export const quizzes = pgTable("quizzes", {
-	id: serial("id").primaryKey(),
-	title: varchar("title", { length: 256 }),
-	description: text("description"),
-	creatorId: text("creator_id").references(() => users.id),
-	status: varchar("status").$type<QuizStatus>(),
-	visibility: visibilityEnum("visibility").default("private").notNull(),
-	difficulty: difficultyEnum("difficulty").default("medium").notNull(),
-	duration: integer("duration").default(0),
-	rating: real("rating").default(0.0).notNull(),
-	participants: integer("participants").default(0).notNull(),
-	imageUrl: text("image_url"), // Add imageUrl column
-	createdAt: timestamp("created_at").defaultNow(),
-	updatedAt: timestamp("updated_at").defaultNow()
-})
+export const quizzes = pgTable(
+	"quizzes",
+	{
+		id: serial("id").primaryKey(),
+		title: varchar("title", { length: 256 }),
+		description: text("description"),
+		creatorId: text("creator_id").references(() => users.id),
+		status: varchar("status").$type<QuizStatus>(),
+		visibility: visibilityEnum("visibility").default("private").notNull(),
+		difficulty: difficultyEnum("difficulty").default("medium").notNull(),
+		duration: integer("duration").default(0),
+		rating: real("rating").default(0.0).notNull(),
+		participants: integer("participants").default(0).notNull(),
+		imageUrl: text("image_url"),
+		createdAt: timestamp("created_at").defaultNow(),
+		updatedAt: timestamp("updated_at").defaultNow()
+	},
+	(table) => [index("idx_quizzes_title").on(table.title)]
+)
 
 export const questions = pgTable("questions", {
 	id: serial("id").primaryKey(),
@@ -99,47 +103,59 @@ export const questionOptions = pgTable("question_options", {
 	correct: boolean("correct")
 })
 
-export const quizSessions = pgTable("quiz_sessions", {
-	id: serial("id").primaryKey(),
-	quizId: integer("quiz_id")
-		.notNull()
-		.references(() => quizzes.id, { onDelete: "cascade" }),
-	hostId: text("host_id")
-		.notNull()
-		.references(() => users.id),
-	code: varchar("code", { length: 8 }).unique().notNull(),
-	status: varchar("status").$type<SessionStatus>().notNull().default("inactive"),
-	expiresAt: timestamp("expires_at").notNull(),
-	createdAt: timestamp("created_at").defaultNow(),
-	updatedAt: timestamp("updated_at").defaultNow()
-})
+export const quizSessions = pgTable(
+	"quiz_sessions",
+	{
+		id: serial("id").primaryKey(),
+		quizId: integer("quiz_id")
+			.notNull()
+			.references(() => quizzes.id, { onDelete: "cascade" }),
+		hostId: text("host_id")
+			.notNull()
+			.references(() => users.id),
+		code: varchar("code", { length: 8 }).unique().notNull(),
+		status: varchar("status").$type<SessionStatus>().notNull().default("inactive"),
+		expiresAt: timestamp("expires_at").notNull(),
+		createdAt: timestamp("created_at").defaultNow(),
+		updatedAt: timestamp("updated_at").defaultNow()
+	},
+	(table) => [index("idx_quiz_sessions_host_id").on(table.hostId), index("idx_quiz_sessions_created_at").on(table.createdAt), index("idx_quiz_sessions_host_created").on(table.hostId, table.createdAt)]
+)
 
-export const sessionParticipants = pgTable("participants", {
-	id: serial("id").primaryKey(),
-	quizSessionId: integer("quiz_session_id")
-		.notNull()
-		.references(() => quizSessions.id, { onDelete: "cascade" }),
-	userId: text("user_id").references(() => users.id), // nullable for guest users
-	guestId: text("guest_id"), // unique identifier for guest users
-	name: varchar("name", { length: 100 }), // for guest users
-	data: jsonb("data"), // Report data: correct, incorrect, attempts, total_time_ms, questions_per_sec, best_score
-	createdAt: timestamp("created_at").defaultNow(),
-	updatedAt: timestamp("updated_at").defaultNow()
-})
+export const sessionParticipants = pgTable(
+	"participants",
+	{
+		id: serial("id").primaryKey(),
+		quizSessionId: integer("quiz_session_id")
+			.notNull()
+			.references(() => quizSessions.id, { onDelete: "cascade" }),
+		userId: text("user_id").references(() => users.id),
+		guestId: text("guest_id"),
+		name: varchar("name", { length: 100 }),
+		data: jsonb("data"),
+		createdAt: timestamp("created_at").defaultNow(),
+		updatedAt: timestamp("updated_at").defaultNow()
+	},
+	(table) => [index("idx_participants_session_id").on(table.quizSessionId)]
+)
 
-export const gameAttempts = pgTable("game_attempts", {
-	id: serial("id").primaryKey(),
-	quizSessionId: integer("quiz_session_id")
-		.notNull()
-		.references(() => quizSessions.id, { onDelete: "cascade" }),
-	participantId: integer("participant_id").references(() => sessionParticipants.id, { onDelete: "cascade" }),
-	attemptNumber: integer("attempt_number"),
-	score: integer("score"),
-	status: varchar("status").$type<AttemptStatus>(),
-	startedAt: timestamp("started_at"),
-	completedAt: timestamp("completed_at"),
-	updatedAt: timestamp("updated_at").defaultNow()
-})
+export const gameAttempts = pgTable(
+	"game_attempts",
+	{
+		id: serial("id").primaryKey(),
+		quizSessionId: integer("quiz_session_id")
+			.notNull()
+			.references(() => quizSessions.id, { onDelete: "cascade" }),
+		participantId: integer("participant_id").references(() => sessionParticipants.id, { onDelete: "cascade" }),
+		attemptNumber: integer("attempt_number"),
+		score: integer("score"),
+		status: varchar("status").$type<AttemptStatus>(),
+		startedAt: timestamp("started_at"),
+		completedAt: timestamp("completed_at"),
+		updatedAt: timestamp("updated_at").defaultNow()
+	},
+	(table) => [index("idx_game_attempts_participant_id").on(table.participantId), index("idx_game_attempts_session_id").on(table.quizSessionId)]
+)
 
 export const sessionQuestions = pgTable("session_questions", {
 	id: serial("id").primaryKey(),
@@ -168,19 +184,23 @@ export const sessionQuestionOptions = pgTable("session_question_options", {
 	correct: boolean("correct")
 })
 
-export const questionAttempts = pgTable("question_attempts", {
-	id: serial("id").primaryKey(),
-	gameAttemptId: integer("game_attempt_id")
-		.notNull()
-		.references(() => gameAttempts.id, { onDelete: "cascade" }),
-	sessionQuestionId: integer("session_question_id")
-		.notNull()
-		.references(() => sessionQuestions.id),
-	selectedSessionOptionId: integer("selected_session_option_id").references(() => sessionQuestionOptions.id), // NULL if no answer
-	correct: boolean("correct"),
-	timeTakenMs: integer("time_taken_ms"),
-	pointsAwarded: integer("points_awarded") // points awarded for this attempt
-})
+export const questionAttempts = pgTable(
+	"question_attempts",
+	{
+		id: serial("id").primaryKey(),
+		gameAttemptId: integer("game_attempt_id")
+			.notNull()
+			.references(() => gameAttempts.id, { onDelete: "cascade" }),
+		sessionQuestionId: integer("session_question_id")
+			.notNull()
+			.references(() => sessionQuestions.id),
+		selectedSessionOptionId: integer("selected_session_option_id").references(() => sessionQuestionOptions.id),
+		correct: boolean("correct"),
+		timeTakenMs: integer("time_taken_ms"),
+		pointsAwarded: integer("points_awarded")
+	},
+	(table) => [index("idx_question_attempts_game_attempt_id").on(table.gameAttemptId)]
+)
 
 export const usersRelations = relations(users, ({ many }) => ({
 	accounts: many(accounts),
@@ -200,7 +220,8 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 
 export const quizzesRelations = relations(quizzes, ({ many, one }) => ({
 	questions: many(questions),
-	creator: one(users, { fields: [quizzes.creatorId], references: [users.id] })
+	creator: one(users, { fields: [quizzes.creatorId], references: [users.id] }),
+	quizSessions: many(quizSessions)
 }))
 
 export const questionsRelations = relations(questions, ({ one, many }) => ({

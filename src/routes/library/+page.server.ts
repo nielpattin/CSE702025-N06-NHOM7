@@ -1,5 +1,5 @@
 import { db } from "$lib/server/db"
-import { quizzes, questions, users, quizSessions, questionOptions, sessionQuestions, sessionQuestionOptions } from "$lib/server/db/schema"
+import { quizzes, questions, users, quizSessions, questionOptions, sessionQuestions, sessionQuestionOptions, questionAttempts } from "$lib/server/db/schema"
 import { redirect, fail } from "@sveltejs/kit"
 import { eq, count, and, asc, desc } from "drizzle-orm"
 import type { PageServerLoad, Actions } from "./$types"
@@ -167,11 +167,19 @@ export const actions: Actions = {
 				const questionIds = quiz.questions.map((q) => q.id)
 
 				if (questionIds.length > 0) {
-					// Delete session question options that reference these questions through session questions
+					// Delete in proper order to respect foreign key constraints
 					for (const questionId of questionIds) {
 						const sessionQuestionsForQuestion = await tx.select({ id: sessionQuestions.id }).from(sessionQuestions).where(eq(sessionQuestions.originalQuestionId, questionId))
 
 						for (const sessionQuestion of sessionQuestionsForQuestion) {
+							// First delete question_attempts that reference session_question_options
+							const sessionQuestionOptionsForQuestion = await tx.select({ id: sessionQuestionOptions.id }).from(sessionQuestionOptions).where(eq(sessionQuestionOptions.sessionQuestionId, sessionQuestion.id))
+
+							for (const sessionQuestionOption of sessionQuestionOptionsForQuestion) {
+								await tx.delete(questionAttempts).where(eq(questionAttempts.selectedSessionOptionId, sessionQuestionOption.id))
+							}
+
+							// Then delete session_question_options
 							await tx.delete(sessionQuestionOptions).where(eq(sessionQuestionOptions.sessionQuestionId, sessionQuestion.id))
 						}
 

@@ -21,6 +21,11 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				with: {
 					options: true
 				}
+			},
+			quizSessions: {
+				with: {
+					participants: true
+				}
 			}
 		}
 	})
@@ -35,8 +40,20 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(403, "This quiz is private")
 	}
 
+	const allParticipants = new Set()
+	quiz.quizSessions.forEach((session) => {
+		session.participants.forEach((participant) => {
+			allParticipants.add(participant.id)
+		})
+	})
+
+	const quizWithParticipantCount = {
+		...quiz,
+		participants: allParticipants.size
+	}
+
 	return {
-		quiz,
+		quiz: quizWithParticipantCount,
 		isOwner
 	}
 }

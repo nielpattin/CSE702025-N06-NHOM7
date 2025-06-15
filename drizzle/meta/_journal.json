@@ -85,6 +85,13 @@
       "when": 1749956189094,
       "tag": "0011_late_moon_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1749991016844,
+      "tag": "0012_add_indexes",
+      "breakpoints": true
     }
   ]
 }
