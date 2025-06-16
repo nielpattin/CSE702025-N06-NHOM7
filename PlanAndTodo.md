@@ -1,7 +1,15 @@
 # Quiz Learn - Kế hoạch & Todo
 
+# Quiz Learn - Kế hoạch & Todo
+
 ## 📋 Thành viên nhóm
 
+| Tên              | GitHub Username | Chuyên môn                    | Tiến độ |
+| ---------------- | --------------- | ----------------------------- | ------- |
+| Trần Thành Long  | nielpattin      | Backend/Core Systems/Database | 85%     |
+| Vương Quang Quý  | akitosuref      | Quiz Management UI            | 75%     |
+| Nguyễn Xuân Mạnh | xuanmanh-2110   | Auth & Results UI             | 70%     |
+| Vũ Văn Sơn       | sunyn582        | Dashboard & Sessions UI       | 80%     |
 | Tên              | GitHub Username | Chuyên môn                    | Tiến độ |
 | ---------------- | --------------- | ----------------------------- | ------- |
 | Trần Thành Long  | nielpattin      | Backend/Core Systems/Database | 85%     |
@@ -28,6 +36,10 @@
 
 ### ✅ Đã hoàn thành
 
+## 🔧 nielpattin - Backend/Core Systems (85% hoàn thành)
+
+### ✅ Đã hoàn thành
+
 #### Thiết lập dự án
 
 - [x] Thiết lập Auth.js với OAuth provider (Google, Github)
@@ -41,6 +53,7 @@
 - [x] Add Role Management (User/Admin)
 - [x] Test auth flows với các providers khác nhau
 - [x] Triển khai protected routes
+- [x] Admin panel với user role management
 - [x] Admin panel với user role management
 
 #### Database Schema & Migrations
@@ -74,6 +87,10 @@
 - [ ] Backup và recovery procedures
 
 ---
+
+## 🎨 akitosuref - Quiz Management UI (75% hoàn thành)
+
+### ✅ Đã hoàn thành
 
 ## 🎨 akitosuref - Quiz Management UI (75% hoàn thành)
 
@@ -117,6 +134,10 @@
 - [ ] Quiz versioning system
 
 ---
+
+## 🖥️ xuanmanh-2110 - Auth & Results UI (70% hoàn thành)
+
+### ✅ Đã hoàn thành
 
 ## 🖥️ xuanmanh-2110 - Auth & Results UI (70% hoàn thành)
 

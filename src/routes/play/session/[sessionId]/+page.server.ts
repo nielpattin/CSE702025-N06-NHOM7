@@ -39,6 +39,23 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(404, "Session not found")
 	}
 
+	if (sessionData.status === "deleting") {
+		return {
+			session: {
+				id: sessionData.id,
+				code: sessionData.code,
+				status: sessionData.status,
+				expiresAt: sessionData.expiresAt,
+				createdAt: sessionData.createdAt,
+				hostId: sessionData.hostId,
+				quiz: sessionData.quiz
+			},
+			participants: [],
+			userSession: await locals.auth(),
+			sessionDeleting: true
+		}
+	}
+
 	const session = {
 		id: sessionData.id,
 		code: sessionData.code,

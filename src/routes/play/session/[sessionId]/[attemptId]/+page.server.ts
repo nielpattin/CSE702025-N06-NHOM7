@@ -63,12 +63,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		// For now, we'll allow access but this should be enhanced with guest session tracking
 	}
 
-	// Check if session is still active
-	if (session.status !== "active") {
-		throw error(400, "Session is no longer active")
+	// Check if session is still active or marked for deletion (allowing ongoing games)
+	if (session.status !== "active" && session.status !== "deleting") {
+		throw error(400, "Session is no longer available for play.")
 	}
 
-	// Check if session has expired
+	// Check if session has expired (Note: a "deleting" session might also have an expiry, this logic remains)
 	if (session.expiresAt && new Date() > new Date(session.expiresAt)) {
 		throw error(400, "Session has expired")
 	}

@@ -3,7 +3,7 @@
 	import { enhance, applyAction } from "$app/forms"
 	import { page } from "$app/state"
 	import { Globe, Lock, Edit, MoreVertical, Archive, Trash2, Send } from "@lucide/svelte"
-	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js"
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu"
 	import { Button } from "$lib/components/ui/button"
 	import { Badge } from "$lib/components/ui/badge"
 	import type { QuizStatus, QuizVisibility } from "$lib/server/db/schema"
