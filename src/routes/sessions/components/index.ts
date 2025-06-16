@@ -1,1 +1,8 @@
 export { default as SessionCard } from "./SessionCard.svelte"
+export { default as SessionsContent } from "./SessionsContent.svelte"
+export { default as SessionDeletingAlert } from "./SessionDeletingAlert.svelte"
+export { default as SessionHeader } from "./SessionHeader.svelte"
+export { default as ParticipantsList } from "./ParticipantsList.svelte"
+export { default as SessionJoinForm } from "./SessionJoinForm.svelte"
+export { default as SessionInstructions } from "./SessionInstructions.svelte"
+export { default as SessionReattemptForm } from "./SessionReattemptForm.svelte"

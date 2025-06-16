@@ -1,22 +1,25 @@
 <script lang="ts">
-	import { goto } from "$app/navigation"
+	import { goto, invalidateAll } from "$app/navigation"
+	import { enhance, applyAction } from "$app/forms"
+	import { MoreVertical, Edit, Trash2 } from "@lucide/svelte"
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js"
+	import { Button } from "$lib/components/ui/button"
+	import { toast } from "svelte-sonner"
 
 	interface SessionData {
 		id: number
-		code: string
 		status: string
 		expiresAt: Date | null
 		quizName: string | null
+		imageUrl: string | null
 		participantCount: number
 	}
 
 	let { session }: { session: SessionData } = $props()
+	let dropdownOpen = $state(false)
 
-	// State for copy feedback
-	let copySuccess = $state(false)
-
-	// State for dropdown menu visibility
-	let isDropdownOpen = $state(false)
+	const randomImageId = Math.floor(Math.random() * 1000)
+	const imageToDisplay = $derived(session.imageUrl ?? `https://picsum.photos/id/${randomImageId}/200/200`)
 
 	// Format date to human-readable format
 	function formatDate(date: Date | null): string {
@@ -82,64 +85,49 @@
 		}
 	}
 
-	// Copy shareable link to clipboard
-	async function copyShareableLink() {
-		const shareableLink = `${window.location.origin}/join?code=${session.code}`
-
-		try {
-			await navigator.clipboard.writeText(shareableLink)
-			copySuccess = true
-			setTimeout(() => {
-				copySuccess = false
-			}, 2000)
-		} catch (err) {
-			console.error("Failed to copy link:", err)
-		}
-	}
-
 	// Navigate to session play page
 	function navigateToSession() {
 		goto(`/play/session/${session.id}`)
 	}
 
-	// Toggle dropdown menu
-	function toggleDropdown(e: Event) {
-		e.preventDefault()
-		e.stopPropagation()
-		isDropdownOpen = !isDropdownOpen
-	}
+	// Handle status toggle
+	async function handleStatusToggle(pressed: boolean) {
+		dropdownOpen = false
+		const formData = new FormData()
+		formData.append("id", session.id.toString())
+		formData.append("currentStatus", session.status)
 
-	// Close dropdown when clicking outside
-	function closeDropdown() {
-		isDropdownOpen = false
-	}
+		try {
+			const response = await fetch("?/toggleStatus", {
+				method: "POST",
+				body: formData
+			})
 
-	// Svelte action for handling click outside
-	function clickOutside(node: HTMLElement, callback: () => void) {
-		const handleClick = (event: MouseEvent) => {
-			if (node && !node.contains(event.target as Node) && !event.defaultPrevented) {
-				callback()
+			const result = await response.json()
+
+			if (result.type === "success" && result.data?.success) {
+				toast.success(`Session status updated to ${result.data.newStatus}.`)
+			} else if (result.type === "failure") {
+				toast.error(String(result.data?.error || "Failed to toggle session status."))
+			} else if (result.type === "error") {
+				toast.error("A server error occurred while toggling status.")
 			}
-		}
 
-		document.addEventListener("click", handleClick, true)
-
-		return {
-			destroy() {
-				document.removeEventListener("click", handleClick, true)
-			}
+			await invalidateAll()
+		} catch (error) {
+			toast.error("Failed to update session status")
+			console.error("Status toggle error:", error)
 		}
 	}
 
 	const statusInfo = $derived(getStatusInfo(session.status, session.expiresAt))
-	const shareableLink = $derived(`${typeof window !== "undefined" ? window.location.origin : ""}/join?code=${session.code}`)
 </script>
 
 <div
 	class="block cursor-pointer rounded-lg border border-gray-700 bg-gray-900/50 p-6 transition-all duration-200 hover:border-gray-600 hover:bg-gray-900/70 hover:shadow-lg"
 	onclick={(e) => {
-		// Navigate to session if not clicking on copy button, status toggle button, or dropdown elements
-		if (!(e.target as HTMLElement).closest('button[aria-label="Copy link"]') && !(e.target as HTMLElement).closest('button[aria-label="Toggle session status"]') && !(e.target as HTMLElement).closest('[role="menu"]') && !(e.target as HTMLElement).closest('button[aria-label="More options"]')) {
+		// Navigate to session if not clicking on form or dropdown elements
+		if (!(e.target as HTMLElement).closest("form") && !(e.target as HTMLElement).closest("[data-dropdown-menu-content]") && !(e.target as HTMLElement).closest('button[aria-haspopup="menu"]')) {
 			navigateToSession()
 		}
 	}}
@@ -150,22 +138,17 @@
 			e.preventDefault()
 			navigateToSession()
 		}
-		if (e.key === "Escape" && isDropdownOpen) {
-			closeDropdown()
-		}
 	}}
 >
 	<div class="flex items-start space-x-4">
-		<!-- Left Section: Session Icon -->
+		<!-- Left Section: Session Image -->
 		<div class="flex-shrink-0">
-			<div class="flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600">
-				<span class="text-2xl text-white">🎯</span>
-			</div>
+			<img src={imageToDisplay} alt={session.quizName || "Quiz Image"} class="h-16 w-16 rounded-lg object-cover" />
 		</div>
 
 		<!-- Right Section: Session Details -->
 		<div class="min-w-0 flex-1">
-			<!-- Row 1: Quiz Name, Status, and Delete Button -->
+			<!-- Row 1: Quiz Name, Status, and Action Buttons -->
 			<div class="flex items-start justify-between">
 				<div class="flex min-w-0 flex-1 items-start space-x-4">
 					<h3 class="truncate text-lg font-semibold text-white">
@@ -178,86 +161,78 @@
 
 				<!-- Action Buttons -->
 				<div class="ml-4 flex items-center space-x-2">
-					<!-- Status Toggle Button -->
-					<form action="?/toggleStatus" method="POST">
-						<input type="hidden" name="id" value={session.id} />
-						<input type="hidden" name="currentStatus" value={session.status} />
-						<button
-							type="submit"
-							class="inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"
-							onclick={(e) => {
-								e.stopPropagation()
-							}}
-							aria-label="Toggle session status"
-						>
-							{session.status === "active" ? "Inactive" : "Active"}
-						</button>
-					</form>
+					<!-- 3 dot dropdown-menu -->
+					<DropdownMenu.Root bind:open={dropdownOpen}>
+						<DropdownMenu.Trigger>
+							{#snippet child({ props }: { props: Record<string, unknown> })}
+								<Button
+									{...props}
+									size="sm"
+									variant="outline"
+									class="cursor-pointer"
+									aria-label="More options"
+									onclick={(e: MouseEvent) => {
+										e.preventDefault()
+										e.stopPropagation()
+									}}
+								>
+									<MoreVertical class="h-4 w-4" />
+								</Button>
+							{/snippet}
+						</DropdownMenu.Trigger>
 
-					<!-- Three-dots Options Button and Dropdown Container -->
-					<div class="relative">
-						<button class="cursor-pointer rounded-md bg-gray-700 p-2 text-gray-300 transition-colors hover:bg-gray-600 hover:text-white focus:outline-none" onclick={toggleDropdown} aria-label="More options">
-							<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-								<circle cx="8" cy="3" r="1.5"></circle>
-								<circle cx="8" cy="8" r="1.5"></circle>
-								<circle cx="8" cy="13" r="1.5"></circle>
-							</svg>
-						</button>
+						<DropdownMenu.Content class="" align="end">
+							<!-- Status Toggle -->
+							<DropdownMenu.Item class="cursor-pointer" onclick={() => handleStatusToggle(session.status !== "active")}>
+								<span class="mr-2 flex h-4 w-4 items-center justify-center {session.status === 'active' ? 'text-green-400' : 'text-red-400'}">●</span>
+								{session.status === "active" ? "Inactive" : "Active"}
+							</DropdownMenu.Item>
 
-						<!-- Dropdown Menu -->
-						{#if isDropdownOpen}
-							<div class="ring-opacity-5 absolute top-full right-0 z-10 mt-2 w-40 rounded-md bg-gray-800 shadow-lg ring-1 ring-black" role="menu" use:clickOutside={closeDropdown}>
-								<div class="py-1">
-									<!-- Edit Option -->
-									<a href="/sessions/{session.id}" class="block w-full cursor-pointer px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white" role="menuitem" onclick={() => closeDropdown()}> ✏️ Edit </a>
+							<!-- Edit Session -->
+							<DropdownMenu.Item class="cursor-pointer" onclick={() => goto(`/sessions/${session.id}`)}>
+								<Edit class="mr-2 h-4 w-4" />
+								Edit
+							</DropdownMenu.Item>
 
-									<!-- Delete Form -->
-									<form action="?/deleteSession" method="POST">
-										<input type="hidden" name="id" value={session.id} />
-										<button type="submit" class="block w-full px-4 py-2 text-left text-sm text-gray-200 hover:bg-gray-700" role="menuitem"> 🗑️ Delete </button>
-									</form>
-								</div>
-							</div>
-						{/if}
-					</div>
+							<DropdownMenu.Separator />
+
+							<!-- Delete Button -->
+							<DropdownMenu.Item
+								variant="destructive"
+								class="cursor-pointer"
+								onclick={() => {
+									const form = document.getElementById(`delete-form-${session.id}`) as HTMLFormElement
+									if (form) {
+										form.requestSubmit()
+									}
+								}}
+							>
+								<Trash2 class="mr-2 h-4 w-4" />
+								Delete
+							</DropdownMenu.Item>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
 				</div>
 			</div>
-
-			<!-- Row 2: Session Code and Copy Button -->
-			<div class="mt-2 flex items-center space-x-3">
-				<span class="text-sm text-gray-400">Session Code:</span>
-				<span class="font-mono text-sm font-medium text-white">{session.code}</span>
-				<button
-					type="button"
-					class="inline-flex items-center rounded-md bg-gray-700 px-2 py-1 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-600 hover:text-white focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"
-					onclick={(e) => {
-						e.stopPropagation()
-						copyShareableLink()
-					}}
-					aria-label="Copy link"
-				>
-					{#if copySuccess}
-						<svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-							<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-						</svg>
-						Copied!
-					{:else}
-						<svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-							<path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
-							<path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path>
-						</svg>
-						Copy
-					{/if}
-				</button>
-			</div>
-
-			<!-- Row 3: Shareable Link -->
-			<div class="mt-2">
-				<span class="text-xs text-gray-500">Share: </span>
-				<span class="font-mono text-xs break-all text-gray-400">{shareableLink}</span>
-			</div>
-
-			<!-- Row 4: Participant Count and Expiry Time -->
+			<form
+				method="POST"
+				action="?/deleteSession"
+				use:enhance={() => {
+					return async ({ result }) => {
+						if (result.type === "success") {
+							toast.success("Session deleted successfully")
+						} else if (result.type === "error") {
+							toast.error(result.error.message)
+						}
+						await invalidateAll()
+					}
+				}}
+				id="delete-form-{session.id}"
+				class="hidden"
+			>
+				<input type="hidden" name="id" value={session.id} />
+			</form>
+			<!-- Row 2: Participant Count and Expiry Time -->
 			<div class="mt-3 flex items-center justify-between">
 				<div class="flex items-center space-x-4 text-sm text-gray-400">
 					<span class="flex items-center">

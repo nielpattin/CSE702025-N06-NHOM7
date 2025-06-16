@@ -1,7 +1,7 @@
 import { error, fail, redirect } from "@sveltejs/kit"
 import { db } from "$lib/server/db/index.js"
 import { quizSessions, quizzes } from "$lib/server/db/schema.js"
-import { eq } from "drizzle-orm"
+import { and, eq, ne } from "drizzle-orm"
 import type { PageServerLoad, Actions } from "./$types.js"
 
 export const load: PageServerLoad = async ({ params, locals }) => {
@@ -39,7 +39,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		})
 		.from(quizSessions)
 		.innerJoin(quizzes, eq(quizSessions.quizId, quizzes.id))
-		.where(eq(quizSessions.id, sessionId))
+		.where(and(eq(quizSessions.id, sessionId), ne(quizSessions.status, "deleting")))
 		.limit(1)
 
 	if (sessionResult.length === 0) {

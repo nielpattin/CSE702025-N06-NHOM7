@@ -1,15 +1,15 @@
 import { db } from "$lib/server/db"
 import { quizzes, quizSessions, sessionParticipants, gameAttempts, questionAttempts } from "$lib/server/db/schema"
-import { redirect } from "@sveltejs/kit"
-import { eq, desc, ilike, sql, count, and, inArray } from "drizzle-orm"
-import type { PageServerLoad } from "./$types"
-
+import { redirect, fail } from "@sveltejs/kit"
+import { eq, desc, asc, ilike, sql, count, and, inArray } from "drizzle-orm"
+import type { PageServerLoad, Actions } from "./$types"
 export interface TransformedReport {
 	id: number
 	sessionName: string
 	createdDate: Date | string | null
 	participantCount: number
 	accuracy: number
+	status: string
 }
 
 export const load: PageServerLoad = async (event) => {
@@ -22,6 +22,8 @@ export const load: PageServerLoad = async (event) => {
 	const url = new URL(event.request.url)
 	const page = parseInt(url.searchParams.get("page") || "1")
 	const search = url.searchParams.get("search") || ""
+	const sortBy = url.searchParams.get("sortBy") || "createdDate"
+	const sortOrder = url.searchParams.get("sortOrder") || "desc"
 	const perPage = 9
 
 	// Build base conditions for quiz sessions
@@ -39,7 +41,9 @@ export const load: PageServerLoad = async (event) => {
 			return {
 				sessionReports: [],
 				pagination: { currentPage: page, perPage, totalReports: 0, totalPages: 0 },
-				search
+				search,
+				sortBy,
+				sortOrder
 			}
 		}
 		const quizIdsToFilter = relevantQuizzes.map((q) => q.id)
@@ -56,8 +60,38 @@ export const load: PageServerLoad = async (event) => {
 		return {
 			sessionReports: [],
 			pagination: { currentPage: page, perPage, totalReports: 0, totalPages: 0 },
-			search
+			search,
+			sortBy,
+			sortOrder
 		}
+	}
+
+	const orderByDirection = sortOrder === "asc" ? asc : desc
+
+	let orderByClause
+	switch (sortBy) {
+		case "sessionName":
+			orderByClause = orderByDirection(quizzes.title)
+			break
+		case "participantCount":
+			orderByClause = orderByDirection(sql`COALESCE(COUNT(DISTINCT ${sessionParticipants.id}), 0)`)
+			break
+		case "accuracy":
+			orderByClause = orderByDirection(sql`
+				CASE
+					WHEN COUNT(${questionAttempts.id}) = 0 THEN 0
+					ELSE ROUND(
+						(COUNT(CASE WHEN ${questionAttempts.correct} = true THEN 1 END)::numeric /
+						 COUNT(${questionAttempts.id})::numeric) * 100
+					)
+				END
+			`)
+			break
+		case "status":
+			orderByClause = orderByDirection(quizSessions.status)
+			break
+		default:
+			orderByClause = orderByDirection(quizSessions.createdAt)
 	}
 
 	// Optimized query using SQL aggregations to calculate accuracy at database level
@@ -66,6 +100,7 @@ export const load: PageServerLoad = async (event) => {
 			id: quizSessions.id,
 			sessionName: quizzes.title,
 			createdDate: quizSessions.createdAt,
+			status: quizSessions.status,
 			participantCount: sql<number>`COALESCE(COUNT(DISTINCT ${sessionParticipants.id}), 0)`.mapWith(Number),
 			accuracy: sql<number>`
 				CASE
@@ -95,7 +130,7 @@ export const load: PageServerLoad = async (event) => {
 		.leftJoin(questionAttempts, eq(questionAttempts.gameAttemptId, gameAttempts.id))
 		.where(searchCondition)
 		.groupBy(quizSessions.id, quizzes.title, quizSessions.createdAt)
-		.orderBy(desc(quizSessions.createdAt))
+		.orderBy(orderByClause)
 		.limit(perPage)
 		.offset((page - 1) * perPage)
 
@@ -104,7 +139,8 @@ export const load: PageServerLoad = async (event) => {
 		sessionName: report.sessionName || "Untitled Session",
 		createdDate: report.createdDate,
 		participantCount: report.participantCount,
-		accuracy: report.accuracy
+		accuracy: report.accuracy,
+		status: report.status
 	}))
 
 	return {
@@ -115,6 +151,43 @@ export const load: PageServerLoad = async (event) => {
 			totalReports,
 			totalPages
 		},
-		search
+		search,
+		sortBy,
+		sortOrder
+	}
+}
+
+export const actions: Actions = {
+	deleteReport: async ({ request, locals }) => {
+		const session = await locals.auth()
+		if (!session?.user) {
+			throw redirect(302, "/signin")
+		}
+
+		const formData = await request.formData()
+		const sessionId = parseInt(formData.get("sessionId") as string)
+
+		if (isNaN(sessionId)) {
+			return fail(400, { error: "Invalid session ID" })
+		}
+
+		const quizSession = await db.query.quizSessions.findFirst({
+			where: eq(quizSessions.id, sessionId),
+			columns: { status: true, hostId: true }
+		})
+
+		if (!quizSession) {
+			return fail(404, { error: "Session not found" })
+		}
+
+		if (quizSession.hostId !== session.user.id) {
+			return fail(403, { error: "Unauthorized" })
+		}
+
+		if (quizSession.status !== "deleting") {
+			return fail(400, { error: "Can only delete reports for sessions marked for deletion" })
+		}
+
+		return fail(400, { error: "Real deletion is disabled. Sessions will remain in deleting status." })
 	}
 }

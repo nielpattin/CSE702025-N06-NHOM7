@@ -6,7 +6,7 @@
 
 	type QuizSession = {
 		createdAt: Date | string | null
-		status: "active" | "inactive" | "ended" | "expired"
+		status: "active" | "inactive" | "ended" | "expired" | "deleting"
 		code: string
 	}
 

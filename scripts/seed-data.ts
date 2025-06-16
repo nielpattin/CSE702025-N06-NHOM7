@@ -354,14 +354,14 @@ async function seedData() {
 	}
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-	seedData()
-		.then(() => {
-			console.log("🎉 Optimized seeding process completed!")
-			process.exit(0)
-		})
-		.catch((error) => {
-			console.error("💥 Seeding failed:", error)
-			process.exit(1)
-		})
-}
+console.log("🚀 Starting optimized seeding process...")
+
+seedData()
+	.then(() => {
+		console.log("🎉 Optimized seeding process completed!")
+		process.exit(0)
+	})
+	.catch((error) => {
+		console.error("💥 Seeding failed:", error)
+		process.exit(1)
+	})
