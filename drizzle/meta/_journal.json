@@ -92,6 +92,48 @@
       "when": 1749991016844,
       "tag": "0012_add_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1750008641507,
+      "tag": "0013_add_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1750010228727,
+      "tag": "0014_add_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1750010492739,
+      "tag": "0015_add_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1750014087925,
+      "tag": "0016_add_delete_status",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1750033560872,
+      "tag": "0017_add_archived",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1750050739297,
+      "tag": "0018_worthless_randall",
+      "breakpoints": true
     }
   ]
 }

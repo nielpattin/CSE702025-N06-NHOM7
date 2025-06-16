@@ -10,7 +10,7 @@ export type QuizStatus = "draft" | "published" | "archived"
 export type QuizVisibility = "public" | "private" | "unlisted"
 export type QuestionType = "multiple_choice" | "true_false"
 export type AttemptStatus = "in_progress" | "completed" | "abandoned"
-export type SessionStatus = "active" | "inactive" | "expired"
+export type SessionStatus = "active" | "inactive" | "expired" | "deleting"
 export type QuizDifficulty = "easy" | "medium" | "hard"
 
 // Auth.js tables
@@ -80,28 +80,36 @@ export const quizzes = pgTable(
 	(table) => [index("idx_quizzes_title").on(table.title)]
 )
 
-export const questions = pgTable("questions", {
-	id: serial("id").primaryKey(),
-	quizId: integer("quiz_id")
-		.notNull()
-		.references(() => quizzes.id, { onDelete: "cascade" }),
-	type: varchar("type").$type<QuestionType>(),
-	content: varchar("content", { length: 5000 }),
-	timeLimit: integer("time_limit"),
-	points: integer("points"),
-	createdAt: timestamp("created_at").defaultNow(),
-	updatedAt: timestamp("updated_at").defaultNow()
-})
+export const questions = pgTable(
+	"questions",
+	{
+		id: serial("id").primaryKey(),
+		quizId: integer("quiz_id")
+			.notNull()
+			.references(() => quizzes.id, { onDelete: "cascade" }),
+		type: varchar("type").$type<QuestionType>(),
+		content: varchar("content", { length: 5000 }),
+		timeLimit: integer("time_limit"),
+		points: integer("points"),
+		createdAt: timestamp("created_at").defaultNow(),
+		updatedAt: timestamp("updated_at").defaultNow()
+	},
+	(table) => [index("idx_questions_quiz_id").on(table.quizId)]
+)
 
-export const questionOptions = pgTable("question_options", {
-	id: serial("id").primaryKey(),
-	questionId: integer("question_id")
-		.notNull()
-		.references(() => questions.id, { onDelete: "cascade" }),
-	order: integer("order"),
-	content: varchar("content", { length: 2500 }),
-	correct: boolean("correct")
-})
+export const questionOptions = pgTable(
+	"question_options",
+	{
+		id: serial("id").primaryKey(),
+		questionId: integer("question_id")
+			.notNull()
+			.references(() => questions.id, { onDelete: "cascade" }),
+		order: integer("order"),
+		content: varchar("content", { length: 2500 }),
+		correct: boolean("correct")
+	},
+	(table) => [index("idx_question_options_question_id").on(table.questionId)]
+)
 
 export const quizSessions = pgTable(
 	"quiz_sessions",
@@ -157,32 +165,40 @@ export const gameAttempts = pgTable(
 	(table) => [index("idx_game_attempts_participant_id").on(table.participantId), index("idx_game_attempts_session_id").on(table.quizSessionId)]
 )
 
-export const sessionQuestions = pgTable("session_questions", {
-	id: serial("id").primaryKey(),
-	quizSessionId: integer("quiz_session_id")
-		.notNull()
-		.references(() => quizSessions.id, { onDelete: "cascade" }),
-	originalQuestionId: integer("original_question_id")
-		.notNull()
-		.references(() => questions.id),
-	type: varchar("type"),
-	content: text("content"),
-	timeLimit: integer("time_limit"),
-	points: integer("points") // points for the question
-})
+export const sessionQuestions = pgTable(
+	"session_questions",
+	{
+		id: serial("id").primaryKey(),
+		quizSessionId: integer("quiz_session_id")
+			.notNull()
+			.references(() => quizSessions.id, { onDelete: "cascade" }),
+		originalQuestionId: integer("original_question_id")
+			.notNull()
+			.references(() => questions.id),
+		type: varchar("type"),
+		content: text("content"),
+		timeLimit: integer("time_limit"),
+		points: integer("points")
+	},
+	(table) => [index("idx_session_questions_session_id").on(table.quizSessionId)]
+)
 
-export const sessionQuestionOptions = pgTable("session_question_options", {
-	id: serial("id").primaryKey(),
-	sessionQuestionId: integer("session_question_id")
-		.notNull()
-		.references(() => sessionQuestions.id, { onDelete: "cascade" }),
-	originalOptionId: integer("original_option_id")
-		.notNull()
-		.references(() => questionOptions.id),
-	order: integer("order"),
-	content: varchar("content"),
-	correct: boolean("correct")
-})
+export const sessionQuestionOptions = pgTable(
+	"session_question_options",
+	{
+		id: serial("id").primaryKey(),
+		sessionQuestionId: integer("session_question_id")
+			.notNull()
+			.references(() => sessionQuestions.id, { onDelete: "cascade" }),
+		originalOptionId: integer("original_option_id")
+			.notNull()
+			.references(() => questionOptions.id),
+		order: integer("order"),
+		content: varchar("content"),
+		correct: boolean("correct")
+	},
+	(table) => [index("idx_session_question_options_session_question_id").on(table.sessionQuestionId)]
+)
 
 export const questionAttempts = pgTable(
 	"question_attempts",
@@ -199,7 +215,7 @@ export const questionAttempts = pgTable(
 		timeTakenMs: integer("time_taken_ms"),
 		pointsAwarded: integer("points_awarded")
 	},
-	(table) => [index("idx_question_attempts_game_attempt_id").on(table.gameAttemptId)]
+	(table) => [index("idx_question_attempts_game_attempt_id").on(table.gameAttemptId), index("idx_question_attempts_session_question_id").on(table.sessionQuestionId)]
 )
 
 export const usersRelations = relations(users, ({ many }) => ({

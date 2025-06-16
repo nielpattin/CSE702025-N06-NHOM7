@@ -17,12 +17,12 @@ const pool = new Pool({
 const db = drizzle(pool, { schema })
 
 const ADMIN_EMAIL = process.env.DEFAULT_EMAIL_SEED || "test@example.com"
-const QUIZ_COUNT = 1000
-const QUESTIONS_PER_QUIZ = 30
-const SESSION_COUNT = 200
-const PARTICIPANTS_PER_SESSION = 100
-const ATTEMPTS_PER_PARTICIPANT = 3
-const BATCH_SIZE = 1000
+const QUIZ_COUNT = process.env.QUIZ_COUNT ? parseInt(process.env.QUIZ_COUNT) : 100
+const QUESTIONS_PER_QUIZ = process.env.QUESTIONS_PER_QUIZ ? parseInt(process.env.QUESTIONS_PER_QUIZ) : 10
+const SESSION_COUNT = process.env.SESSION_COUNT ? parseInt(process.env.SESSION_COUNT) : 50
+const PARTICIPANTS_PER_SESSION = process.env.PARTICIPANTS_PER_SESSION ? parseInt(process.env.PARTICIPANTS_PER_SESSION) : 5
+const ATTEMPTS_PER_PARTICIPANT = process.env.ATTEMPTS_PER_PARTICIPANT ? parseInt(process.env.ATTEMPTS_PER_PARTICIPANT) : 3
+const BATCH_SIZE = process.env.BATCH_SIZE ? parseInt(process.env.BATCH_SIZE) : 10
 
 function generateRandomString(length: number): string {
 	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"

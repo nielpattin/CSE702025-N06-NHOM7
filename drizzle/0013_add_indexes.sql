@@ -1,0 +1,2 @@
+CREATE INDEX "idx_session_question_options_session_question_id" ON "session_question_options" USING btree ("session_question_id");--> statement-breakpoint
+CREATE INDEX "idx_session_questions_session_id" ON "session_questions" USING btree ("quiz_session_id");
