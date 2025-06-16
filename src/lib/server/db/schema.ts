@@ -140,7 +140,6 @@ export const sessionParticipants = pgTable(
 		userId: text("user_id").references(() => users.id),
 		guestId: text("guest_id"),
 		name: varchar("name", { length: 100 }),
-		data: jsonb("data"),
 		createdAt: timestamp("created_at").defaultNow(),
 		updatedAt: timestamp("updated_at").defaultNow()
 	},

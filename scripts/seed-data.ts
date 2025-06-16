@@ -82,10 +82,14 @@ function generateRealisticTimestamps() {
 
 async function createQuizzesInBatches(adminUserId: string) {
 	console.log(`📝 Creating ${QUIZ_COUNT} quizzes in batches...`)
+	const totalBatches = Math.ceil(QUIZ_COUNT / BATCH_SIZE)
+	const startTime = Date.now()
 
 	for (let batchStart = 0; batchStart < QUIZ_COUNT; batchStart += BATCH_SIZE) {
 		const batchEnd = Math.min(batchStart + BATCH_SIZE, QUIZ_COUNT)
-		console.log(`Creating quiz batch ${Math.floor(batchStart / BATCH_SIZE) + 1}/${Math.ceil(QUIZ_COUNT / BATCH_SIZE)} (${batchStart + 1}-${batchEnd})...`)
+		const currentBatch = Math.floor(batchStart / BATCH_SIZE) + 1
+
+		process.stdout.write(`\r📝 Creating quiz batch ${currentBatch}/${totalBatches} (${batchStart + 1}-${batchEnd})...`)
 
 		await db.transaction(async (tx) => {
 			const quizInserts: (typeof quizzes.$inferInsert)[] = []
@@ -135,10 +139,15 @@ async function createQuizzesInBatches(adminUserId: string) {
 			}
 		})
 	}
+
+	const endTime = Date.now()
+	const duration = ((endTime - startTime) / 1000).toFixed(2)
+	console.log(`\n✅ Quiz creation completed in ${duration}s`)
 }
 
 async function createSessionsWithOptimizedQueries(adminUserId: string) {
 	console.log(`🎮 Creating ${SESSION_COUNT} quiz sessions with optimized queries...`)
+	const startTime = Date.now()
 
 	const allQuizzes = await db.select({ id: quizzes.id }).from(quizzes)
 	const allQuestions = await db
@@ -180,7 +189,8 @@ async function createSessionsWithOptimizedQueries(adminUserId: string) {
 	const usedCodes = new Set()
 
 	for (let i = 0; i < SESSION_COUNT; i++) {
-		console.log(`Creating session ${i + 1}/${SESSION_COUNT}...`)
+		const sessionStartTime = Date.now()
+		process.stdout.write(`\r🎮 Creating session ${i + 1}/${SESSION_COUNT}...`)
 
 		await db.transaction(async (tx) => {
 			let sessionCode
@@ -244,15 +254,7 @@ async function createSessionsWithOptimizedQueries(adminUserId: string) {
 					participantsToInsert.push({
 						quizSessionId: session.id,
 						guestId: `guest_${session.id}_${p}`,
-						name: generateGuestName(),
-						data: {
-							correct: 0,
-							incorrect: 0,
-							attempts: 0,
-							total_time_ms: 0,
-							questions_per_sec: 0,
-							best_score: 0
-						}
+						name: generateGuestName()
 					})
 				}
 
@@ -307,13 +309,45 @@ async function createSessionsWithOptimizedQueries(adminUserId: string) {
 				}
 			}
 		})
+
+		const sessionEndTime = Date.now()
+		const sessionDuration = ((sessionEndTime - sessionStartTime) / 1000).toFixed(2)
+		process.stdout.write(`\r🎮 Creating session ${i + 1}/${SESSION_COUNT}... ✅ (${sessionDuration}s)`)
+	}
+
+	const endTime = Date.now()
+	const totalDuration = ((endTime - startTime) / 1000).toFixed(2)
+	console.log(`\n✅ Session creation completed in ${totalDuration}s`)
+}
+
+async function truncateTables() {
+	console.log("🗑️ Truncating existing tables...")
+
+	try {
+		await db.execute(`TRUNCATE TABLE "question_attempts" CASCADE`)
+		await db.execute(`TRUNCATE TABLE "session_question_options" CASCADE`)
+		await db.execute(`TRUNCATE TABLE "session_questions" CASCADE`)
+		await db.execute(`TRUNCATE TABLE "game_attempts" CASCADE`)
+		await db.execute(`TRUNCATE TABLE "participants" CASCADE`)
+		await db.execute(`TRUNCATE TABLE "quiz_sessions" CASCADE`)
+		await db.execute(`TRUNCATE TABLE "question_options" CASCADE`)
+		await db.execute(`TRUNCATE TABLE "questions" CASCADE`)
+		await db.execute(`TRUNCATE TABLE "quizzes" CASCADE`)
+
+		console.log("✅ Tables truncated successfully")
+	} catch (error) {
+		console.error("❌ Error truncating tables:", error)
+		throw error
 	}
 }
 
 async function seedData() {
+	const seedStartTime = Date.now()
 	console.log("🌱 Starting optimized data seeding...")
 
 	try {
+		await truncateTables()
+
 		console.log("📚 Checking for existing admin user...")
 		let adminUser = await db.select().from(users).where(eq(users.email, ADMIN_EMAIL)).limit(1)
 
@@ -337,7 +371,11 @@ async function seedData() {
 		await createQuizzesInBatches(adminUserId)
 		await createSessionsWithOptimizedQueries(adminUserId)
 
+		const seedEndTime = Date.now()
+		const totalSeedDuration = ((seedEndTime - seedStartTime) / 1000).toFixed(2)
+
 		console.log("✅ Optimized data seeding completed successfully!")
+		console.log(`⏱️  Total seeding time: ${totalSeedDuration}s`)
 		console.log(`📊 Summary:`)
 		console.log(`   • Quizzes: ${QUIZ_COUNT}`)
 		console.log(`   • Questions: ${QUIZ_COUNT * QUESTIONS_PER_QUIZ}`)
