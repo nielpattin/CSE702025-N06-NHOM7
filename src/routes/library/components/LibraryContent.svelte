@@ -7,6 +7,7 @@
 	import { Button } from "$lib/components/ui/button"
 	import { Input } from "$lib/components/ui/input"
 	import { Star, FileText, Archive, Search, X } from "@lucide/svelte"
+	import { onMount } from "svelte"
 
 	interface Quiz {
 		id: number
@@ -51,6 +52,7 @@
 
 	let currentSortKey = $state<"createdAt" | "title">("createdAt")
 	let currentSortOrder = $state<"asc" | "desc">("desc")
+	let visibleQuizzes = $state<number[]>([])
 
 	let sortedQuizzes = $derived.by(() => {
 		const quizzesToSort = [...quizzes]
@@ -82,6 +84,23 @@
 			currentSortOrder = "desc"
 		}
 	}
+
+	onMount(() => {
+		setTimeout(() => {
+			visibleQuizzes = sortedQuizzes.map((_, index) => index)
+		}, 100)
+	})
+
+	$effect(() => {
+		visibleQuizzes = []
+		setTimeout(() => {
+			sortedQuizzes.forEach((_, index) => {
+				setTimeout(() => {
+					visibleQuizzes = [...visibleQuizzes, index]
+				}, index * 100)
+			})
+		}, 100)
+	})
 </script>
 
 <!-- Right Section: Tab Navigation and Quiz List (60% width) -->
@@ -186,8 +205,10 @@
 							<!-- Quiz List -->
 							{#if sortedQuizzes.length > 0}
 								<div class="space-y-4">
-									{#each sortedQuizzes as quiz (quiz.id)}
-										<LibraryQuizCard {quiz} />
+									{#each sortedQuizzes as quiz, index (quiz.id)}
+										<div class="transform transition-all duration-500 ease-out {visibleQuizzes.includes(index) ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}" style="transition-delay: {index * 50}ms">
+											<LibraryQuizCard {quiz} />
+										</div>
 									{/each}
 								</div>
 							{:else}

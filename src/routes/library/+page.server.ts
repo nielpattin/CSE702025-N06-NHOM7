@@ -14,7 +14,7 @@ export const load: PageServerLoad = async (event) => {
 	const url = new URL(event.request.url)
 	const page = parseInt(url.searchParams.get("page") || "1")
 	const search = url.searchParams.get("search") || ""
-	const perPage = 6
+	const perPage = 4
 
 	const filter = url.searchParams.get("filter") || "createdByMe"
 	const tab = (url.searchParams.get("tab") || "published") as QuizStatus

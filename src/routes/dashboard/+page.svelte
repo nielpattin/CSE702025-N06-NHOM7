@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from "$app/state"
-	import Sidebar from "$lib/components/Sidebar.svelte"
 	import AppHeader from "$lib/components/AppHeader.svelte"
 	import { TrendingQuizzes } from "./components"
 
@@ -23,10 +22,7 @@
 	<meta name="description" content="Quiz Learn Dashboard - Manage your quizzes and learning progress" />
 </svelte:head>
 
-<!-- Sidebar Component -->
-<Sidebar />
-
-<div class="ml-64 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
 	<!-- Dashboard Header Component -->
 	<AppHeader title="Dashboard" />
 
