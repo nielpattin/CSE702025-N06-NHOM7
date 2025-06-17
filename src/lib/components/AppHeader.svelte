@@ -4,6 +4,7 @@
 	import MoonIcon from "@lucide/svelte/icons/moon"
 	import { toggleMode } from "mode-watcher"
 	import { Button } from "$lib/components/ui/button/index.js"
+	import * as Sidebar from "$lib/components/ui/sidebar"
 
 	// Props
 	let { showJoinCode = true, title } = $props()
@@ -18,6 +19,7 @@
 		<div class="flex h-16 items-center justify-between">
 			<!-- Logo Section -->
 			<div class="flex items-center space-x-3">
+				<Sidebar.Trigger />
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg">
 					<img src="/quiz-learn-logo.png" alt="Quiz Learn Logo" class="h-8 w-8 object-contain" />
 				</div>
