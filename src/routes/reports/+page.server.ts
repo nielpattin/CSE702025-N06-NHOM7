@@ -8,7 +8,6 @@ export interface TransformedReport {
 	sessionName: string
 	createdDate: Date | string | null
 	participantCount: number
-	accuracy: number
 	status: string
 }
 
@@ -76,17 +75,6 @@ export const load: PageServerLoad = async (event) => {
 		case "participantCount":
 			orderByClause = orderByDirection(sql`COALESCE(COUNT(DISTINCT ${sessionParticipants.id}), 0)`)
 			break
-		case "accuracy":
-			orderByClause = orderByDirection(sql`
-				CASE
-					WHEN COUNT(${questionAttempts.id}) = 0 THEN 0
-					ELSE ROUND(
-						(COUNT(CASE WHEN ${questionAttempts.correct} = true THEN 1 END)::numeric /
-						 COUNT(${questionAttempts.id})::numeric) * 100
-					)
-				END
-			`)
-			break
 		case "status":
 			orderByClause = orderByDirection(quizSessions.status)
 			break
@@ -94,40 +82,18 @@ export const load: PageServerLoad = async (event) => {
 			orderByClause = orderByDirection(quizSessions.createdAt)
 	}
 
-	// Optimized query using SQL aggregations to calculate accuracy at database level
+	// Simplified query without accuracy calculation for better performance
 	const sessionReportsData = await db
 		.select({
 			id: quizSessions.id,
 			sessionName: quizzes.title,
 			createdDate: quizSessions.createdAt,
 			status: quizSessions.status,
-			participantCount: sql<number>`COALESCE(COUNT(DISTINCT ${sessionParticipants.id}), 0)`.mapWith(Number),
-			accuracy: sql<number>`
-				CASE
-					WHEN COUNT(${questionAttempts.id}) = 0 THEN 0
-					ELSE ROUND(
-						(COUNT(CASE WHEN ${questionAttempts.correct} = true THEN 1 END)::numeric /
-						 COUNT(${questionAttempts.id})::numeric) * 100
-					)
-				END
-			`.mapWith(Number)
+			participantCount: sql<number>`COALESCE(COUNT(DISTINCT ${sessionParticipants.id}), 0)`.mapWith(Number)
 		})
 		.from(quizSessions)
 		.leftJoin(quizzes, eq(quizSessions.quizId, quizzes.id))
 		.leftJoin(sessionParticipants, eq(sessionParticipants.quizSessionId, quizSessions.id))
-		.leftJoin(
-			gameAttempts,
-			and(
-				eq(gameAttempts.participantId, sessionParticipants.id),
-				// Only get the latest attempt per participant
-				sql`${gameAttempts.startedAt} = (
-				SELECT MAX(ga2.started_at)
-				FROM game_attempts ga2
-				WHERE ga2.participant_id = ${sessionParticipants.id}
-			)`
-			)
-		)
-		.leftJoin(questionAttempts, eq(questionAttempts.gameAttemptId, gameAttempts.id))
 		.where(searchCondition)
 		.groupBy(quizSessions.id, quizzes.title, quizSessions.createdAt)
 		.orderBy(orderByClause)
@@ -139,7 +105,6 @@ export const load: PageServerLoad = async (event) => {
 		sessionName: report.sessionName || "Untitled Session",
 		createdDate: report.createdDate,
 		participantCount: report.participantCount,
-		accuracy: report.accuracy,
 		status: report.status
 	}))
 

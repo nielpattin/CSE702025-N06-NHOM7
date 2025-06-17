@@ -8,6 +8,7 @@
 	import { Input } from "$lib/components/ui/input"
 	import * as Pagination from "$lib/components/ui/pagination"
 	import { Search, X, Calendar, Users, Activity, BookOpen } from "@lucide/svelte"
+	import { onMount } from "svelte"
 
 	interface SessionData {
 		id: number
@@ -35,13 +36,16 @@
 		search: string
 		sortBy: string
 		sortOrder: string
+		isPaginationLoading: boolean
+		onPaginationLoadingChange: (loading: boolean) => void
 	}
 
-	let { sessions, pagination, search, sortBy, sortOrder }: Props = $props()
+	let { sessions, pagination, search, sortBy, sortOrder, isPaginationLoading, onPaginationLoadingChange }: Props = $props()
 
 	let searchInput = $state(search)
 	let currentSortKey = $state<"createdAt" | "quizName" | "participantCount" | "status">((sortBy as "createdAt" | "quizName" | "participantCount" | "status") || "createdAt")
 	let currentSortOrder = $state<"asc" | "desc">((sortOrder as "asc" | "desc") || "desc")
+	let visibleSessions = $state<number[]>([])
 
 	$effect(() => {
 		searchInput = search
@@ -100,8 +104,16 @@
 		goto(url.toString(), { replaceState: false, noScroll: false, invalidateAll: true })
 	}
 
-	function handlePageChange(newPage: number) {
+	async function handlePageChange(newPage: number) {
+		onPaginationLoadingChange(true)
+
+		window.scrollTo({ top: 0, behavior: "smooth" })
+
 		updateUrl({ page: newPage })
+
+		setTimeout(() => {
+			onPaginationLoadingChange(false)
+		}, 800)
 	}
 
 	const sortOptions = [
@@ -110,6 +122,23 @@
 		{ key: "participantCount" as const, label: "Participants", icon: Users },
 		{ key: "status" as const, label: "Status", icon: Activity }
 	]
+
+	onMount(() => {
+		setTimeout(() => {
+			visibleSessions = sessions.map((_, index) => index)
+		}, 100)
+	})
+
+	$effect(() => {
+		visibleSessions = []
+		setTimeout(() => {
+			sessions.forEach((_, index) => {
+				setTimeout(() => {
+					visibleSessions = [...visibleSessions, index]
+				}, index * 100)
+			})
+		}, 100)
+	})
 </script>
 
 <div class="w-full">
@@ -187,8 +216,10 @@
 			<!-- Sessions Grid -->
 			{#if sessions.length > 0}
 				<div class="mb-6 grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
-					{#each sessions as session (session.id)}
-						<SessionCard {session} />
+					{#each sessions as session, index (session.id)}
+						<div class="transform transition-all duration-500 ease-out {visibleSessions.includes(index) ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}" style="transition-delay: {index * 50}ms">
+							<SessionCard {session} />
+						</div>
 					{/each}
 				</div>
 

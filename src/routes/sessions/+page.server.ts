@@ -33,7 +33,7 @@ export const load: PageServerLoad = async (event) => {
 	const search = url.searchParams.get("search") || ""
 	const sortBy = url.searchParams.get("sortBy") || "createdAt"
 	const sortOrder = url.searchParams.get("sortOrder") || "desc"
-	const perPage = 10
+	const perPage = 8
 
 	const baseWhere = and(eq(quizSessions.hostId, session.user.id), ne(quizSessions.status, "deleting"))
 	let whereCondition = baseWhere

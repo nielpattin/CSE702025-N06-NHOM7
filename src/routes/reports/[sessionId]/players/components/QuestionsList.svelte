@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { questions, formatQuestionType } = $props()
+	let { questions, formatQuestionType, visibleQuestions = [] } = $props()
 </script>
 
 <!-- Questions Tab Content -->
@@ -14,26 +14,28 @@
 		</div>
 	{:else}
 		{#each questions as question, index (question.id)}
-			<div class="rounded-lg border border-gray-600 bg-gray-700 p-4">
-				<div class="flex items-start justify-between">
-					<div class="flex-1">
-						<div class="mb-2 flex items-center space-x-2">
-							<span class="inline-flex items-center rounded bg-blue-600 px-2 py-1 text-xs font-medium text-blue-100">
-								Question {index + 1}
-							</span>
-							<span class="inline-flex items-center rounded bg-gray-600 px-2 py-1 text-xs font-medium text-gray-200">
-								{formatQuestionType(question.type)}
-							</span>
-							<span class="inline-flex items-center rounded bg-green-600 px-2 py-1 text-xs font-medium text-green-100">
-								{question.points} pts
-							</span>
-							{#if question.timeLimit}
-								<span class="inline-flex items-center rounded bg-yellow-600 px-2 py-1 text-xs font-medium text-yellow-100">
-									{question.timeLimit}s
+			<div class="transform transition-all duration-500 ease-out {visibleQuestions.includes(index) ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}" style="transition-delay: {index * 50}ms">
+				<div class="rounded-lg border border-gray-600 bg-gray-700 p-4">
+					<div class="flex items-start justify-between">
+						<div class="flex-1">
+							<div class="mb-2 flex items-center space-x-2">
+								<span class="inline-flex items-center rounded bg-blue-600 px-2 py-1 text-xs font-medium text-blue-100">
+									Question {index + 1}
 								</span>
-							{/if}
+								<span class="inline-flex items-center rounded bg-gray-600 px-2 py-1 text-xs font-medium text-gray-200">
+									{formatQuestionType(question.type)}
+								</span>
+								<span class="inline-flex items-center rounded bg-green-600 px-2 py-1 text-xs font-medium text-green-100">
+									{question.points} pts
+								</span>
+								{#if question.timeLimit}
+									<span class="inline-flex items-center rounded bg-yellow-600 px-2 py-1 text-xs font-medium text-yellow-100">
+										{question.timeLimit}s
+									</span>
+								{/if}
+							</div>
+							<p class="text-sm text-white">{question.content}</p>
 						</div>
-						<p class="text-sm text-white">{question.content}</p>
 					</div>
 				</div>
 			</div>

@@ -2,13 +2,13 @@
 	import { ReportCard } from "./index"
 	import { goto } from "$app/navigation"
 	import { page } from "$app/state"
-	import { invalidateAll } from "$app/navigation"
 	import { ChevronDoubleUpOutline, ChevronDoubleDownOutline } from "flowbite-svelte-icons"
 	import { Button } from "$lib/components/ui/button"
 	import { Input } from "$lib/components/ui/input"
 	import * as Pagination from "$lib/components/ui/pagination"
-	import { Search, X, Calendar, Users, Activity, BookOpen, Target } from "@lucide/svelte"
+	import { Search, X, Calendar, Users, Activity, BookOpen } from "@lucide/svelte"
 	import type { PageData } from "../$types"
+	import { onMount } from "svelte"
 
 	interface Props {
 		reports: PageData["sessionReports"]
@@ -16,21 +16,24 @@
 		search: string
 		sortBy: string
 		sortOrder: string
+		isPaginationLoading: boolean
+		onPaginationLoadingChange: (loading: boolean) => void
 	}
 
-	let { reports, pagination, search, sortBy, sortOrder }: Props = $props()
+	let { reports, pagination, search, sortBy, sortOrder, isPaginationLoading, onPaginationLoadingChange }: Props = $props()
 
 	let searchInput = $state(search)
-	let currentSortKey = $state<"createdDate" | "sessionName" | "participantCount" | "status" | "accuracy">((sortBy as "createdDate" | "sessionName" | "participantCount" | "status" | "accuracy") || "createdDate")
+	let currentSortKey = $state<"createdDate" | "sessionName" | "participantCount" | "status">((sortBy as "createdDate" | "sessionName" | "participantCount" | "status") || "createdDate")
 	let currentSortOrder = $state<"asc" | "desc">((sortOrder as "asc" | "desc") || "desc")
+	let visibleReports = $state<number[]>([])
 
 	$effect(() => {
 		searchInput = search
-		currentSortKey = (sortBy as "createdDate" | "sessionName" | "participantCount" | "status" | "accuracy") || "createdDate"
+		currentSortKey = (sortBy as "createdDate" | "sessionName" | "participantCount" | "status") || "createdDate"
 		currentSortOrder = (sortOrder as "asc" | "desc") || "desc"
 	})
 
-	function handleSort(key: "createdDate" | "sessionName" | "participantCount" | "status" | "accuracy") {
+	function handleSort(key: "createdDate" | "sessionName" | "participantCount" | "status") {
 		if (currentSortKey === key) {
 			currentSortOrder = currentSortOrder === "asc" ? "desc" : "asc"
 		} else {
@@ -81,17 +84,41 @@
 		goto(url.toString(), { replaceState: false, noScroll: false, invalidateAll: true })
 	}
 
-	function handlePageChange(newPage: number) {
+	async function handlePageChange(newPage: number) {
+		onPaginationLoadingChange(true)
+
+		window.scrollTo({ top: 0, behavior: "smooth" })
+
 		updateUrl({ page: newPage })
+
+		setTimeout(() => {
+			onPaginationLoadingChange(false)
+		}, 800)
 	}
 
 	const sortOptions = [
 		{ key: "createdDate" as const, label: "Date Created", icon: Calendar },
 		{ key: "sessionName" as const, label: "Quiz Name", icon: BookOpen },
 		{ key: "participantCount" as const, label: "Participants", icon: Users },
-		{ key: "accuracy" as const, label: "Accuracy", icon: Target },
 		{ key: "status" as const, label: "Status", icon: Activity }
 	]
+
+	onMount(() => {
+		setTimeout(() => {
+			visibleReports = reports.map((_, index) => index)
+		}, 100)
+	})
+
+	$effect(() => {
+		visibleReports = []
+		setTimeout(() => {
+			reports.forEach((_, index) => {
+				setTimeout(() => {
+					visibleReports = [...visibleReports, index]
+				}, index * 100)
+			})
+		}, 100)
+	})
 </script>
 
 <div class="w-full">
@@ -169,8 +196,10 @@
 			<!-- Reports Grid -->
 			{#if reports.length > 0}
 				<div class="mb-6 grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-					{#each reports as report (report.id)}
-						<ReportCard {report} />
+					{#each reports as report, index (report.id)}
+						<div class="transform transition-all duration-500 ease-out {visibleReports.includes(index) ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}" style="transition-delay: {index * 50}ms">
+							<ReportCard {report} />
+						</div>
 					{/each}
 				</div>
 
