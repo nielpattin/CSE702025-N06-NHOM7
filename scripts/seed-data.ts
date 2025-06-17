@@ -23,6 +23,7 @@ const SESSION_COUNT = process.env.SESSION_COUNT ? parseInt(process.env.SESSION_C
 const PARTICIPANTS_PER_SESSION = process.env.PARTICIPANTS_PER_SESSION ? parseInt(process.env.PARTICIPANTS_PER_SESSION) : 5
 const ATTEMPTS_PER_PARTICIPANT = process.env.ATTEMPTS_PER_PARTICIPANT ? parseInt(process.env.ATTEMPTS_PER_PARTICIPANT) : 3
 const BATCH_SIZE = process.env.BATCH_SIZE ? parseInt(process.env.BATCH_SIZE) : 10
+const EXPIRATION_DAYS = process.env.EXPIRATION_DAYS ? parseInt(process.env.EXPIRATION_DAYS) : 7
 
 function generateRandomString(length: number): string {
 	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -187,6 +188,8 @@ async function createSessionsWithOptimizedQueries(adminUserId: string) {
 	})
 
 	const usedCodes = new Set()
+	let totalParticipants = 0
+	let totalGameAttempts = 0
 
 	for (let i = 0; i < SESSION_COUNT; i++) {
 		const sessionStartTime = Date.now()
@@ -207,7 +210,7 @@ async function createSessionsWithOptimizedQueries(adminUserId: string) {
 					hostId: adminUserId,
 					code: sessionCode,
 					status: "active",
-					expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+					expiresAt: new Date(Date.now() + Math.random() * EXPIRATION_DAYS * 24 * 60 * 60 * 1000)
 				})
 				.returning()
 
@@ -250,7 +253,8 @@ async function createSessionsWithOptimizedQueries(adminUserId: string) {
 				})
 
 				const participantsToInsert: (typeof sessionParticipants.$inferInsert)[] = []
-				for (let p = 0; p < PARTICIPANTS_PER_SESSION; p++) {
+				const participantsInSession = Math.floor(Math.random() * (PARTICIPANTS_PER_SESSION + 1))
+				for (let p = 0; p < participantsInSession; p++) {
 					participantsToInsert.push({
 						quizSessionId: session.id,
 						guestId: `guest_${session.id}_${p}`,
@@ -259,6 +263,7 @@ async function createSessionsWithOptimizedQueries(adminUserId: string) {
 				}
 
 				const insertedParticipants = await tx.insert(sessionParticipants).values(participantsToInsert).returning()
+				totalParticipants += insertedParticipants.length
 
 				const attemptsToInsert: (typeof gameAttempts.$inferInsert)[] = []
 				const questionAttemptsToInsert: (typeof questionAttempts.$inferInsert)[] = []
@@ -281,6 +286,7 @@ async function createSessionsWithOptimizedQueries(adminUserId: string) {
 				}
 
 				const insertedAttempts = await tx.insert(gameAttempts).values(attemptsToInsert).returning()
+				totalGameAttempts += insertedAttempts.length
 
 				for (const attempt of insertedAttempts) {
 					for (const sessionQuestion of insertedSessionQuestions) {
@@ -318,6 +324,7 @@ async function createSessionsWithOptimizedQueries(adminUserId: string) {
 	const endTime = Date.now()
 	const totalDuration = ((endTime - startTime) / 1000).toFixed(2)
 	console.log(`\n✅ Session creation completed in ${totalDuration}s`)
+	return { totalParticipants, totalGameAttempts }
 }
 
 async function truncateTables() {
@@ -369,7 +376,7 @@ async function seedData() {
 		const adminUserId = adminUser[0].id
 
 		await createQuizzesInBatches(adminUserId)
-		await createSessionsWithOptimizedQueries(adminUserId)
+		const { totalParticipants, totalGameAttempts } = await createSessionsWithOptimizedQueries(adminUserId)
 
 		const seedEndTime = Date.now()
 		const totalSeedDuration = ((seedEndTime - seedStartTime) / 1000).toFixed(2)
@@ -381,8 +388,8 @@ async function seedData() {
 		console.log(`   • Questions: ${QUIZ_COUNT * QUESTIONS_PER_QUIZ}`)
 		console.log(`   • Question Options: ${QUIZ_COUNT * QUESTIONS_PER_QUIZ * 4}`)
 		console.log(`   • Sessions: ${SESSION_COUNT}`)
-		console.log(`   • Participants: ${SESSION_COUNT * PARTICIPANTS_PER_SESSION}`)
-		console.log(`   • Game Attempts: ${SESSION_COUNT * PARTICIPANTS_PER_SESSION * ATTEMPTS_PER_PARTICIPANT}`)
+		console.log(`   • Participants: ${totalParticipants}`)
+		console.log(`   • Game Attempts: ${totalGameAttempts}`)
 		console.log(`   • Performance optimizations applied: ✅`)
 	} catch (error) {
 		console.error("❌ Error during seeding:", error)
