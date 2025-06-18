@@ -81,6 +81,18 @@ function generateRealisticTimestamps() {
 	}
 }
 
+function generateRandomDate(daysAgo: number): Date {
+	const now = new Date()
+	const randomDays = Math.floor(Math.random() * daysAgo)
+	const randomHours = Math.floor(Math.random() * 24)
+	const randomMinutes = Math.floor(Math.random() * 60)
+	const randomSeconds = Math.floor(Math.random() * 60)
+
+	now.setDate(now.getDate() - randomDays)
+	now.setHours(randomHours, randomMinutes, randomSeconds, 0)
+	return now
+}
+
 async function createQuizzesInBatches(adminUserId: string) {
 	console.log(`📝 Creating ${QUIZ_COUNT} quizzes in batches...`)
 	const totalBatches = Math.ceil(QUIZ_COUNT / BATCH_SIZE)
@@ -103,7 +115,8 @@ async function createQuizzesInBatches(adminUserId: string) {
 					visibility: Math.random() > 0.5 ? ("public" as const) : ("private" as const),
 					difficulty: (["easy", "medium", "hard"] as const)[Math.floor(Math.random() * 3)],
 					duration: Math.floor(Math.random() * 60) + 15,
-					rating: Math.round((Math.random() * 4 + 1) * 10) / 10
+					rating: Math.round((Math.random() * 4 + 1) * 10) / 10,
+					createdAt: generateRandomDate(365)
 				})
 			}
 
@@ -203,13 +216,14 @@ async function createSessionsWithOptimizedQueries(adminUserId: string) {
 			usedCodes.add(sessionCode)
 
 			const randomQuiz = allQuizzes[Math.floor(Math.random() * allQuizzes.length)]
+			const randomStatus = Math.random() > 0.5 ? "active" : "inactive"
 			const [session] = await tx
 				.insert(quizSessions)
 				.values({
 					quizId: randomQuiz.id,
 					hostId: adminUserId,
 					code: sessionCode,
-					status: "active",
+					status: randomStatus,
 					expiresAt: new Date(Date.now() + Math.random() * EXPIRATION_DAYS * 24 * 60 * 60 * 1000)
 				})
 				.returning()
@@ -225,92 +239,99 @@ async function createSessionsWithOptimizedQueries(adminUserId: string) {
 					timeLimit: originalQuestion.timeLimit,
 					points: originalQuestion.points
 				}))
+				if (sessionQuestionsToInsert.length > 0) {
+					const insertedSessionQuestions = await tx.insert(sessionQuestions).values(sessionQuestionsToInsert).returning()
 
-				const insertedSessionQuestions = await tx.insert(sessionQuestions).values(sessionQuestionsToInsert).returning()
-
-				const sessionOptionsToInsert: (typeof sessionQuestionOptions.$inferInsert)[] = []
-				for (const sessionQuestion of insertedSessionQuestions) {
-					const originalOptions = optionsByQuestion.get(sessionQuestion.originalQuestionId) || []
-					for (const originalOption of originalOptions) {
-						sessionOptionsToInsert.push({
-							sessionQuestionId: sessionQuestion.id,
-							originalOptionId: originalOption.id,
-							order: originalOption.order,
-							content: originalOption.content,
-							correct: originalOption.correct
-						})
-					}
-				}
-
-				const insertedSessionOptions = await tx.insert(sessionQuestionOptions).values(sessionOptionsToInsert).returning()
-
-				const sessionOptionsByQuestion = new Map()
-				insertedSessionOptions.forEach((so) => {
-					if (!sessionOptionsByQuestion.has(so.sessionQuestionId)) {
-						sessionOptionsByQuestion.set(so.sessionQuestionId, [])
-					}
-					sessionOptionsByQuestion.get(so.sessionQuestionId).push(so)
-				})
-
-				const participantsToInsert: (typeof sessionParticipants.$inferInsert)[] = []
-				const participantsInSession = Math.floor(Math.random() * (PARTICIPANTS_PER_SESSION + 1))
-				for (let p = 0; p < participantsInSession; p++) {
-					participantsToInsert.push({
-						quizSessionId: session.id,
-						guestId: `guest_${session.id}_${p}`,
-						name: generateGuestName()
-					})
-				}
-
-				const insertedParticipants = await tx.insert(sessionParticipants).values(participantsToInsert).returning()
-				totalParticipants += insertedParticipants.length
-
-				const attemptsToInsert: (typeof gameAttempts.$inferInsert)[] = []
-				const questionAttemptsToInsert: (typeof questionAttempts.$inferInsert)[] = []
-
-				for (const participant of insertedParticipants) {
-					for (let a = 0; a < ATTEMPTS_PER_PARTICIPANT; a++) {
-						const { startedAt, completedAt } = generateRealisticTimestamps()
-						const score = Math.floor(Math.random() * 100)
-
-						attemptsToInsert.push({
-							quizSessionId: session.id,
-							participantId: participant.id,
-							attemptNumber: a + 1,
-							score: score,
-							status: "completed" as const,
-							startedAt,
-							completedAt
-						})
-					}
-				}
-
-				const insertedAttempts = await tx.insert(gameAttempts).values(attemptsToInsert).returning()
-				totalGameAttempts += insertedAttempts.length
-
-				for (const attempt of insertedAttempts) {
+					const sessionOptionsToInsert: (typeof sessionQuestionOptions.$inferInsert)[] = []
 					for (const sessionQuestion of insertedSessionQuestions) {
-						const sessionOptions = sessionOptionsByQuestion.get(sessionQuestion.id) || []
-						if (sessionOptions.length > 0) {
-							const selectedOption = sessionOptions[Math.floor(Math.random() * sessionOptions.length)]
-							const isCorrect = selectedOption.correct
-
-							questionAttemptsToInsert.push({
-								gameAttemptId: attempt.id,
+						const originalOptions = optionsByQuestion.get(sessionQuestion.originalQuestionId) || []
+						for (const originalOption of originalOptions) {
+							sessionOptionsToInsert.push({
 								sessionQuestionId: sessionQuestion.id,
-								selectedSessionOptionId: selectedOption.id,
-								correct: isCorrect,
-								timeTakenMs: Math.floor(Math.random() * 30000) + 5000,
-								pointsAwarded: isCorrect ? sessionQuestion.points || 1 : 0
+								originalOptionId: originalOption.id,
+								order: originalOption.order,
+								content: originalOption.content,
+								correct: originalOption.correct
 							})
 						}
 					}
-				}
 
-				if (questionAttemptsToInsert.length > 0) {
-					for (let i = 0; i < questionAttemptsToInsert.length; i += BATCH_SIZE) {
-						const batch = questionAttemptsToInsert.slice(i, i + BATCH_SIZE)
-						await tx.insert(questionAttempts).values(batch)
+					if (sessionOptionsToInsert.length > 0) {
+						const insertedSessionOptions = await tx.insert(sessionQuestionOptions).values(sessionOptionsToInsert).returning()
+
+						const sessionOptionsByQuestion = new Map()
+						insertedSessionOptions.forEach((so) => {
+							if (!sessionOptionsByQuestion.has(so.sessionQuestionId)) {
+								sessionOptionsByQuestion.set(so.sessionQuestionId, [])
+							}
+							sessionOptionsByQuestion.get(so.sessionQuestionId).push(so)
+						})
+
+						const participantsToInsert: (typeof sessionParticipants.$inferInsert)[] = []
+						const participantsInSession = Math.floor(Math.random() * (PARTICIPANTS_PER_SESSION + 1))
+						for (let p = 0; p < participantsInSession; p++) {
+							participantsToInsert.push({
+								quizSessionId: session.id,
+								guestId: `guest_${session.id}_${p}`,
+								name: generateGuestName()
+							})
+						}
+
+						if (participantsToInsert.length > 0) {
+							const insertedParticipants = await tx.insert(sessionParticipants).values(participantsToInsert).returning()
+							totalParticipants += insertedParticipants.length
+
+							const attemptsToInsert: (typeof gameAttempts.$inferInsert)[] = []
+							const questionAttemptsToInsert: (typeof questionAttempts.$inferInsert)[] = []
+
+							for (const participant of insertedParticipants) {
+								for (let a = 0; a < ATTEMPTS_PER_PARTICIPANT; a++) {
+									const { startedAt, completedAt } = generateRealisticTimestamps()
+									const score = Math.floor(Math.random() * 100)
+
+									attemptsToInsert.push({
+										quizSessionId: session.id,
+										participantId: participant.id,
+										attemptNumber: a + 1,
+										score: score,
+										status: "completed" as const,
+										startedAt,
+										completedAt
+									})
+								}
+							}
+
+							if (attemptsToInsert.length > 0) {
+								const insertedAttempts = await tx.insert(gameAttempts).values(attemptsToInsert).returning()
+								totalGameAttempts += insertedAttempts.length
+
+								for (const attempt of insertedAttempts) {
+									for (const sessionQuestion of insertedSessionQuestions) {
+										const sessionOptions = sessionOptionsByQuestion.get(sessionQuestion.id) || []
+										if (sessionOptions.length > 0) {
+											const selectedOption = sessionOptions[Math.floor(Math.random() * sessionOptions.length)]
+											const isCorrect = selectedOption.correct
+
+											questionAttemptsToInsert.push({
+												gameAttemptId: attempt.id,
+												sessionQuestionId: sessionQuestion.id,
+												selectedSessionOptionId: selectedOption.id,
+												correct: isCorrect,
+												timeTakenMs: Math.floor(Math.random() * 30000) + 5000,
+												pointsAwarded: isCorrect ? sessionQuestion.points || 1 : 0
+											})
+										}
+									}
+								}
+
+								if (questionAttemptsToInsert.length > 0) {
+									for (let i = 0; i < questionAttemptsToInsert.length; i += BATCH_SIZE) {
+										const batch = questionAttemptsToInsert.slice(i, i + BATCH_SIZE)
+										await tx.insert(questionAttempts).values(batch)
+									}
+								}
+							}
+						}
 					}
 				}
 			}

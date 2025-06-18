@@ -37,6 +37,7 @@
 		"clsx": "^2.1.1",
 		"dotenv": "^16.5.0",
 		"drizzle-kit": "^0.30.2",
+		"embla-carousel-svelte": "^8.6.0",
 		"eslint": "^9.26.0",
 		"eslint-config-prettier": "^10.1.3",
 		"eslint-plugin-svelte": "^3.5.1",
@@ -65,6 +66,7 @@
 		"@auth/drizzle-adapter": "^1.9.1",
 		"@auth/sveltekit": "^1.9.2",
 		"drizzle-orm": "^0.40.0",
+		"embla-carousel-autoplay": "^8.6.0",
 		"mode-watcher": "^1.0.8",
 		"pg": "^8.16.0"
 	},

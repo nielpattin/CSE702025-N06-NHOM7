@@ -3,7 +3,6 @@
  * @type {import('lint-staged').Configuration}
  */
 export default {
-	"src/**/*.{js,ts,jsx,tsx,css,svelte}": ["prettier --write", "eslint --fix"],
-	"*.{js,ts,jsx,tsx,css,svelte}": ["prettier --write", "eslint --fix"],
+	"src/**/*.{js,ts,jsx,tsx,svelte}": ["prettier --write", "eslint"],
 	"*.{json,md}": ["prettier --write"]
 }

@@ -7,38 +7,33 @@
 	import * as Sidebar from "$lib/components/ui/sidebar"
 
 	// Props
-	let { showJoinCode = true, title } = $props()
+	let { title } = $props()
 
 	let data = $derived(page.data)
-	let session = $derived(data.session)
+	let session = $derived(data.userSession ?? data.session)
+	let pathname = $derived(page.url.pathname)
 </script>
 
 <!-- Header -->
-<header class="sticky top-0 z-50 border-b border-gray-700 bg-gray-900 shadow-lg select-none">
+<header class="bg-background dark:bg-background sticky top-0 z-50 border-b border-gray-700 shadow-lg select-none">
 	<nav class="mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex h-16 items-center justify-between">
 			<!-- Logo Section -->
 			<div class="flex items-center space-x-3">
-				<Sidebar.Trigger />
+				{#if pathname !== "/join" && !pathname.startsWith("/play/session/")}
+					<Sidebar.Trigger />
+				{/if}
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg">
 					<img src="/quiz-learn-logo.png" alt="Quiz Learn Logo" class="h-8 w-8 object-contain" />
 				</div>
-				<span class="text-xl font-semibold text-white">{title || "Quiz Learn Dashboard"}</span>
+				<span class="text-card-foreground text-xl font-semibold transition-colors">{title || "Join Quiz"}</span>
 			</div>
 
 			<!-- Right Side Actions -->
 			<div class="flex items-center space-x-4">
-				<!-- Enter Code to Join Section -->
-				{#if showJoinCode}
-					<div class="hidden items-center space-x-2 md:flex">
-						<input type="text" placeholder="Enter quiz code..." class="w-32 rounded-md border border-gray-600 bg-gray-700 px-3 py-1.5 text-sm text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none" />
-						<button class="rounded-md bg-gradient-to-r from-green-600 to-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition-all hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> Join </button>
-					</div>
-				{/if}
-
-				<!-- Dashboard Button -->
+				<Button href="/join">Join</Button>
 				{#if session?.user}
-					<a href="/dashboard" class="rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white transition-all hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> Dashboard </a>
+					<Button href="/dashboard" class="bg-gradient-to-r from-blue-600 to-cyan-500 text-white transition-colors hover:from-blue-700 hover:to-cyan-600">Dashboard</Button>
 				{/if}
 
 				<!-- User Info -->
@@ -51,7 +46,7 @@
 								{(session.user.name || session.user.email || "U").charAt(0).toUpperCase()}
 							</div>
 						{/if}
-						<span class="text-sm font-medium text-white">{session.user.name || session.user.email}</span>
+						<span class="text-card-foreground text-sm font-medium transition-colors">{session.user.name || session.user.email}</span>
 					</div>
 				{/if}
 

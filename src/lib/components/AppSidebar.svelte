@@ -5,7 +5,7 @@
 	import { enhance } from "$app/forms"
 	import * as Sidebar from "$lib/components/ui/sidebar"
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu"
-	import { Home, Plus, BookOpen, Target, BarChart3, Crown, User, Settings, LogOut, ChevronUp } from "@lucide/svelte"
+	import { Home, Plus, BookOpen, Target, BarChart3, Crown, User, Settings, LogOut, ChevronUp, Search } from "@lucide/svelte"
 
 	let data = $derived(page.data)
 	let session = $derived(data.session)
@@ -20,15 +20,24 @@
 
 	const navigationItems: NavigationItem[] = [
 		{ name: "Dashboard", href: "/dashboard", icon: Home },
+		{ name: "Browse", href: "/browse", icon: Search },
 		{ name: "Create Quiz", href: "/quiz/create", icon: Plus },
 		{ name: "Library", href: "/library", icon: BookOpen },
-		{ name: "Active Sessions", href: "/sessions", icon: Target },
+		{ name: "My Sessions", href: "/sessions", icon: Target },
 		{ name: "Reports", href: "/reports", icon: BarChart3 },
 		{ name: "Admin Panel", href: "/admin", icon: Crown, adminOnly: true }
 	]
 
 	let filteredNavigation = $derived(navigationItems.filter((item) => !item.adminOnly || userRole === "Admin"))
 	let currentPath = $derived(page.url.pathname)
+
+	// Helper function to check if a navigation item should be active
+	function isItemActive(itemHref: string): boolean {
+		if (itemHref === "/browse") {
+			return currentPath === "/browse" || currentPath.startsWith("/browse/")
+		}
+		return currentPath === itemHref
+	}
 
 	function handleProfile() {
 		goto("/profile")
@@ -59,9 +68,9 @@
 					<Sidebar.Menu>
 						{#each filteredNavigation as item (item.href)}
 							<Sidebar.MenuItem>
-								<Sidebar.MenuButton isActive={currentPath === item.href}>
+								<Sidebar.MenuButton isActive={isItemActive(item.href)}>
 									{#snippet child({ props })}
-										<a href={item.href} {...props} class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex items-center rounded-md border border-gray-200 px-2 py-2 text-base dark:border-gray-700 {currentPath === item.href ? 'bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-accent' : ''}">
+										<a href={item.href} {...props} class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex items-center rounded-md border border-gray-200 px-2 py-2 text-base dark:border-gray-700 {isItemActive(item.href) ? 'bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-accent' : ''}">
 											<item.icon class="mr-2 h-4 w-4" />
 											<span>{item.name}</span>
 											{#if item.adminOnly}
