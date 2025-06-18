@@ -16,13 +16,13 @@
 	<meta name="description" content="Edit your Quiz Learn profile" />
 </svelte:head>
 
-<div class=" min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+<div class="bg-background min-h-screen">
 	<AppHeader title="Edit Profile" />
 	<main class="mx-auto max-w-3xl px-6 py-12">
-		<div class="rounded-2xl border border-gray-600 bg-gray-800 p-8 shadow-2xl">
+		<div class="border-border bg-card rounded-2xl border p-8 shadow-2xl">
 			<div class="mb-8">
-				<h1 class="mb-2 text-3xl font-bold text-white">Edit Profile</h1>
-				<p class="text-gray-400">Update your profile information</p>
+				<h1 class="text-card-foreground mb-2 text-3xl font-bold">Edit Profile</h1>
+				<p class="text-muted-foreground">Update your profile information</p>
 			</div>
 
 			{#if form?.error}
@@ -68,13 +68,13 @@
 				class="space-y-6"
 			>
 				<div>
-					<label for="name" class="mb-2 block text-sm font-medium text-gray-300"> Display Name </label>
-					<input type="text" id="name" name="name" value={data.session.user?.name || ""} required disabled={isSubmitting} class="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-3 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50" placeholder="Enter your display name" />
+					<label for="name" class="text-card-foreground mb-2 block text-sm font-medium"> Display Name </label>
+					<input type="text" id="name" name="name" value={data.session.user?.name || ""} required disabled={isSubmitting} class="border-input bg-background text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring/20 w-full rounded-lg border px-4 py-3 focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50" placeholder="Enter your display name" />
 				</div>
 
 				<div class="flex items-center justify-between pt-6">
-					<a href="/profile" class="rounded-lg border border-gray-600 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 focus:outline-none"> Cancel </a>
-					<button type="submit" disabled={isSubmitting} class="rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50">
+					<a href="/profile" class="border-border text-card-foreground hover:bg-muted focus:ring-ring rounded-lg border px-6 py-3 text-sm font-medium transition-colors duration-200 focus:ring-2 focus:outline-none"> Cancel </a>
+					<button type="submit" disabled={isSubmitting} class="bg-primary text-primary-foreground hover:bg-primary-hover focus:ring-ring rounded-lg px-6 py-3 text-sm font-medium transition-colors duration-200 focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50">
 						{#if isSubmitting}
 							<Spinner class="mr-2" size="4" />
 							Saving...

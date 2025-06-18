@@ -170,7 +170,7 @@
 
 <AppHeader title="Quiz in Progress" />
 
-<div class="min-h-screen bg-gray-800">
+<div class="bg-secondary min-h-screen">
 	<div class="container mx-auto px-4 py-8">
 		<!-- Progress Header -->
 		<div class="mx-auto mb-8 max-w-4xl">
@@ -184,15 +184,15 @@
 			</div>
 
 			<!-- Progress Bar -->
-			<div class="h-3 w-full rounded-full bg-gray-700">
+			<div class="bg-muted h-3 w-full rounded-full">
 				<div class="h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300" style="width: {progress}%"></div>
 			</div>
 		</div>
 
 		<!-- Question Content -->
 		<div class="mx-auto max-w-4xl">
-			<div class="rounded-lg border border-gray-700 bg-gray-900/50 shadow-lg">
-				<div class="border-b border-gray-700 px-6 py-4">
+			<div class="border-border bg-card rounded-lg border shadow-lg">
+				<div class="border-border border-b px-6 py-4">
 					<h1 class="text-2xl font-semibold text-white">
 						{currentQuestion.content}
 					</h1>
@@ -221,7 +221,7 @@
 							<div class="space-y-3">
 								{#each currentQuestion.options as option (option.id)}
 									<label class="block cursor-pointer">
-										<div class="flex items-center gap-4 rounded-lg border border-gray-600 p-4 transition-all hover:border-blue-500 hover:bg-gray-800/50 {selectedOptionId === option.id ? 'border-blue-500 bg-blue-900/20' : ''}">
+										<div class="border-border hover:bg-card flex items-center gap-4 rounded-lg border p-4 transition-all hover:border-blue-500 {selectedOptionId === option.id ? 'border-blue-500 bg-blue-900/20' : ''}">
 											<input type="radio" name="option" value={option.id} checked={selectedOptionId === option.id} onchange={() => selectOption(option.id)} class="h-4 w-4 text-blue-600" />
 											<span class="text-white">{option.content}</span>
 										</div>
@@ -249,7 +249,7 @@
 						<!-- Already Answered - Show Selection -->
 						<div class="space-y-3">
 							{#each currentQuestion.options as option (option.id)}
-								<div class="flex items-center gap-4 rounded-lg border p-4 {selectedOptionId === option.id ? 'border-blue-500 bg-blue-900/20' : 'border-gray-600 bg-gray-800/20'}">
+								<div class="flex items-center gap-4 rounded-lg border p-4 {selectedOptionId === option.id ? 'border-blue-500 bg-blue-900/20' : 'border-border bg-secondary/20'}">
 									<div class="h-4 w-4 rounded-full border-2 {selectedOptionId === option.id ? 'border-blue-500 bg-blue-500' : 'border-gray-500'}">
 										{#if selectedOptionId === option.id}
 											<div class="h-full w-full scale-50 rounded-full bg-white"></div>
@@ -280,7 +280,7 @@
 
 		<!-- Session Info -->
 		<div class="mx-auto mt-8 max-w-4xl">
-			<div class="rounded-lg border border-gray-700 bg-gray-900/30 p-4">
+			<div class="border-border bg-muted rounded-lg border p-4">
 				<div class="flex items-center justify-between text-sm text-gray-400">
 					<div>Session: {session.code}</div>
 					<div>Participant: {participant.name || "Anonymous"}</div>
@@ -294,7 +294,7 @@
 <!-- Result Popup -->
 {#if showResult && lastResult}
 	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-		<div class="rounded-lg border border-gray-700 bg-gray-900 p-6 shadow-xl">
+		<div class="border-border bg-secondary rounded-lg border p-6 shadow-xl">
 			<div class="text-center">
 				{#if lastResult.correct}
 					<div class="mb-4">
@@ -324,7 +324,7 @@
 					</div>
 
 					<!-- Progress Bar -->
-					<div class="mx-auto h-2 w-32 rounded-full bg-gray-600">
+					<div class="bg-muted mx-auto h-2 w-32 rounded-full">
 						<div class="h-2 rounded-full bg-blue-500 transition-all duration-1000 ease-linear" style="width: {((totalWaitTime - resultCountdown) / totalWaitTime) * 100}%"></div>
 					</div>
 				</div>

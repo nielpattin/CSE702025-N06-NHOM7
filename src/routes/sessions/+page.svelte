@@ -7,11 +7,22 @@
 	import { Skeleton } from "$lib/components/ui/skeleton"
 	import { navigationStore } from "$lib/stores/navigation"
 	import { onMount } from "svelte"
+	import { Search, X, Calendar, Users, Activity, BookOpen } from "@lucide/svelte"
+	import { Button } from "$lib/components/ui/button"
+	import { Input } from "$lib/components/ui/input"
+	import SortButtons from "$lib/components/ui/sort-buttons.svelte"
 
 	let { data }: { data: PageData } = $props()
 	let isPageVisible = $state(false)
 	let isLoading = $state(true)
 	let isPaginationLoading = $state(false)
+
+	const sortOptions = [
+		{ key: "createdAt" as const, label: "Date Created", icon: Calendar },
+		{ key: "quizName" as const, label: "Quiz Name", icon: BookOpen },
+		{ key: "participantCount" as const, label: "Participants", icon: Users },
+		{ key: "status" as const, label: "Status", icon: Activity }
+	]
 
 	onMount(() => {
 		navigationStore.stopLoading()
@@ -31,16 +42,17 @@
 
 <!-- Sidebar Component -->
 
-<div class=" min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+<div class=" bg-background min-h-screen">
 	<!-- Dashboard Header Component -->
 	<AppHeader title="My Sessions" />
 
 	<!-- Main Content -->
 	<main class="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
-		{#if isLoading || isPaginationLoading}
+		{#if isLoading}
+			<!-- Full page skeleton during initial load -->
 			<div class="w-full">
 				<div class="mb-8">
-					<div class="rounded-lg bg-gray-800/50 p-6 shadow-lg backdrop-blur">
+					<div class="bg-card rounded-lg p-6 shadow-lg backdrop-blur">
 						<div class="mb-6">
 							<div class="relative flex items-center space-x-4">
 								<div class="relative flex-1">
@@ -60,20 +72,9 @@
 							</div>
 						</div>
 
-						<div class="mb-6 flex items-center justify-between">
-							<div class="flex items-center space-x-3">
-								<Skeleton class="h-4 w-16 rounded" />
-								<Skeleton class="h-9 w-24 rounded-lg" />
-								<Skeleton class="h-9 w-28 rounded-lg" />
-								<Skeleton class="h-9 w-32 rounded-lg" />
-								<Skeleton class="h-9 w-24 rounded-lg" />
-							</div>
-							<Skeleton class="h-4 w-24 rounded" />
-						</div>
-
 						<div class="mb-6 grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
 							{#each Array(6) as _, i (i)}
-								<div class="rounded-lg border border-gray-700 bg-gray-900/50 p-6">
+								<div class="border-border bg-card rounded-lg border p-6">
 									<div class="flex items-start space-x-4">
 										<div class="flex-shrink-0">
 											<Skeleton class="h-16 w-16 rounded-lg" />
@@ -111,7 +112,7 @@
 				</div>
 			</div>
 		{:else}
-			<!-- Sessions Content with Search, Sort, and Pagination -->
+			<!-- Search Panel and Content (always visible when not in initial loading) -->
 			<SessionsContent sessions={data.sessions} pagination={data.pagination} search={data.search} sortBy={data.sortBy} sortOrder={data.sortOrder} {isPaginationLoading} onPaginationLoadingChange={(loading) => (isPaginationLoading = loading)} />
 		{/if}
 	</main>

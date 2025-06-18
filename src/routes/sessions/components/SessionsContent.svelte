@@ -5,6 +5,7 @@
 	import { Button } from "$lib/components/ui/button"
 	import { Input } from "$lib/components/ui/input"
 	import * as Pagination from "$lib/components/ui/pagination"
+	import { Skeleton } from "$lib/components/ui/skeleton"
 	import { Search, X, Calendar, Users, Activity, BookOpen } from "@lucide/svelte"
 	import SortButtons from "$lib/components/ui/sort-buttons.svelte"
 	import { onMount } from "svelte"
@@ -46,6 +47,7 @@
 	let currentSortKey = $state<"createdAt" | "quizName" | "participantCount" | "status">((sortBy as "createdAt" | "quizName" | "participantCount" | "status") || "createdAt")
 	let currentSortOrder = $state<"asc" | "desc">((sortOrder as "asc" | "desc") || "desc")
 	let visibleSessions = $state<number[]>([])
+	let isSortLoading = $state(false)
 
 	$effect(() => {
 		searchInput = search
@@ -60,10 +62,23 @@
 			currentSortKey = key as "createdAt" | "quizName" | "participantCount" | "status"
 			currentSortOrder = "desc"
 		}
+
+		// Show loading for sort operations
+		isSortLoading = true
+		setTimeout(() => {
+			isSortLoading = false
+		}, 500)
+
 		updateUrl()
 	}
 
 	function handleSearchSubmit() {
+		// Show loading for search operations
+		isSortLoading = true
+		setTimeout(() => {
+			isSortLoading = false
+		}, 500)
+
 		updateUrl({ search: searchInput, page: 1 })
 	}
 
@@ -143,7 +158,7 @@
 
 <div class="w-full">
 	<div class="mb-8">
-		<div class="rounded-lg bg-gray-800/50 p-6 shadow-lg backdrop-blur">
+		<div class="bg-card rounded-lg p-6 shadow-lg backdrop-blur">
 			<!-- Search Bar -->
 			<div class="mb-6">
 				<div class="relative flex items-center space-x-4">
@@ -197,7 +212,48 @@
 			</div>
 
 			<!-- Sessions Grid -->
-			{#if sessions.length > 0}
+			{#if isPaginationLoading || isSortLoading}
+				<!-- Sessions Grid Skeleton during pagination -->
+				<div class="mb-6 grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
+					{#each Array(6) as _, i (i)}
+						<div class="border-border bg-card rounded-lg border p-6">
+							<div class="flex items-start space-x-4">
+								<div class="flex-shrink-0">
+									<Skeleton class="h-16 w-16 rounded-lg" />
+								</div>
+
+								<div class="min-w-0 flex-1">
+									<div class="flex items-start justify-between">
+										<div class="flex min-w-0 flex-1 items-start space-x-4">
+											<Skeleton class="h-6 w-32 rounded" />
+											<Skeleton class="h-5 w-16 rounded-full" />
+										</div>
+										<Skeleton class="h-8 w-8 rounded-md" />
+									</div>
+
+									<div class="mt-3 flex items-center justify-between">
+										<Skeleton class="h-4 w-24 rounded" />
+										<Skeleton class="h-4 w-20 rounded" />
+									</div>
+								</div>
+							</div>
+						</div>
+					{/each}
+				</div>
+
+				<!-- Pagination Skeleton -->
+				{#if pagination.totalPages > 1}
+					<div class="mt-6 flex justify-center">
+						<div class="flex items-center space-x-2">
+							<Skeleton class="h-10 w-16 rounded-md" />
+							<Skeleton class="h-10 w-8 rounded-md" />
+							<Skeleton class="h-10 w-8 rounded-md" />
+							<Skeleton class="h-10 w-8 rounded-md" />
+							<Skeleton class="h-10 w-12 rounded-md" />
+						</div>
+					</div>
+				{/if}
+			{:else if sessions.length > 0}
 				<div class="mb-6 grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
 					{#each sessions as session, index (session.id)}
 						<div class="transform transition-all duration-500 ease-out {visibleSessions.includes(index) ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}" style="transition-delay: {index * 50}ms">

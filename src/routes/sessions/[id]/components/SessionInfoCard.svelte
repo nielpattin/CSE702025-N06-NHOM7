@@ -32,7 +32,7 @@
 </script>
 
 <!-- Session Info Card -->
-<div class="rounded-xl border border-gray-700 bg-gray-800 p-6 shadow-sm">
+<div class="border-border bg-card rounded-xl border p-6 shadow-sm">
 	<SessionDetails {session} />
 	<SessionExpiration {session} {actionData} />
 

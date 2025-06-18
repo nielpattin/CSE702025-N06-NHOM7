@@ -70,7 +70,7 @@
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton isActive={isItemActive(item.href)}>
 									{#snippet child({ props })}
-										<a href={item.href} {...props} class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex items-center rounded-md border border-gray-200 px-2 py-2 text-base dark:border-gray-700 {isItemActive(item.href) ? 'bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-accent' : ''}">
+										<a href={item.href} {...props} class="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-sidebar-border flex items-center rounded-md border px-2 py-2 text-base {isItemActive(item.href) ? 'bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-accent' : ''}">
 											<item.icon class="mr-2 h-4 w-4" />
 											<span>{item.name}</span>
 											{#if item.adminOnly}

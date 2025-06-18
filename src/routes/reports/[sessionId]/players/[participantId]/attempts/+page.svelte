@@ -9,7 +9,7 @@
 	const breadcrumbs = [{ label: "Report", href: "/reports" }, { label: data.quiz.title, href: `/reports/${data.participant.quizSessionId}/players` }, { label: data.participant.user?.name || data.participant.name }]
 </script>
 
-<div class=" min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+<div class=" bg-background min-h-screen">
 	<AppHeader title="Participant Attempts" />
 
 	<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -37,9 +37,9 @@
 			<h1 class="mb-2 text-3xl font-bold text-white">Participant Attempts</h1>
 			<div class="flex items-center space-x-4">
 				{#if data.participant.user?.image}
-					<img src={data.participant.user.image} alt={data.participant.name} class="h-12 w-12 rounded-full border-2 border-gray-600" />
+					<img src={data.participant.user.image} alt={data.participant.name} class="border-border h-12 w-12 rounded-full border-2" />
 				{:else}
-					<div class="flex h-12 w-12 items-center justify-center rounded-full border-2 border-gray-600 bg-gray-600 text-xl font-semibold text-white">
+					<div class="border-border bg-muted flex h-12 w-12 items-center justify-center rounded-full border-2 text-xl font-semibold text-white">
 						{data.participant.name?.charAt(0).toUpperCase()}
 					</div>
 				{/if}
@@ -54,7 +54,7 @@
 
 		<div class="space-y-4">
 			{#if data.attempts.length === 0}
-				<div class="rounded-lg border border-gray-700 bg-gray-800 py-12 text-center text-gray-400">No attempts found for this participant.</div>
+				<div class="border-border bg-card rounded-lg border py-12 text-center text-gray-400">No attempts found for this participant.</div>
 			{:else}
 				<div class="grid grid-cols-5 items-center gap-4 px-6 pb-4 text-sm font-semibold text-gray-400 uppercase">
 					<span class="text-left">Attempt #</span>
@@ -66,7 +66,7 @@
 				{#each data.attempts as attempt, i (attempt.id)}
 					{@const correctAnswers = attempt.correctAnswers}
 					{@const incorrectAnswers = attempt.totalQuestions - correctAnswers}
-					<a href="/reports/{data.participant.quizSessionId}/players/{data.participant.id}/attempts/{attempt.id}" class="grid cursor-pointer grid-cols-5 items-center gap-4 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 transition-colors hover:bg-gray-700">
+					<a href="/reports/{data.participant.quizSessionId}/players/{data.participant.id}/attempts/{attempt.id}" class="border-border bg-card hover:bg-muted grid cursor-pointer grid-cols-5 items-center gap-4 rounded-lg border px-4 py-2 transition-colors">
 						<div class="flex items-center">
 							<span class="text-base font-semibold text-white">
 								Attempt {data.attempts.length - i}

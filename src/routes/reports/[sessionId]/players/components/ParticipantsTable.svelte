@@ -25,9 +25,9 @@
 
 <!-- Desktop Grid View -->
 <div class="hidden lg:block">
-	<div class="bg-gray-750 rounded-lg border border-gray-600">
+	<div class="bg-card border-border rounded-lg border">
 		<!-- Header -->
-		<div class="grid grid-cols-6 gap-4 border-b border-gray-600 bg-gray-700 px-6 py-4">
+		<div class="border-border bg-muted grid grid-cols-6 gap-4 border-b px-6 py-4">
 			<div class="flex items-center justify-center text-center text-sm font-medium tracking-wider text-gray-300 uppercase">Name</div>
 			<div class="flex items-center justify-center text-center text-sm font-medium tracking-wider text-gray-300 uppercase">Accuracy</div>
 			<div class="flex items-center justify-center text-center text-sm font-medium tracking-wider text-gray-300 uppercase">Attempt Times</div>
@@ -37,17 +37,17 @@
 		</div>
 
 		<!-- Participant Cards -->
-		<div class="divide-y divide-gray-600 bg-gray-800">
+		<div class="bg-secondary divide-y divide-gray-600">
 			{#each participants as participant, index (participant.id)}
 				<div class="transform transition-all duration-500 ease-out {visibleParticipants.includes(index) ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}" style="transition-delay: {index * 50}ms">
-					<a href="/reports/{sessionId()}/players/{participant.id}/attempts" class="relative grid grid-cols-6 gap-4 px-6 py-4 transition-colors hover:bg-gray-700" aria-label="View details for {participant.displayName}">
+					<a href="/reports/{sessionId()}/players/{participant.id}/attempts" class="hover:bg-muted relative grid grid-cols-6 gap-4 px-6 py-4 transition-colors" aria-label="View details for {participant.displayName}">
 						<!-- Name -->
 						<div class="flex items-center justify-center space-x-4">
 							<div class="flex-shrink-0">
 								{#if participant.user?.image}
 									<img class="h-10 w-10 rounded-full" src={participant.user.image} alt={participant.displayName} />
 								{:else}
-									<div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-600">
+									<div class="bg-muted flex h-10 w-10 items-center justify-center rounded-full">
 										<span class="text-sm font-medium text-white">
 											{participant.displayName.charAt(0).toUpperCase()}
 										</span>
@@ -103,14 +103,14 @@
 
 								<!-- Dropdown Menu -->
 								{#if dropdownOpen === participant.id}
-									<div class="absolute right-0 z-10 mt-2 w-48 rounded-md border border-gray-600 bg-gray-700 shadow-lg">
+									<div class="border-border bg-muted absolute right-0 z-10 mt-2 w-48 rounded-md border shadow-lg">
 										<div class="py-1">
 											<button
 												onclick={(e) => {
 													e.stopPropagation()
 													handlePrint(participant.id)
 												}}
-												class="flex w-full cursor-pointer items-center px-4 py-2 text-sm text-gray-300 transition-colors hover:bg-gray-600 hover:text-white"
+												class="hover:bg-muted flex w-full cursor-pointer items-center px-4 py-2 text-sm text-gray-300 transition-colors hover:text-white"
 											>
 												<svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -122,7 +122,7 @@
 													e.stopPropagation()
 													handleDelete(participant.id)
 												}}
-												class="flex w-full cursor-pointer items-center px-4 py-2 text-sm text-gray-300 transition-colors hover:bg-gray-600 hover:text-white"
+												class="hover:bg-muted flex w-full cursor-pointer items-center px-4 py-2 text-sm text-gray-300 transition-colors hover:text-white"
 											>
 												<svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

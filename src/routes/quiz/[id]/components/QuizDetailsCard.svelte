@@ -8,7 +8,7 @@
 	let { data } = $props<{ data: PageData }>()
 </script>
 
-<div class="rounded-lg border border-gray-700 bg-gray-900/50 p-6 backdrop-blur transition-all hover:bg-gray-900/70">
+<div class="border-border bg-card hover:bg-secondary/70 rounded-lg border p-6 backdrop-blur transition-all">
 	<div class="flex items-start space-x-6">
 		<!-- Quiz Image Placeholder -->
 		<div class="flex-shrink-0">

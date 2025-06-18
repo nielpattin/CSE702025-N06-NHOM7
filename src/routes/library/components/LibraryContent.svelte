@@ -102,17 +102,17 @@
 	<!-- Tab Navigation for Created by Me -->
 	<div>
 		<Tabs.Root value={activeTab} onValueChange={(value: string) => handleTabChange(value as QuizStatus)} class="flex w-full flex-col md:flex-row">
-			<Tabs.List class="flex h-auto w-fit space-x-2 rounded-lg bg-gray-800 p-2 md:flex-col md:space-y-2 md:space-x-0">
+			<Tabs.List class="bg-secondary flex h-auto w-fit space-x-2 rounded-lg p-2 md:flex-col md:space-y-2 md:space-x-0">
 				{#each quizStatusTabs as tab (tab.id)}
 					<Tabs.Trigger
 						value={tab.id}
-						class="flex cursor-pointer items-center rounded-md border-transparent px-6 py-1 text-base font-medium transition-all duration-200 hover:bg-gray-700
+						class="hover:bg-muted flex cursor-pointer items-center rounded-md border-transparent px-6 py-1 text-base font-medium transition-all duration-200
 								data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white
 								data-[state=active]:shadow-lg {activeTab === tab.id ? 'text-white' : tab.color}"
 					>
 						<tab.icon class="mr-2 h-4 w-4 {activeTab === tab.id ? tab.activeColor : tab.color}" />
 						<span class={activeTab === tab.id ? "text-white" : tab.color}>{tab.label}</span>
-						<span class="ml-1 rounded-full bg-gray-600 px-3 py-1 text-xs text-gray-300">
+						<span class="bg-muted ml-1 rounded-full px-3 py-1 text-xs text-gray-300">
 							{userQuizzesCount[tab.id]}
 						</span>
 					</Tabs.Trigger>
@@ -169,7 +169,7 @@
 
 				{#each quizStatusTabs as tab (tab.id)}
 					<Tabs.Content value={tab.id} class="">
-						<div class="rounded-lg bg-gray-800/50 p-3 shadow-lg backdrop-blur">
+						<div class="bg-card rounded-lg p-3 shadow-lg backdrop-blur">
 							{#if isLoadingQuizzes || isPaginationLoading}
 								<div class="space-y-4">
 									{#each Array(4) as _, i (i)}

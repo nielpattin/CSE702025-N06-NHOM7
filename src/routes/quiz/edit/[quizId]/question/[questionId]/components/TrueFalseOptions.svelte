@@ -41,7 +41,7 @@
 			</div>
 			<div class="flex flex-col items-center gap-2">
 				<span class="text-sm font-medium text-gray-300">Correct Answer</span>
-				<input type="checkbox" checked={trueOption?.correct} onchange={setTrueCorrect} class="h-5 w-5 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800" />
+				<input type="checkbox" checked={trueOption?.correct} onchange={setTrueCorrect} class="border-border bg-muted h-5 w-5 rounded text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800" />
 			</div>
 		</div>
 	</div>
@@ -56,7 +56,7 @@
 			</div>
 			<div class="flex flex-col items-center gap-2">
 				<span class="text-sm font-medium text-gray-300">Correct Answer</span>
-				<input type="checkbox" checked={falseOption?.correct} onchange={setFalseCorrect} class="h-5 w-5 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800" />
+				<input type="checkbox" checked={falseOption?.correct} onchange={setFalseCorrect} class="border-border bg-muted h-5 w-5 rounded text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800" />
 			</div>
 		</div>
 	</div>

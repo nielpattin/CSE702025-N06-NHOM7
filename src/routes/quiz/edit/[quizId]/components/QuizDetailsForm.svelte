@@ -54,7 +54,7 @@
 		<label for="quiz-title" class="mb-3 block text-lg font-medium text-white">Quiz Title</label>
 		<div class="flex items-end gap-3">
 			<div class="flex-1">
-				<input type="text" id="quiz-title" name="title" class="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-3 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" bind:value={currentTitle} placeholder="Enter quiz title..." required disabled={!isEditing || isSubmitting} />
+				<input type="text" id="quiz-title" name="title" class="border-border bg-muted w-full rounded-lg border px-4 py-3 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" bind:value={currentTitle} placeholder="Enter quiz title..." required disabled={!isEditing || isSubmitting} />
 			</div>
 			{#if isEditing}
 				<button type="submit" disabled={isSubmitting} class="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-sm font-medium whitespace-nowrap text-white shadow-md transition-all hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none">

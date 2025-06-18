@@ -5,9 +5,9 @@
 	let { question, index } = $props<{ question: PageData["quiz"]["questions"][0]; index: number }>()
 </script>
 
-<div class="rounded-lg border border-gray-700 bg-gray-800/50 p-4 transition-colors hover:bg-gray-800/70">
+<div class="border-border bg-card hover:bg-secondary/70 rounded-lg border p-4 transition-colors">
 	<div class="mb-3 flex items-start justify-between">
-		<span class="inline-flex items-center rounded-full bg-gray-900/50 px-2.5 py-0.5 text-xs font-medium text-gray-300">
+		<span class="bg-card inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-gray-300">
 			Question {index + 1}
 		</span>
 		{#if question.points}

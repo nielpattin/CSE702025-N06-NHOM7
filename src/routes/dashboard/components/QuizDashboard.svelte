@@ -35,30 +35,49 @@
 
 	let { quizzes, pagination, search, sortBy, sortOrder, difficultyFilter }: Props = $props()
 
-	let isLoading = $state(true)
-	let loadingStartTime = $state(Date.now())
+	let isInitialLoading = $state(true)
+	let isFilterLoading = $state(false)
+	let initialLoadingStartTime = $state(Date.now())
+	let hasInitiallyLoaded = $state(false)
 
 	$effect(() => {
-		if (quizzes.length > 0 && isLoading) {
-			const elapsed = Date.now() - loadingStartTime
+		if (quizzes.length > 0 && isInitialLoading && !hasInitiallyLoaded) {
+			const elapsed = Date.now() - initialLoadingStartTime
 			const remainingTime = Math.max(0, 500 - elapsed)
 
 			setTimeout(() => {
-				isLoading = false
+				isInitialLoading = false
+				hasInitiallyLoaded = true
 			}, remainingTime)
 		}
 	})
 
-	// Reset loading state when URL parameters change
+	// Handle filter/sort/pagination changes after initial load
+	let previousSearch = $state(search)
+	let previousSortBy = $state(sortBy)
+	let previousSortOrder = $state(sortOrder)
+	let previousDifficultyFilter = $state(difficultyFilter)
+	let previousCurrentPage = $state(pagination.currentPage)
+
 	$effect(() => {
-		// Watch for changes in the URL parameters that trigger new data loads
-		void search
-		void sortBy
-		void sortOrder
-		void difficultyFilter
-		void pagination.currentPage
-		isLoading = true
-		loadingStartTime = Date.now()
+		if (hasInitiallyLoaded) {
+			// Check if any of the parameters have actually changed
+			const hasChanged = search !== previousSearch || sortBy !== previousSortBy || sortOrder !== previousSortOrder || difficultyFilter !== previousDifficultyFilter || pagination.currentPage !== previousCurrentPage
+
+			if (hasChanged) {
+				isFilterLoading = true
+				setTimeout(() => {
+					isFilterLoading = false
+				}, 500)
+
+				// Update previous values
+				previousSearch = search
+				previousSortBy = sortBy
+				previousSortOrder = sortOrder
+				previousDifficultyFilter = difficultyFilter
+				previousCurrentPage = pagination.currentPage
+			}
+		}
 	})
 
 	function handleClearFilters() {
@@ -71,9 +90,9 @@
 </script>
 
 <div class="w-full space-y-6">
-	<QuizFilters {search} {sortBy} {sortOrder} {difficultyFilter} totalQuizzes={pagination.totalQuizzes} {isLoading} />
+	<QuizFilters {search} {sortBy} {sortOrder} {difficultyFilter} totalQuizzes={pagination.totalQuizzes} isLoading={isInitialLoading} />
 
-	<QuizGrid {quizzes} {isLoading} {search} {difficultyFilter} onClearFilters={handleClearFilters} />
+	<QuizGrid {quizzes} isLoading={isInitialLoading || isFilterLoading} {search} {difficultyFilter} onClearFilters={handleClearFilters} />
 
 	<QuizPagination {pagination} />
 </div>

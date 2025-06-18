@@ -2,7 +2,7 @@
 	import Skeleton from "$lib/components/ui/skeleton/skeleton.svelte"
 </script>
 
-<div class="block rounded-lg border border-gray-700 bg-gray-700/50 p-3 px-4 transition-all duration-200 select-none">
+<div class="border-border bg-muted block rounded-lg border p-3 px-4 transition-all duration-200 select-none">
 	<div class="flex items-center space-x-4">
 		<!-- Left Section: Cover Image Skeleton -->
 		<div class="flex-shrink-0">

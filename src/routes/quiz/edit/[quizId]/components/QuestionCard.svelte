@@ -68,7 +68,7 @@
 	})
 </script>
 
-<div class="rounded-lg border border-gray-600 bg-gray-800 p-6 shadow-lg transition-all hover:border-gray-500">
+<div class="border-border bg-secondary rounded-lg border p-6 shadow-lg transition-all hover:border-gray-500">
 	<!-- First Row: Question metadata -->
 	<div class="mb-4 flex items-center justify-between">
 		<div class="flex items-center gap-6">
@@ -89,10 +89,10 @@
 					</button>
 
 					{#if timeDropdownOpen}
-						<div class="absolute right-0 z-10 mt-2 w-40 rounded-lg border border-gray-600 bg-gray-700 shadow-lg">
+						<div class="border-border bg-muted absolute right-0 z-10 mt-2 w-40 rounded-lg border shadow-lg">
 							<div class="custom-scrollbar max-h-60 overflow-y-auto py-1">
 								{#each timeOptions as option (option.value)}
-									<button type="button" onclick={() => selectTimeLimit(option.value)} class="block w-full px-4 py-2 text-left text-sm text-white transition-colors hover:bg-gray-600 focus:bg-gray-600 focus:outline-none {question.timeLimit === option.value ? 'bg-orange-600' : ''}">
+									<button type="button" onclick={() => selectTimeLimit(option.value)} class="hover:bg-muted focus:bg-muted block w-full px-4 py-2 text-left text-sm text-white transition-colors focus:outline-none {question.timeLimit === option.value ? 'bg-orange-600' : ''}">
 										{option.label}
 									</button>
 								{/each}
@@ -112,10 +112,10 @@
 					</button>
 
 					{#if pointsDropdownOpen}
-						<div class="absolute right-0 z-10 mt-2 w-32 rounded-lg border border-gray-600 bg-gray-700 shadow-lg">
+						<div class="border-border bg-muted absolute right-0 z-10 mt-2 w-32 rounded-lg border shadow-lg">
 							<div class="custom-scrollbar max-h-60 overflow-y-auto py-1">
 								{#each pointOptions as pointValue (pointValue)}
-									<button type="button" onclick={() => selectPoints(pointValue)} class="block w-full px-4 py-2 text-left text-sm text-white transition-colors hover:bg-gray-600 focus:bg-gray-600 focus:outline-none {question.points === pointValue ? 'bg-green-600' : ''}">
+									<button type="button" onclick={() => selectPoints(pointValue)} class="hover:bg-muted focus:bg-muted block w-full px-4 py-2 text-left text-sm text-white transition-colors focus:outline-none {question.points === pointValue ? 'bg-green-600' : ''}">
 										{pointValue}
 									</button>
 								{/each}
@@ -137,7 +137,7 @@
 	{#if question.options && question.options.length > 0}
 		<div class="grid grid-cols-2 gap-4">
 			{#each question.options as option (option.id)}
-				<div class="flex items-center gap-2 rounded-lg border border-gray-600 bg-gray-700 p-3">
+				<div class="border-border bg-muted flex items-center gap-2 rounded-lg border p-3">
 					{#if option.correct}
 						<svg class="h-5 w-5 flex-shrink-0 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -148,7 +148,7 @@
 			{/each}
 		</div>
 	{:else}
-		<div class="rounded-lg border border-gray-600 bg-gray-700 p-3 text-center">
+		<div class="border-border bg-muted rounded-lg border p-3 text-center">
 			<span class="text-sm text-gray-400">No options configured</span>
 		</div>
 	{/if}

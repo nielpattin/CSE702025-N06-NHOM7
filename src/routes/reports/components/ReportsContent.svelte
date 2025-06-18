@@ -5,6 +5,7 @@
 	import { Button } from "$lib/components/ui/button"
 	import { Input } from "$lib/components/ui/input"
 	import * as Pagination from "$lib/components/ui/pagination"
+	import { Skeleton } from "$lib/components/ui/skeleton"
 	import { Search, X, Calendar, Users, Activity, BookOpen } from "@lucide/svelte"
 	import SortButtons from "$lib/components/ui/sort-buttons.svelte"
 	import type { PageData } from "../$types"
@@ -26,6 +27,7 @@
 	let currentSortKey = $state<"createdDate" | "sessionName" | "participantCount" | "status">((sortBy as "createdDate" | "sessionName" | "participantCount" | "status") || "createdDate")
 	let currentSortOrder = $state<"asc" | "desc">((sortOrder as "asc" | "desc") || "desc")
 	let visibleReports = $state<number[]>([])
+	let isSortLoading = $state(false)
 
 	$effect(() => {
 		searchInput = search
@@ -40,10 +42,23 @@
 			currentSortKey = key as "createdDate" | "sessionName" | "participantCount" | "status"
 			currentSortOrder = "desc"
 		}
+
+		// Show loading for sort operations
+		isSortLoading = true
+		setTimeout(() => {
+			isSortLoading = false
+		}, 500)
+
 		updateUrl()
 	}
 
 	function handleSearchSubmit() {
+		// Show loading for search operations
+		isSortLoading = true
+		setTimeout(() => {
+			isSortLoading = false
+		}, 500)
+
 		updateUrl({ search: searchInput, page: 1 })
 	}
 
@@ -123,7 +138,7 @@
 
 <div class="w-full">
 	<div class="mb-8">
-		<div class="rounded-lg bg-gray-800/50 p-6 shadow-lg backdrop-blur">
+		<div class="bg-card rounded-lg p-6 shadow-lg backdrop-blur">
 			<!-- Search Bar -->
 			<div class="mb-6">
 				<div class="relative flex items-center space-x-2">
@@ -174,8 +189,57 @@
 			</div>
 
 			<!-- Reports Grid -->
-			{#if reports.length > 0}
-				<div class="mb-6 grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+			{#if isPaginationLoading || isSortLoading}
+				<!-- Reports Grid Skeleton during pagination or sort/search -->
+				<div class="mb-6 grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+					{#each Array(6) as _, i (i)}
+						<div class="border-border bg-muted rounded-lg border p-6 shadow-lg backdrop-blur">
+							<div class="mb-4 flex items-start justify-between">
+								<div class="flex-1">
+									<Skeleton class="mb-2 h-6 w-3/4 rounded" />
+									<Skeleton class="h-4 w-1/2 rounded" />
+								</div>
+								<Skeleton class="h-6 w-16 rounded-full" />
+							</div>
+
+							<div class="mb-4 grid grid-cols-2 gap-4">
+								<div>
+									<Skeleton class="mb-1 h-4 w-16 rounded" />
+									<Skeleton class="h-5 w-12 rounded" />
+								</div>
+								<div>
+									<Skeleton class="mb-1 h-4 w-20 rounded" />
+									<Skeleton class="h-5 w-10 rounded" />
+								</div>
+							</div>
+
+							<div class="mb-4">
+								<Skeleton class="mb-2 h-4 w-20 rounded" />
+								<Skeleton class="h-2 w-full rounded-full" />
+							</div>
+
+							<div class="flex items-center justify-between">
+								<Skeleton class="h-4 w-24 rounded" />
+								<Skeleton class="h-8 w-20 rounded-md" />
+							</div>
+						</div>
+					{/each}
+				</div>
+
+				<!-- Pagination Skeleton -->
+				{#if pagination.totalPages > 1}
+					<div class="mt-6 flex justify-center">
+						<div class="flex items-center space-x-2">
+							<Skeleton class="h-10 w-10 rounded-md" />
+							<Skeleton class="h-10 w-8 rounded-md" />
+							<Skeleton class="h-10 w-8 rounded-md" />
+							<Skeleton class="h-10 w-8 rounded-md" />
+							<Skeleton class="h-10 w-10 rounded-md" />
+						</div>
+					</div>
+				{/if}
+			{:else if reports.length > 0}
+				<div class="mb-6 grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
 					{#each reports as report, index (report.id)}
 						<div class="transform transition-all duration-500 ease-out {visibleReports.includes(index) ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}" style="transition-delay: {index * 50}ms">
 							<ReportCard {report} />

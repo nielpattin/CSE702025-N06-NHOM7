@@ -1,30 +1,58 @@
 <script lang="ts">
 	import { formatDate } from "./utils"
 	import type { PageData } from "../$types"
-	import { Calendar } from "@lucide/svelte"
+	import { Calendar, Users, Activity, Eye } from "@lucide/svelte"
+	import { Button } from "$lib/components/ui/button"
+	import { Badge } from "$lib/components/ui/badge"
+	import * as Card from "$lib/components/ui/card"
+	import { Separator } from "$lib/components/ui/separator"
 
 	type SessionReport = PageData["sessionReports"][0]
 
 	let { report }: { report: SessionReport } = $props()
+
+	function getStatusColor(status: string) {
+		switch (status) {
+			case "completed":
+				return "default"
+			case "active":
+				return "secondary"
+			case "deleting":
+				return "destructive"
+			default:
+				return "outline"
+		}
+	}
 </script>
 
-<div class="block cursor-pointer rounded-lg border border-gray-700 bg-gray-800 p-6 shadow-lg transition-transform hover:scale-105">
-	<a href="/reports/{report.id}/players">
-		<div class="min-w-0 flex-1">
-			<h3 class="mb-3 truncate text-lg font-semibold text-white" title={report.sessionName}>
-				{report.sessionName}
-			</h3>
-
-			<div class="mb-4 flex items-center text-sm text-gray-400">
-				<Calendar class="mr-2 h-4 w-4 flex-shrink-0" />
-				<span class="truncate">Created: {formatDate(report.createdDate)}</span>
+<a href="/reports/{report.id}/players" class="block transition-transform hover:scale-105">
+	<Card.Root class="h-full">
+		<div class="space-y-3 p-4">
+			<div class="grid grid-cols-[1fr_auto] items-start gap-2">
+				<h3 class="truncate text-base font-semibold" title={report.sessionName}>
+					{report.sessionName}
+				</h3>
+				<Badge variant={getStatusColor(report.status)} class="text-xs capitalize">
+					{report.status}
+				</Badge>
 			</div>
 
-			<div class="flex items-center justify-between border-t border-gray-700 pt-4">
-				<div class="text-sm text-gray-400">
-					<span class="font-medium text-white">{report.participantCount}</span> participant{report.participantCount === 1 ? "" : "s"}
+			<div class="text-muted-foreground flex items-center text-sm">
+				<Calendar class="mr-2 h-4 w-4" />
+				Created: {formatDate(report.createdDate)}
+			</div>
+
+			<div class="text-muted-foreground flex items-center gap-4 text-sm">
+				<div class="flex items-center">
+					<Users class="mr-1 h-4 w-4" />
+					<span class="font-medium">{report.participantCount}</span>
+					<span class="ml-1">participant{report.participantCount === 1 ? "" : "s"}</span>
+				</div>
+				<div class="flex items-center">
+					<Activity class="mr-1 h-4 w-4" />
+					<span>Report</span>
 				</div>
 			</div>
 		</div>
-	</a>
-</div>
+	</Card.Root>
+</a>

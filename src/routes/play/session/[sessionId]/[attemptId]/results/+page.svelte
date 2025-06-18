@@ -40,7 +40,7 @@
 
 <AppHeader title="Quiz Complete" />
 
-<div class="min-h-screen bg-gray-800">
+<div class="bg-secondary min-h-screen">
 	<div class="container mx-auto px-4 py-8">
 		<!-- Results Header -->
 		<div class="mx-auto mb-8 max-w-4xl text-center">
@@ -89,28 +89,28 @@
 		<div class="mx-auto mb-8 max-w-4xl">
 			<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
 				<!-- Final Score -->
-				<div class="rounded-lg border border-gray-700 bg-gradient-to-br from-blue-900/50 to-blue-800/30 p-6 text-center">
+				<div class="border-border rounded-lg border bg-gradient-to-br from-blue-900/50 to-blue-800/30 p-6 text-center">
 					<div class="text-3xl font-bold text-blue-400">{summary.score}</div>
 					<div class="text-sm text-gray-300">out of {summary.totalPossiblePoints}</div>
 					<div class="mt-1 text-xs text-gray-400">Final Score</div>
 				</div>
 
 				<!-- Percentage -->
-				<div class="rounded-lg border border-gray-700 bg-gradient-to-br from-green-900/50 to-green-800/30 p-6 text-center">
+				<div class="border-border rounded-lg border bg-gradient-to-br from-green-900/50 to-green-800/30 p-6 text-center">
 					<div class="text-3xl font-bold text-green-400">{summary.percentage}%</div>
 					<div class="text-sm text-gray-300">accuracy</div>
 					<div class="mt-1 text-xs text-gray-400">Percentage</div>
 				</div>
 
 				<!-- Correct Answers -->
-				<div class="rounded-lg border border-gray-700 bg-gradient-to-br from-purple-900/50 to-purple-800/30 p-6 text-center">
+				<div class="border-border rounded-lg border bg-gradient-to-br from-purple-900/50 to-purple-800/30 p-6 text-center">
 					<div class="text-3xl font-bold text-purple-300">{summary.correctAnswers}</div>
 					<div class="text-sm text-gray-200">out of {summary.totalQuestions}</div>
 					<div class="mt-1 text-xs text-gray-300">Correct</div>
 				</div>
 
 				<!-- Time Taken -->
-				<div class="rounded-lg border border-gray-700 bg-gradient-to-br from-orange-900/50 to-orange-800/30 p-6 text-center">
+				<div class="border-border rounded-lg border bg-gradient-to-br from-orange-900/50 to-orange-800/30 p-6 text-center">
 					<div class="text-3xl font-bold text-orange-300">{formatDuration()}</div>
 					<div class="text-sm text-gray-200">total time</div>
 					<div class="mt-1 text-xs text-gray-300">Duration</div>
@@ -120,8 +120,8 @@
 
 		<!-- Detailed Results -->
 		<div class="mx-auto max-w-4xl">
-			<div class="rounded-lg border border-gray-700 bg-gray-900/50 shadow-lg">
-				<div class="border-b border-gray-700 px-6 py-4">
+			<div class="border-border bg-card rounded-lg border shadow-lg">
+				<div class="border-border border-b px-6 py-4">
 					<h3 class="text-xl font-semibold text-white">Question Review</h3>
 					<p class="text-sm text-gray-400">Review your answers and see the correct responses</p>
 				</div>
@@ -129,7 +129,7 @@
 				<div class="p-6">
 					<div class="space-y-6">
 						{#each questions as question, index (question.id)}
-							<div class="rounded-lg border border-gray-600 bg-gray-800/50 p-6">
+							<div class="border-border bg-card rounded-lg border p-6">
 								<!-- Question Header -->
 								<div class="mb-4 flex items-start justify-between">
 									<div class="flex-1">
@@ -159,7 +159,7 @@
 												Incorrect
 											</div>
 										{:else}
-											<div class="inline-flex items-center rounded-full bg-gray-600 px-3 py-1 text-sm font-medium text-white">Not Answered</div>
+											<div class="bg-muted inline-flex items-center rounded-full px-3 py-1 text-sm font-medium text-white">Not Answered</div>
 										{/if}
 									</div>
 								</div>
@@ -167,7 +167,7 @@
 								<!-- Answer Options -->
 								<div class="space-y-2">
 									{#each question.options as option (option.id)}
-										<div class="flex items-center gap-3 rounded-lg border p-3 {option.correct ? 'border-green-500 bg-green-900/20' : question.selectedOption?.id === option.id ? 'border-red-500 bg-red-900/20' : 'border-gray-600 bg-gray-700/30'}">
+										<div class="flex items-center gap-3 rounded-lg border p-3 {option.correct ? 'border-green-500 bg-green-900/20' : question.selectedOption?.id === option.id ? 'border-red-500 bg-red-900/20' : 'border-border bg-muted/30'}">
 											<div class="flex-shrink-0">
 												{#if option.correct}
 													<!-- Correct answer icon -->
@@ -212,7 +212,7 @@
 
 		<!-- Session Info -->
 		<div class="mx-auto mt-8 max-w-4xl">
-			<div class="rounded-lg border border-gray-700 bg-gray-900/30 p-4">
+			<div class="border-border bg-muted rounded-lg border p-4">
 				<div class="flex items-center justify-between text-sm text-gray-400">
 					<div>Session: {session.code}</div>
 					<div>Participant: {participant.name || "Anonymous"}</div>

@@ -85,7 +85,7 @@
 		</div>
 
 		<!-- Shareable Link -->
-		<div class="mt-4 rounded-lg bg-gray-700/50 p-4">
+		<div class="bg-muted mt-4 rounded-lg p-4">
 			<div class="flex items-center justify-between">
 				<span class="text-sm font-medium text-gray-300">Share Link:</span>
 			</div>
@@ -98,7 +98,7 @@
 		<span class="inline-flex items-center rounded-full bg-blue-900 px-3 py-1 text-xs font-medium text-blue-200">
 			{session.quiz.status}
 		</span>
-		<span class="inline-flex items-center rounded-full bg-gray-700 px-3 py-1 text-xs font-medium text-gray-300">
+		<span class="bg-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-medium text-gray-300">
 			{session.quiz.visibility}
 		</span>
 	</div>

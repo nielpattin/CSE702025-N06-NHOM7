@@ -44,7 +44,7 @@
 </script>
 
 <div
-	class="block cursor-pointer rounded-lg border border-gray-700 bg-gray-700/50 p-3 px-4 transition-all duration-200 select-none hover:border-gray-600 hover:bg-gray-900/50 hover:shadow-lg"
+	class="border-border bg-card hover:border-border hover:bg-card-hover block cursor-pointer rounded-lg border p-3 px-4 transition-all duration-200 select-none hover:shadow-lg"
 	onclick={(e) => {
 		// Navigate to quiz if not clicking on form or dropdown elements
 		if (!(e.target as HTMLElement).closest("form") && !(e.target as HTMLElement).closest("[data-dropdown-menu-content]") && !(e.target as HTMLElement).closest('button[aria-haspopup="menu"]')) {
@@ -62,8 +62,8 @@
 	<div class="flex items-center space-x-4">
 		<!-- Left Section: Cover Image Placeholder -->
 		<div class="flex-shrink-0">
-			<div class="flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600">
-				<span class="text-2xl text-white">📝</span>
+			<div class="from-primary to-accent flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br">
+				<span class="text-primary-foreground text-2xl">📝</span>
 			</div>
 		</div>
 
@@ -72,12 +72,12 @@
 			<!-- Row 1: Quiz Title -->
 			<div class="flex items-start justify-between">
 				<div class="flex items-center space-x-2">
-					<h3 class="truncate pr-2 text-lg font-semibold text-white">
+					<h3 class="text-foreground truncate pr-2 text-lg font-semibold">
 						{quiz.title || "Untitled Quiz"}
 					</h3>
 					<div class="flex-shrink-0">
 						{#if quiz.visibility === "public"}
-							<Badge variant="default" class="bg-green-100 text-green-800 hover:bg-green-200">
+							<Badge variant="default" class="bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-100 dark:hover:bg-green-800">
 								<Globe class="mr-1 h-3 w-3" />
 								Public
 							</Badge>
@@ -169,10 +169,10 @@
 								}}
 							>
 								{#if quiz.visibility === "private"}
-									<Globe class="mr-2 h-4 w-4 text-white" />
+									<Globe class="text-foreground mr-2 h-4 w-4" />
 									Make Public
 								{:else}
-									<Lock class="mr-2 h-4 w-4 text-white" />
+									<Lock class="text-foreground mr-2 h-4 w-4" />
 									Make Private
 								{/if}
 							</DropdownMenu.Item>
@@ -197,7 +197,7 @@
 										;(e.currentTarget as HTMLElement).closest("form")?.requestSubmit()
 									}}
 								>
-									<Archive class="mr-2 h-4 w-4 text-white" />
+									<Archive class="text-foreground mr-2 h-4 w-4" />
 									Archive
 								</DropdownMenu.Item>
 							</form>
@@ -220,7 +220,7 @@
 										;(e.currentTarget as HTMLElement).closest("form")?.requestSubmit()
 									}}
 								>
-									<Trash2 class="mr-2 h-4 w-4 text-red-400" />
+									<Trash2 class="text-destructive mr-2 h-4 w-4" />
 									Delete
 								</DropdownMenu.Item>
 							</form>
@@ -231,7 +231,7 @@
 
 			<!-- Row 2: Creator and Time -->
 			<div class="mt-1 flex items-center space-x-3 text-sm text-gray-400">
-				<span>
+				<span class="text-muted-foreground">
 					{quiz.creatorName || "Unknown Creator"}
 				</span>
 				<span>•</span>
@@ -242,13 +242,13 @@
 
 			<!-- Row 3: Question Count -->
 			<div class="mt-2">
-				<div class="flex items-center space-x-4 text-sm text-gray-300">
-					<span>
+				<div class="text-muted-foreground flex items-center space-x-4 text-sm">
+					<span class="text-muted-foreground">
 						{quiz.questionCount || 0} question{(quiz.questionCount || 0) === 1 ? "" : "s"}
 					</span>
 					{#if quiz.description}
 						<span>•</span>
-						<span class="max-w-md truncate" title={quiz.description}>
+						<span class="text-muted-foreground max-w-md truncate" title={quiz.description}>
 							{quiz.description}
 						</span>
 					{/if}

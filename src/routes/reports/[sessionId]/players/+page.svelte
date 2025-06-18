@@ -75,7 +75,7 @@
 	<title>Session Report - {data.quizSession.quiz.title || "Unknown Quiz"}</title>
 </svelte:head>
 
-<div class=" min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+<div class=" bg-background min-h-screen">
 	<AppHeader title="Session Report" />
 
 	<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -87,7 +87,7 @@
 					<Skeleton class="mb-4 h-8 w-64 rounded" />
 					<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
 						{#each Array(4) as _, i (i)}
-							<div class="rounded-lg border border-gray-600 bg-gray-700/50 p-4">
+							<div class="border-border bg-muted rounded-lg border p-4">
 								<Skeleton class="mb-2 h-4 w-16 rounded" />
 								<Skeleton class="h-6 w-12 rounded" />
 							</div>
@@ -96,8 +96,8 @@
 				</div>
 
 				<!-- Tab Navigation Skeleton -->
-				<div class="rounded-lg border border-gray-600 bg-gray-700/50 shadow-lg">
-					<div class="border-b border-gray-600">
+				<div class="border-border bg-muted rounded-lg border shadow-lg">
+					<div class="border-border border-b">
 						<div class="flex">
 							<Skeleton class="h-12 flex-1 rounded-none" />
 							<Skeleton class="h-12 flex-1 rounded-none" />
@@ -108,7 +108,7 @@
 					<div class="p-6">
 						<div class="space-y-4">
 							{#each Array(5) as _, i (i)}
-								<div class="rounded-lg border border-gray-600 bg-gray-600/50 p-4">
+								<div class="border-border bg-muted/50 rounded-lg border p-4">
 									<div class="flex items-center justify-between">
 										<div class="flex items-center space-x-4">
 											<Skeleton class="h-10 w-10 rounded-full" />
@@ -133,8 +133,8 @@
 			<ReportHeader quizSession={data.quizSession} stats={data.stats} {formatDate} {getAccuracyColor} title={data.quizSession.quiz.title || "Unknown Quiz"} breadcrumbs={[{ label: "Report", href: "/reports" }, { label: data.quizSession.quiz.title || "Unknown Quiz" }]} />
 
 			<!-- Tab Navigation -->
-			<div class="rounded-lg border border-gray-700 bg-gray-800 shadow-lg">
-				<div class="border-b border-gray-700">
+			<div class="border-border bg-card rounded-lg border shadow-lg">
+				<div class="border-border border-b">
 					<nav class="-mb-px flex">
 						<button onclick={() => handleTabChange("participants")} class="w-1/2 border-b-2 px-6 py-4 text-center text-sm font-medium transition-colors {activeTab === 'participants' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-300'}">
 							Participants ({data.participants.length})

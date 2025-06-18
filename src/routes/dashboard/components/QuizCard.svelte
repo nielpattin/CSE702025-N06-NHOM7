@@ -15,7 +15,7 @@
 			case "advanced":
 				return "bg-red-600 text-white hover:bg-red-700"
 			default:
-				return "bg-gray-600 text-white hover:bg-gray-700"
+				return "bg-muted text-white hover:bg-muted"
 		}
 	}
 
@@ -31,7 +31,7 @@
 	}
 </script>
 
-<Card class="group cursor-pointer border-gray-700 bg-gray-800/50 p-3 transition-all duration-200 hover:border-blue-500/50 hover:shadow-sm hover:shadow-blue-500/20" onclick={handleQuizClick} onkeydown={handleKeydown} role="button" tabindex={0}>
+<Card class="group border-border bg-card cursor-pointer p-3 transition-all duration-200 hover:border-blue-500/50 hover:shadow-sm hover:shadow-blue-500/20" onclick={handleQuizClick} onkeydown={handleKeydown} role="button" tabindex={0}>
 	<div class="flex items-center justify-between gap-2">
 		<h3 class="flex-1 truncate text-sm font-medium text-white transition-colors duration-200 group-hover:text-blue-300">
 			{quiz.title}

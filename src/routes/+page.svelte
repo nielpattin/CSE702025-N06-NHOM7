@@ -63,9 +63,9 @@
 	<meta name="description" content="SvelteKit authentication demo with Auth.js" />
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+<div class="bg-background min-h-screen">
 	<!-- Header -->
-	<header class="border-b border-gray-700 bg-gray-900 shadow-lg">
+	<header class="border-border bg-secondary border-b shadow-lg">
 		<nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 			<div class="flex h-16 items-center justify-between">
 				<!-- Logo and Search Section -->
@@ -82,7 +82,7 @@
 						<!-- Find a quiz search bar and Dashboard button (only for authenticated users) -->
 						<div class="hidden items-center space-x-4 md:flex">
 							<div class="relative">
-								<input type="text" placeholder="Find a quiz" bind:value={searchQuery} onkeydown={(e) => e.key === "Enter" && handleSearchQuiz()} class="w-64 rounded-md border border-gray-600 bg-gray-700 px-4 py-2 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+								<input type="text" placeholder="Find a quiz" bind:value={searchQuery} onkeydown={(e) => e.key === "Enter" && handleSearchQuiz()} class="border-border bg-muted w-64 rounded-md border px-4 py-2 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
 								<button onclick={handleSearchQuiz} aria-label="Search Quiz" class="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 hover:text-white">
 									<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -99,7 +99,7 @@
 					{#if session?.user}
 						<!-- Burger Menu for authenticated users -->
 						<div class="relative">
-							<button onclick={() => (burgerMenuOpen = !burgerMenuOpen)} class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:bg-gray-700 focus:text-white focus:outline-none" aria-expanded="false">
+							<button onclick={() => (burgerMenuOpen = !burgerMenuOpen)} class="hover:bg-muted focus:bg-muted inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:text-white focus:text-white focus:outline-none" aria-expanded="false">
 								<span class="sr-only">Open main menu</span>
 								<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
@@ -108,9 +108,9 @@
 
 							<!-- Burger Menu Dropdown -->
 							{#if burgerMenuOpen}
-								<div class="ring-opacity-5 absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-gray-800 py-1 shadow-lg ring-1 ring-black focus:outline-none">
-									<button onclick={handleSettings} class="block w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white"> Settings </button>
-									<button onclick={handleLogout} class="block w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white"> Logout </button>
+								<div class="ring-opacity-5 bg-secondary absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md py-1 shadow-lg ring-1 ring-black focus:outline-none">
+									<button onclick={handleSettings} class="hover:bg-muted block w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white"> Settings </button>
+									<button onclick={handleLogout} class="hover:bg-muted block w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white"> Logout </button>
 								</div>
 							{/if}
 						</div>
@@ -147,13 +147,13 @@
 					<!-- Enter Code to Join Section - Centered -->
 					<div class="text-center">
 						<div class="mx-auto max-w-md">
-							<div class="rounded-lg border border-gray-700 bg-gray-800 p-8 shadow-xl">
+							<div class="border-border bg-card rounded-lg border p-8 shadow-xl">
 								<div class="mb-6">
 									<h2 class="mb-2 text-2xl font-bold text-white">Enter code to join</h2>
 									<p class="text-sm text-gray-400">Have a quiz code? Enter it below to join instantly</p>
 								</div>
 								<div class="space-y-4">
-									<input type="text" placeholder="Enter join code" bind:value={joinCode} onkeydown={(e) => e.key === "Enter" && handleJoinQuiz()} class="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-3 text-center text-lg tracking-wider text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+									<input type="text" placeholder="Enter join code" bind:value={joinCode} onkeydown={(e) => e.key === "Enter" && handleJoinQuiz()} class="border-border bg-muted w-full rounded-lg border px-4 py-3 text-center text-lg tracking-wider text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
 									<button onclick={handleJoinQuiz} disabled={!joinCode.trim()} class="w-full rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-3 text-lg font-medium text-white transition-all hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"> Join Quiz </button>
 								</div>
 							</div>
@@ -163,7 +163,7 @@
 					<!-- Dashboard Content -->
 					<div class="grid gap-6 lg:grid-cols-2">
 						<!-- Quick Stats Card -->
-						<div class="rounded-lg border border-gray-700 bg-gray-800 p-6 shadow-lg">
+						<div class="border-border bg-card rounded-lg border p-6 shadow-lg">
 							<h3 class="mb-4 text-xl font-semibold text-white">📊 Quick Stats</h3>
 							<div class="space-y-3 text-sm text-gray-300">
 								<div class="flex items-center justify-between">
@@ -182,11 +182,11 @@
 						</div>
 
 						<!-- Recent Activity Card -->
-						<div class="rounded-lg border border-gray-700 bg-gray-800 p-6 shadow-lg">
+						<div class="border-border bg-card rounded-lg border p-6 shadow-lg">
 							<h3 class="mb-4 text-xl font-semibold text-white">🕒 Recent Activity</h3>
 							<div class="space-y-3">
 								{#each recentActivity as activity (activity.id)}
-									<div class="flex items-center justify-between rounded-lg bg-gray-700/50 p-3 transition-colors hover:bg-gray-700">
+									<div class="bg-muted hover:bg-muted flex items-center justify-between rounded-lg p-3 transition-colors">
 										<div class="flex items-center space-x-3">
 											<span class="h-3 w-3 rounded-full {activity.status === 'completed' ? 'bg-green-400' : 'bg-yellow-400'}"></span>
 											<div>
@@ -204,7 +204,7 @@
 									</div>
 								{/each}
 							</div>
-							<div class="mt-4 border-t border-gray-700 pt-4">
+							<div class="border-border mt-4 border-t pt-4">
 								<button class="text-sm font-medium text-blue-400 hover:text-blue-300"> View all activity → </button>
 							</div>
 						</div>
@@ -230,13 +230,13 @@
 
 					<!-- Enter Code to Join Section for Non-authenticated Users -->
 					<div class="mx-auto max-w-md">
-						<div class="rounded-lg border border-gray-700 bg-gray-800 p-8 shadow-xl">
+						<div class="border-border bg-card rounded-lg border p-8 shadow-xl">
 							<div class="mb-6">
 								<h2 class="mb-2 text-2xl font-bold text-white">Enter code to join</h2>
 								<p class="text-sm text-gray-400">Have a quiz code? You can join without signing up!</p>
 							</div>
 							<div class="space-y-4">
-								<input type="text" placeholder="Enter join code" bind:value={joinCode} onkeydown={(e) => e.key === "Enter" && handleJoinQuiz()} class="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-3 text-center text-lg tracking-wider text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+								<input type="text" placeholder="Enter join code" bind:value={joinCode} onkeydown={(e) => e.key === "Enter" && handleJoinQuiz()} class="border-border bg-muted w-full rounded-lg border px-4 py-3 text-center text-lg tracking-wider text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
 								<button onclick={handleJoinQuiz} disabled={!joinCode.trim()} class="w-full rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-3 text-lg font-medium text-white transition-all hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"> Join Quiz </button>
 							</div>
 						</div>

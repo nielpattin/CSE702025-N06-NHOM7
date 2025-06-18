@@ -73,7 +73,7 @@
 
 <!-- Statistics Row -->
 <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-	<div class="rounded-lg border border-gray-700 bg-gray-800 p-6 shadow-lg">
+	<div class="border-border bg-card rounded-lg border p-6 shadow-lg">
 		<div class="flex items-center">
 			<div class="flex-shrink-0">
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500">
@@ -89,7 +89,7 @@
 		</div>
 	</div>
 
-	<div class="rounded-lg border border-gray-700 bg-gray-800 p-6 shadow-lg">
+	<div class="border-border bg-card rounded-lg border p-6 shadow-lg">
 		<div class="flex items-center">
 			<div class="flex-shrink-0">
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500">
@@ -105,7 +105,7 @@
 		</div>
 	</div>
 
-	<div class="rounded-lg border border-gray-700 bg-gray-800 p-6 shadow-lg">
+	<div class="border-border bg-card rounded-lg border p-6 shadow-lg">
 		<div class="flex items-center">
 			<div class="flex-shrink-0">
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500">

@@ -32,7 +32,7 @@
 				<form method="POST" use:enhance class="space-y-6">
 					<div class="space-y-2">
 						<label for="code" class="text-card-foreground block text-sm font-medium">Quiz Code</label>
-						<Input id="code" name="code" type="text" placeholder="ABC123" required maxlength={6} autocomplete="off" class="w-full border-gray-600 bg-gray-900/60 py-4 text-center text-xl tracking-widest text-white uppercase placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500/20" />
+						<Input id="code" name="code" type="text" placeholder="ABC123" required maxlength={6} autocomplete="off" class="border-border bg-secondary/60 w-full py-4 text-center text-xl tracking-widest text-white uppercase placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500/20" />
 					</div>
 
 					{#if form?.error}

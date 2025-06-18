@@ -88,7 +88,7 @@
 </script>
 
 <!-- Session Expiration with Calendar Icon -->
-<div class="rounded-lg bg-gray-700 p-4">
+<div class="bg-muted rounded-lg p-4">
 	<h3 class="mb-2 text-sm font-medium text-gray-300">Session Expiration</h3>
 	<p class="text-lg font-semibold text-white">{formatDateForDisplay(currentDateTime())}</p>
 

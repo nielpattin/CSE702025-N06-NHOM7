@@ -12,7 +12,7 @@
 			case "hard":
 				return "bg-red-900/30 text-red-200"
 			default:
-				return "bg-gray-900/30 text-gray-200"
+				return "bg-muted text-gray-200"
 		}
 	}
 
@@ -21,11 +21,11 @@
 			case "public":
 				return "bg-blue-900/30 text-blue-200"
 			case "private":
-				return "bg-gray-900/30 text-gray-200"
+				return "bg-muted text-gray-200"
 			case "unlisted":
 				return "bg-purple-900/30 text-purple-200"
 			default:
-				return "bg-gray-900/30 text-gray-200"
+				return "bg-muted text-gray-200"
 		}
 	}
 
@@ -36,9 +36,9 @@
 			case "draft":
 				return "bg-yellow-900/30 text-yellow-200"
 			case "archived":
-				return "bg-gray-900/30 text-gray-200"
+				return "bg-muted text-gray-200"
 			default:
-				return "bg-gray-900/30 text-gray-200"
+				return "bg-muted text-gray-200"
 		}
 	}
 </script>

@@ -80,7 +80,7 @@
 		} else {
 			return {
 				text: status,
-				class: "bg-gray-900 text-gray-200"
+				class: "bg-secondary text-gray-200"
 			}
 		}
 	}
@@ -124,7 +124,7 @@
 </script>
 
 <div
-	class="block cursor-pointer rounded-lg border border-gray-700 bg-gray-900/50 p-6 transition-all duration-200 hover:border-gray-600 hover:bg-gray-900/70 hover:shadow-lg"
+	class="border-border bg-card hover:border-border hover:bg-secondary/70 block cursor-pointer rounded-lg border p-6 transition-all duration-200 hover:shadow-lg"
 	onclick={(e) => {
 		// Navigate to session if not clicking on form or dropdown elements
 		if (!(e.target as HTMLElement).closest("form") && !(e.target as HTMLElement).closest("[data-dropdown-menu-content]") && !(e.target as HTMLElement).closest('button[aria-haspopup="menu"]')) {

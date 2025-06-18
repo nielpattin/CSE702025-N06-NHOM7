@@ -5,7 +5,7 @@
 	let { data, form: actionData }: { data: PageData; form: ActionData | undefined } = $props()
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+<div class="bg-background min-h-screen">
 	<SessionHeader title={data.session.quiz.title ?? ""} />
 
 	<!-- Main Content -->

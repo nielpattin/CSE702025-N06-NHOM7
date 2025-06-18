@@ -11,7 +11,7 @@
 	<title>Admin Panel - User Management</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+<div class="bg-background min-h-screen">
 	<div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
 		<!-- Header -->
 		<div class="mb-8">
@@ -27,13 +27,13 @@
 		{/if}
 
 		<!-- Users Table -->
-		<div class="overflow-hidden rounded-lg bg-gray-800 shadow">
-			<div class="border-b border-gray-700 px-6 py-4">
+		<div class="bg-secondary overflow-hidden rounded-lg shadow">
+			<div class="border-border border-b px-6 py-4">
 				<h2 class="text-xl font-semibold text-white">User Management</h2>
 			</div>
 			<div class="overflow-x-auto">
 				<table class="min-w-full divide-y divide-gray-700">
-					<thead class="bg-gray-700">
+					<thead class="bg-muted">
 						<tr>
 							<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-300 uppercase"> User </th>
 							<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-300 uppercase"> Email </th>
@@ -41,15 +41,15 @@
 							<th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-300 uppercase"> Actions </th>
 						</tr>
 					</thead>
-					<tbody class="divide-y divide-gray-700 bg-gray-800">
+					<tbody class="bg-secondary divide-y divide-gray-700">
 						{#each data.users as user (user.id)}
-							<tr class="hover:bg-gray-700">
+							<tr class="hover:bg-muted">
 								<td class="px-6 py-4 whitespace-nowrap">
 									<div class="flex items-center">
 										{#if user.image}
 											<img class="h-10 w-10 rounded-full" src={user.image} alt="" />
 										{:else}
-											<div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-600">
+											<div class="bg-muted flex h-10 w-10 items-center justify-center rounded-full">
 												<span class="text-sm font-medium text-white">
 													{user.name?.charAt(0) || user.email?.charAt(0) || "U"}
 												</span>
@@ -73,7 +73,7 @@
 								<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
 									<form method="POST" action="?/updateUserRole" use:enhance>
 										<input type="hidden" name="userId" value={user.id} />
-										<select name="role" class="mr-2 rounded border border-gray-600 bg-gray-700 px-2 py-1 text-sm text-white" value={user.role}>
+										<select name="role" class="border-border bg-muted mr-2 rounded border px-2 py-1 text-sm text-white" value={user.role}>
 											<option value="Admin">👑 Admin</option>
 											<option value="User">🎓 User</option>
 										</select>
@@ -89,7 +89,7 @@
 
 		<!-- Back to Home -->
 		<div class="mt-8">
-			<a href="/" class="inline-flex items-center rounded-md border border-gray-600 bg-gray-800 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-gray-700"> ← Back to Home </a>
+			<a href="/" class="border-border bg-secondary hover:bg-muted inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium text-gray-200"> ← Back to Home </a>
 		</div>
 	</div>
 </div>

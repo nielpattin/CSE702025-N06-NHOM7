@@ -15,8 +15,8 @@
 	}>()
 </script>
 
-<div class="rounded-lg border border-gray-600 bg-gray-800 p-6 shadow-lg">
-	<h2 class="mb-6 border-b border-gray-600 pb-3 text-2xl font-bold text-white">Answer Options</h2>
+<div class="border-border bg-secondary rounded-lg border p-6 shadow-lg">
+	<h2 class="border-border mb-6 border-b pb-3 text-2xl font-bold text-white">Answer Options</h2>
 	<div class="space-y-4">
 		{#if questionType === "multiple_choice"}
 			<MultipleChoiceOptions {options} {onOptionsChange} />

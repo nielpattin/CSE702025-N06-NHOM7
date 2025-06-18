@@ -155,7 +155,7 @@
 	<meta name="description" content="Join active quiz sessions happening right now" />
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+<div class="bg-background min-h-screen">
 	<AppHeader title="Browse Sessions" />
 
 	<main class="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
@@ -176,7 +176,7 @@
 		</nav>
 
 		<!-- Search and Sort Controls -->
-		<div class="mb-6 rounded-lg bg-gray-800/50 p-6 shadow-lg backdrop-blur">
+		<div class="bg-card mb-6 rounded-lg p-6 shadow-lg backdrop-blur">
 			<div class="flex flex-col space-y-4 md:flex-row md:items-center md:space-y-0 md:space-x-4">
 				<div class="relative flex-1">
 					<Search class="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
@@ -191,7 +191,7 @@
 							}
 						}}
 						placeholder="Search quiz sessions..."
-						class="border-gray-600 bg-gray-700 pr-10 pl-10 text-white placeholder-gray-400"
+						class="border-border bg-muted pr-10 pl-10 text-white placeholder-gray-400"
 					/>
 					{#if searchInput}
 						<Button
@@ -210,13 +210,13 @@
 				</div>
 
 				<Select.Root type="single" bind:value={difficultyFilter} onValueChange={handleDifficultyFilter}>
-					<Select.Trigger class="w-[180px] border-gray-600 bg-gray-700 text-white hover:bg-gray-600">
+					<Select.Trigger class="border-border bg-muted hover:bg-muted w-[180px] text-white">
 						<Filter class="mr-2 h-4 w-4" />
 						{getDifficultyLabel(difficultyFilter)}
 					</Select.Trigger>
-					<Select.Content class="border-gray-700 bg-gray-800">
+					<Select.Content class="border-border bg-card">
 						{#each difficultyOptions as option (option.value)}
-							<Select.Item value={option.value} label={option.label} class="text-white hover:bg-gray-700 focus:bg-gray-700">
+							<Select.Item value={option.value} label={option.label} class="hover:bg-muted focus:bg-muted text-white">
 								{option.label}
 							</Select.Item>
 						{/each}
@@ -272,7 +272,7 @@
 		{#if isPageLoading || isPaginationLoading}
 			<div class="grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
 				{#each Array(6) as _, i (i)}
-					<Card class="border-gray-700 bg-gray-800/50">
+					<Card class="border-border bg-card">
 						<CardHeader class="pb-3">
 							<div class="flex items-start space-x-3">
 								<Skeleton class="h-14 w-14 rounded-lg" />
@@ -307,7 +307,7 @@
 			<div class="grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
 				{#each sessions as session, index (session.id)}
 					<div class="transform transition-all duration-500 ease-out {visibleSessions.includes(index) ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}" style="transition-delay: {index * 50}ms">
-						<Card class="border-gray-700 bg-gray-800/50 transition-colors hover:bg-gray-800/70">
+						<Card class="border-border bg-card hover:bg-secondary/70 transition-colors">
 							<CardHeader class="pb-3">
 								<div class="flex items-start space-x-3">
 									<div class="flex-shrink-0">

@@ -122,7 +122,7 @@
 	}
 </script>
 
-<div class="rounded-lg border border-gray-700 bg-gray-800/50 px-6 pt-6 shadow-lg backdrop-blur">
+<div class="border-border bg-card rounded-lg border px-6 pt-6 shadow-lg backdrop-blur">
 	<div class="mb-4">
 		<div class="relative flex items-center gap-3">
 			<div class="relative flex-1">
@@ -135,7 +135,7 @@
 						if (e.key === "Escape") handleSearchClear()
 					}}
 					placeholder="Search quizzes by title..."
-					class="border-gray-600 bg-gray-700 pr-10 pl-10 text-white placeholder-gray-400"
+					class="border-border bg-muted pr-10 pl-10 text-white placeholder-gray-400"
 				/>
 				{#if searchInput}
 					<Button variant="ghost" size="sm" onclick={handleSearchClear} class="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 p-0 text-gray-400 hover:bg-transparent hover:text-white">
@@ -146,13 +146,13 @@
 			</div>
 
 			<Select.Root type="single" value={currentDifficultyFilter} onValueChange={handleDifficultyFilter}>
-				<Select.Trigger class="w-[180px] border-gray-600 bg-gray-700 text-white hover:bg-gray-600">
+				<Select.Trigger class="border-border bg-muted hover:bg-muted w-[180px] text-white">
 					<Filter class="mr-2 h-4 w-4" />
 					{getDifficultyLabel(currentDifficultyFilter)}
 				</Select.Trigger>
-				<Select.Content class="border-gray-700 bg-gray-800">
+				<Select.Content class="border-border bg-card">
 					{#each difficultyOptions as option (option.value)}
-						<Select.Item value={option.value} label={option.label} class="text-white hover:bg-gray-700 focus:bg-gray-700">
+						<Select.Item value={option.value} label={option.label} class="hover:bg-muted focus:bg-muted text-white">
 							{option.label}
 						</Select.Item>
 					{/each}

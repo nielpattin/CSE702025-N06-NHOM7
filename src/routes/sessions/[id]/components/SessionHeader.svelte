@@ -7,7 +7,7 @@
 </svelte:head>
 
 <!-- Header -->
-<header class="border-b border-gray-700 bg-gray-800/50 backdrop-blur">
+<header class="border-border bg-card border-b backdrop-blur">
 	<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 		<div>
 			<a href="/sessions" class="flex items-center gap-2 text-gray-400 transition-colors hover:text-gray-300">

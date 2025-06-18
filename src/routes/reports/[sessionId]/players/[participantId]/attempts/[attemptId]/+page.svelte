@@ -55,7 +55,7 @@
 	<title>Attempt Details - {participant.displayName} - {quiz.title}</title>
 </svelte:head>
 
-<div class=" min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+<div class=" bg-background min-h-screen">
 	<AppHeader title="Attempt Details" />
 
 	<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -86,7 +86,7 @@
 		<!-- Performance metrics grid -->
 		<div class="mb-8 grid gap-6 md:grid-cols-4">
 			<!-- Accuracy -->
-			<div class="flex min-h-[180px] flex-col justify-between rounded-lg border border-gray-700 bg-gray-800 p-6 text-center">
+			<div class="border-border bg-card flex min-h-[180px] flex-col justify-between rounded-lg border p-6 text-center">
 				<div class="flex h-32 items-center justify-center">
 					<CircularProgress percentage={summary.accuracy} size={80} strokeWidth={8} color={getAccuracyStrokeColor(summary.accuracy)} />
 				</div>
@@ -96,7 +96,7 @@
 			</div>
 
 			<!-- Correct Answers -->
-			<div class="flex min-h-[180px] flex-col justify-between rounded-lg border border-gray-700 bg-gradient-to-br from-green-900/50 to-green-800/30 p-6 text-center">
+			<div class="border-border flex min-h-[180px] flex-col justify-between rounded-lg border bg-gradient-to-br from-green-900/50 to-green-800/30 p-6 text-center">
 				<div class="flex h-32 items-center justify-center">
 					<div class="flex items-baseline space-x-1 text-green-400">
 						<span class="text-5xl font-bold">{summary.correctAnswers}</span>
@@ -110,7 +110,7 @@
 			</div>
 
 			<!-- Completion Time -->
-			<div class="flex min-h-[180px] flex-col justify-between rounded-lg border border-gray-700 bg-gradient-to-br from-blue-900/50 to-blue-800/30 p-6 text-center">
+			<div class="border-border flex min-h-[180px] flex-col justify-between rounded-lg border bg-gradient-to-br from-blue-900/50 to-blue-800/30 p-6 text-center">
 				<div class="flex h-32 items-center justify-center">
 					<div class="text-3xl font-bold text-blue-400">{formatDuration()}</div>
 				</div>
@@ -120,7 +120,7 @@
 			</div>
 
 			<!-- Score -->
-			<div class="flex min-h-[180px] flex-col justify-between rounded-lg border border-gray-700 bg-gradient-to-br from-purple-900/50 to-purple-800/30 p-6 text-center">
+			<div class="border-border flex min-h-[180px] flex-col justify-between rounded-lg border bg-gradient-to-br from-purple-900/50 to-purple-800/30 p-6 text-center">
 				<div class="flex h-32 items-center justify-center">
 					<div class="flex items-baseline space-x-1 text-purple-300">
 						<span class="text-5xl font-bold">{summary.score}</span>
@@ -136,14 +136,14 @@
 
 		<!-- Progress bar -->
 		<div class="mb-8">
-			<div class="rounded-lg border border-gray-700 bg-gray-800 p-6">
+			<div class="border-border bg-card rounded-lg border p-6">
 				<div class="mb-4 flex items-center justify-between">
 					<h3 class="text-lg font-semibold text-white">Progress Overview</h3>
 					<span class="text-sm text-gray-400">
 						{summary.correctAnswers} of {summary.totalQuestions} correct
 					</span>
 				</div>
-				<div class="h-4 w-full rounded-full bg-gray-700">
+				<div class="bg-muted h-4 w-full rounded-full">
 					<div class="h-4 rounded-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500" style="width: {(summary.correctAnswers / summary.totalQuestions) * 100}%"></div>
 				</div>
 				<div class="mt-2 flex justify-between text-sm text-gray-400">
@@ -154,8 +154,8 @@
 		</div>
 
 		<!-- Detailed Questions -->
-		<div class="rounded-lg border border-gray-700 bg-gray-800 shadow-lg">
-			<div class="border-b border-gray-700 px-6 py-4">
+		<div class="border-border bg-card rounded-lg border shadow-lg">
+			<div class="border-border border-b px-6 py-4">
 				<h3 class="text-xl font-semibold text-white">Question Details</h3>
 				<p class="text-sm text-gray-400">Review each question and the participant's responses</p>
 			</div>
@@ -170,7 +170,7 @@
 									<span class="inline-flex items-center rounded bg-blue-600 px-2 py-1 text-xs font-medium text-blue-100">
 										Question {index + 1}
 									</span>
-									<span class="inline-flex items-center rounded bg-gray-600 px-2 py-1 text-xs font-medium text-gray-200">
+									<span class="bg-muted inline-flex items-center rounded px-2 py-1 text-xs font-medium text-gray-200">
 										{formatQuestionType(question.type)}
 									</span>
 									<span class="inline-flex items-center rounded bg-green-600 px-2 py-1 text-xs font-medium text-green-100">
@@ -205,7 +205,7 @@
 										Incorrect
 									</div>
 								{:else}
-									<div class="inline-flex items-center rounded-full bg-gray-600 px-3 py-1 text-sm font-medium text-white">Not Answered</div>
+									<div class="bg-muted inline-flex items-center rounded-full px-3 py-1 text-sm font-medium text-white">Not Answered</div>
 								{/if}
 							</div>
 						</div>
@@ -213,7 +213,7 @@
 						<!-- Answer Options -->
 						<div class="space-y-2">
 							{#each question.options as option (option.id)}
-								<div class="flex items-center gap-3 rounded-lg border p-3 {option.correct ? 'border-green-500 bg-green-900/20' : option.selected ? 'border-red-500 bg-red-900/20' : 'border-gray-600 bg-gray-700/30'}">
+								<div class="flex items-center gap-3 rounded-lg border p-3 {option.correct ? 'border-green-500 bg-green-900/20' : option.selected ? 'border-red-500 bg-red-900/20' : 'border-border bg-muted/30'}">
 									<div class="flex-shrink-0">
 										{#if option.correct}
 											<svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,7 +251,7 @@
 
 		<!-- Summary Footer -->
 		<div class="mt-8">
-			<div class="rounded-lg border border-gray-700 bg-gray-900/50 p-4">
+			<div class="border-border bg-card rounded-lg border p-4">
 				<div class="flex items-center justify-between text-sm text-gray-400">
 					<div>Attempt #{attempt.attemptNumber}</div>
 					<div>Status: {attempt.status}</div>

@@ -29,14 +29,15 @@
 	<meta name="description" content="View and manage your quiz reports" />
 </svelte:head>
 
-<div class=" min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+<div class="bg-background min-h-screen">
 	<AppHeader title="My Reports" />
 
 	<main class="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
-		{#if isLoading || isPaginationLoading}
+		{#if isLoading}
+			<!-- Full page skeleton during initial load -->
 			<div class="w-full">
 				<div class="mb-8">
-					<div class="rounded-lg bg-gray-800/50 p-6 shadow-lg backdrop-blur">
+					<div class="bg-card rounded-lg p-6 shadow-lg backdrop-blur">
 						<div class="mb-6">
 							<div class="relative flex items-center space-x-2">
 								<div class="relative flex-1">
@@ -60,7 +61,7 @@
 
 						<div class="mb-6 grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
 							{#each Array(6) as _, i (i)}
-								<div class="rounded-lg border border-gray-600 bg-gray-700/50 p-6 shadow-lg backdrop-blur">
+								<div class="border-border bg-muted rounded-lg border p-6 shadow-lg backdrop-blur">
 									<div class="mb-4 flex items-start justify-between">
 										<div class="flex-1">
 											<Skeleton class="mb-2 h-6 w-3/4 rounded" />
@@ -106,6 +107,7 @@
 				</div>
 			</div>
 		{:else}
+			<!-- Reports Content with Search, Sort, and Pagination -->
 			<ReportsContent reports={data.sessionReports} pagination={data.pagination} search={data.search} sortBy={data.sortBy} sortOrder={data.sortOrder} {isPaginationLoading} onPaginationLoadingChange={(loading) => (isPaginationLoading = loading)} />
 		{/if}
 	</main>

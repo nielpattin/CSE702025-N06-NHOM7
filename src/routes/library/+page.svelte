@@ -67,6 +67,12 @@
 	}
 
 	async function toggleSortOrder() {
+		// Show loading for sort operations
+		isSortSearchLoading = true
+		setTimeout(() => {
+			isSortSearchLoading = false
+		}, 500)
+
 		// Toggle between 'asc' and 'desc' while preserving all other URL parameters
 		const url = new URL(page.url)
 		const newSortOrder = sortOrder === "asc" ? "desc" : "asc"
@@ -76,6 +82,12 @@
 	}
 
 	async function setSortKey(newSortKey: "createdAt" | "title") {
+		// Show loading for sort operations
+		isSortSearchLoading = true
+		setTimeout(() => {
+			isSortSearchLoading = false
+		}, 500)
+
 		const url = new URL(page.url)
 		url.searchParams.set("sortBy", newSortKey)
 		await goto(url.toString(), { replaceState: true, noScroll: true })
@@ -115,6 +127,12 @@
 	}
 
 	async function handleSearch() {
+		// Show loading for search operations
+		isSortSearchLoading = true
+		setTimeout(() => {
+			isSortSearchLoading = false
+		}, 500)
+
 		const newUrl = new URL(page.url)
 
 		if (searchInput.trim()) {
@@ -155,13 +173,14 @@
 	})
 
 	const quizStatusTabs = [
-		{ id: "published" as const, label: "Published", icon: Star, color: "text-yellow-400", activeColor: "text-yellow-300" },
-		{ id: "draft" as const, label: "Drafts", icon: FileText, color: "text-blue-400", activeColor: "text-blue-300" },
-		{ id: "archived" as const, label: "Archived", icon: Archive, color: "text-gray-400", activeColor: "text-gray-300" }
+		{ id: "published" as const, label: "Published", icon: Star, color: "text-yellow-500 dark:text-yellow-400", activeColor: "text-primary-foreground" },
+		{ id: "draft" as const, label: "Drafts", icon: FileText, color: "text-blue-500 dark:text-blue-400", activeColor: "text-primary-foreground" },
+		{ id: "archived" as const, label: "Archived", icon: Archive, color: "text-gray-500 dark:text-gray-400", activeColor: "text-primary-foreground" }
 	]
 
 	let visibleQuizzes = $state<number[]>([])
 	let isLoadingQuizzes = $state(false)
+	let isSortSearchLoading = $state(false)
 
 	function handleTabChange(tabId: QuizStatus) {
 		isLoadingQuizzes = true
@@ -204,7 +223,7 @@
 	<meta name="description" content="Browse and manage your quiz collection" />
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 select-none">
+<div class="bg-background min-h-screen select-none">
 	<AppHeader title="Quiz Library" />
 
 	<main class="mx-auto max-w-full px-4 pt-4 sm:px-6 lg:px-8">
@@ -212,7 +231,7 @@
 			<div class="w-full">
 				<div class="flex w-full flex-col md:flex-row md:items-start">
 					<!-- Skeleton for vertical tabs -->
-					<div class="flex h-auto w-fit shrink-0 space-x-2 rounded-lg bg-gray-800 p-2 md:w-48 md:flex-col md:space-y-2 md:space-x-0">
+					<div class="bg-secondary flex h-auto w-fit shrink-0 space-x-2 rounded-lg p-2 md:w-48 md:flex-col md:space-y-2 md:space-x-0">
 						{#each Array(3) as _, i (i)}
 							<Skeleton class="h-12 w-full rounded-md" />
 						{/each}
@@ -230,10 +249,10 @@
 						</div>
 
 						<!-- Content skeleton -->
-						<div class="rounded-lg bg-gray-800/50 p-3 shadow-lg backdrop-blur">
+						<div class="bg-card border-border rounded-lg border p-3 shadow-lg backdrop-blur">
 							<div class="space-y-4">
 								{#each Array(4) as _, i (i)}
-									<div class="rounded-lg border border-gray-700 bg-gray-700/50 p-3 px-4 shadow-sm">
+									<div class="border-border bg-card rounded-lg border p-3 px-4 shadow-sm">
 										<div class="flex items-center space-x-4">
 											<div class="flex-shrink-0">
 												<Skeleton class="h-16 w-16 rounded-lg" />
@@ -289,19 +308,19 @@
 		{:else}
 			<div class="w-full">
 				<Tabs.Root value={activeTab} onValueChange={(value: string) => handleTabChange(value as QuizStatus)} class="flex w-full flex-col md:flex-row md:items-start">
-					<Tabs.List class="flex h-auto w-fit shrink-0 space-x-2 rounded-lg bg-gray-800 p-2 md:w-48 md:flex-col md:space-y-2 md:space-x-0">
+					<Tabs.List class="bg-card border-border mt-2 flex h-auto w-fit shrink-0 space-x-2 rounded-lg border p-2 md:w-48 md:flex-col md:space-y-2 md:space-x-0">
 						{#each quizStatusTabs as tab (tab.id)}
 							<Tabs.Trigger
 								value={tab.id}
-								class="flex h-12 w-full cursor-pointer items-center justify-between rounded-md border-transparent px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-gray-700
-										data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white
-										data-[state=active]:shadow-lg {activeTab === tab.id ? 'text-white' : tab.color}"
+								class="hover:bg-muted data-[state=active]:from-primary data-[state=active]:to-accent data-[state=active]:text-primary-foreground flex h-12 w-full cursor-pointer items-center justify-between rounded-md border-transparent px-4 py-3 text-sm
+										font-medium transition-all duration-200 data-[state=active]:bg-gradient-to-r
+										data-[state=active]:shadow-lg {activeTab === tab.id ? 'text-primary-foreground' : tab.color}"
 							>
 								<div class="flex items-center">
 									<tab.icon class="mr-2 h-4 w-4 shrink-0 {activeTab === tab.id ? tab.activeColor : tab.color}" />
-									<span class={activeTab === tab.id ? "text-white" : tab.color}>{tab.label}</span>
+									<span class={activeTab === tab.id ? "text-primary-foreground" : tab.color}>{tab.label}</span>
 								</div>
-								<span class="ml-2 min-w-[28px] shrink-0 rounded-full bg-gray-600 px-2 py-1 text-center text-xs text-gray-300">
+								<span class="bg-muted text-muted-foreground ml-2 min-w-[28px] shrink-0 rounded-full px-2 py-1 text-center text-xs">
 									{userQuizzesCount[tab.id]}
 								</span>
 							</Tabs.Trigger>
@@ -309,7 +328,7 @@
 					</Tabs.List>
 
 					<div class="ml-0 flex-1 md:ml-4">
-						<div class="mt-2 flex items-center space-x-4">
+						<div class="mt-2 mb-6 flex items-center space-x-4">
 							<div class="relative flex-1">
 								<Search class="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
 								<Input
@@ -329,12 +348,6 @@
 									</Button>
 								{/if}
 							</div>
-
-							<Button onclick={handleSearch} variant="default" size="sm" class="cursor-pointer">
-								<Search class="mr-2 h-4 w-4" />
-								Enter
-							</Button>
-
 							<SortButtons
 								options={[
 									{ key: "createdAt", label: "Date Created", icon: Calendar },
@@ -356,8 +369,8 @@
 
 						{#each quizStatusTabs as tab (tab.id)}
 							<Tabs.Content value={tab.id} class="">
-								<div class="rounded-lg bg-gray-800/50 p-3 shadow-lg backdrop-blur">
-									{#if isLoadingQuizzes || isPaginationLoading}
+								<div class="bg-card rounded-lg p-3 shadow-lg backdrop-blur">
+									{#if isLoadingQuizzes || isPaginationLoading || isSortSearchLoading}
 										<div class="space-y-4">
 											{#each Array(4) as _, i (i)}
 												<LibraryQuizCardSkeleton />
@@ -376,10 +389,10 @@
 											<div class="mx-auto flex h-24 w-24 items-center justify-center opacity-50">
 												<tab.icon class="h-16 w-16 {tab.color}" />
 											</div>
-											<h3 class="mt-4 text-lg font-medium text-white">
+											<h3 class="text-foreground mt-4 text-lg font-medium">
 												No {tab.label.toLowerCase()} quizzes
 											</h3>
-											<p class="mt-2 text-gray-400">
+											<p class="text-muted-foreground mt-2">
 												{#if tab.id === "published"}
 													You haven't published any quizzes yet. Create and publish your first quiz to see it here.
 												{:else if tab.id === "draft"}
@@ -398,7 +411,7 @@
 			</div>
 
 			{#if pagination && pagination.totalQuizzes > pagination.perPage}
-				<div class="flex justify-center">
+				<div class="justify-cente mt-4 flex">
 					<Pagination.Root count={pagination.totalQuizzes} perPage={pagination.perPage} page={currentPage} onPageChange={handlePageChange}>
 						{#snippet children({ pages, currentPage: paginationCurrentPage })}
 							<Pagination.Content>
@@ -431,7 +444,7 @@
 </div>
 
 {#if showBackToTop}
-	<button onclick={scrollToTop} class="fixed right-8 bottom-8 z-50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-xl focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none" aria-label="Back to top" title="Back to top">
+	<button onclick={scrollToTop} class="bg-primary text-primary-foreground hover:bg-primary-hover focus:ring-ring fixed right-8 bottom-8 z-50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full shadow-lg transition-all duration-200 hover:shadow-xl focus:ring-2 focus:ring-offset-2 focus:outline-none" aria-label="Back to top" title="Back to top">
 		<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
 		</svg>

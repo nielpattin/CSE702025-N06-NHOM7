@@ -15,14 +15,14 @@
 	{:else}
 		{#each questions as question, index (question.id)}
 			<div class="transform transition-all duration-500 ease-out {visibleQuestions.includes(index) ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}" style="transition-delay: {index * 50}ms">
-				<div class="rounded-lg border border-gray-600 bg-gray-700 p-4">
+				<div class="border-border bg-muted rounded-lg border p-4">
 					<div class="flex items-start justify-between">
 						<div class="flex-1">
 							<div class="mb-2 flex items-center space-x-2">
 								<span class="inline-flex items-center rounded bg-blue-600 px-2 py-1 text-xs font-medium text-blue-100">
 									Question {index + 1}
 								</span>
-								<span class="inline-flex items-center rounded bg-gray-600 px-2 py-1 text-xs font-medium text-gray-200">
+								<span class="bg-muted inline-flex items-center rounded px-2 py-1 text-xs font-medium text-gray-200">
 									{formatQuestionType(question.type)}
 								</span>
 								<span class="inline-flex items-center rounded bg-green-600 px-2 py-1 text-xs font-medium text-green-100">
