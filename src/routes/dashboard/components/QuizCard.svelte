@@ -1,27 +1,25 @@
 <script lang="ts">
 	import { goto } from "$app/navigation"
+	import { Card } from "$lib/components/ui/card"
+	import { Badge } from "$lib/components/ui/badge"
+	import { Star, Users, Clock } from "@lucide/svelte"
 
 	let { quiz } = $props()
 
 	function getDifficultyColor(difficulty: string) {
 		switch (difficulty.toLowerCase()) {
 			case "beginner":
-				return "text-green-400 bg-green-900/30"
+				return "bg-green-600 text-white hover:bg-green-700"
 			case "intermediate":
-				return "text-yellow-400 bg-yellow-900/30"
+				return "bg-yellow-600 text-white hover:bg-yellow-700"
 			case "advanced":
-				return "text-red-400 bg-red-900/30"
+				return "bg-red-600 text-white hover:bg-red-700"
 			default:
-				return "text-gray-400 bg-gray-900/30"
+				return "bg-gray-600 text-white hover:bg-gray-700"
 		}
 	}
 
 	function handleQuizClick() {
-		goto(`/quiz/${quiz.id}`)
-	}
-
-	function handleTakeQuiz(event: Event) {
-		event.stopPropagation()
 		goto(`/quiz/${quiz.id}`)
 	}
 
@@ -33,35 +31,31 @@
 	}
 </script>
 
-<div class="group cursor-pointer rounded-lg border border-gray-700 bg-gray-700/50 p-4 transition-all hover:border-blue-500 hover:bg-gray-700" onclick={handleQuizClick} onkeydown={handleKeydown} role="button" tabindex="0">
-	<div class="mb-3 flex items-start justify-between">
-		<div class="flex-1">
-			<h3 class="font-semibold text-white group-hover:text-blue-300">
-				{quiz.title}
-			</h3>
-			<p class="text-sm text-gray-400">by {quiz.author}</p>
-		</div>
-		<div class="flex items-center text-yellow-400">
-			<svg class="mr-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-				<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-			</svg>
-			<span class="text-sm">{quiz.rating}</span>
+<Card class="group cursor-pointer border-gray-700 bg-gray-800/50 p-3 transition-all duration-200 hover:border-blue-500/50 hover:shadow-sm hover:shadow-blue-500/20" onclick={handleQuizClick} onkeydown={handleKeydown} role="button" tabindex={0}>
+	<div class="flex items-center justify-between gap-2">
+		<h3 class="flex-1 truncate text-sm font-medium text-white transition-colors duration-200 group-hover:text-blue-300">
+			{quiz.title}
+		</h3>
+		<div class="flex flex-shrink-0 items-center gap-0.5 text-yellow-400">
+			<Star class="h-2.5 w-2.5 fill-current" />
+			<span class="text-xs">{quiz.rating.toFixed(1)}</span>
 		</div>
 	</div>
 
-	<div class="mb-3 flex flex-wrap gap-2">
-		<span class={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getDifficultyColor(quiz.difficulty)}`}>
-			{quiz.difficulty}
-		</span>
-		<span class="inline-flex items-center rounded-full bg-gray-900/50 px-2.5 py-0.5 text-xs font-medium text-gray-300">
-			⏱️ {quiz.duration}
-		</span>
+	<div class="flex items-center justify-between text-xs">
+		<span class="truncate text-gray-400">by {quiz.author}</span>
+		<div class="flex items-center gap-1">
+			<Badge class="{getDifficultyColor(quiz.difficulty)} h-5 px-2 py-0.5 text-xs">
+				{quiz.difficulty}
+			</Badge>
+			<span class="text-gray-400">{quiz.duration}</span>
+			<span class="text-gray-400">{quiz.participants.toLocaleString()}</span>
+		</div>
 	</div>
 
-	<div class="flex items-center justify-between">
-		<span class="text-sm text-gray-400">
-			{quiz.participants.toLocaleString()} participants
-		</span>
-		<button onclick={handleTakeQuiz} class="rounded-md bg-gradient-to-r from-purple-600 to-pink-600 px-3 py-1 text-sm font-medium text-white transition-all hover:from-purple-700 hover:to-pink-700"> Take Quiz </button>
-	</div>
-</div>
+	{#if quiz.createdAt}
+		<div class="text-xs leading-none text-gray-500">
+			{new Date(quiz.createdAt).toLocaleDateString()}
+		</div>
+	{/if}
+</Card>

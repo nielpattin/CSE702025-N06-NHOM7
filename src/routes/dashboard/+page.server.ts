@@ -1,7 +1,7 @@
 import { db } from "$lib/server/db"
-import { quizzes, quizSessions, sessionParticipants, users } from "$lib/server/db/schema"
+import { quizzes, quizSessions, sessionParticipants, users, questions } from "$lib/server/db/schema"
 import { redirect } from "@sveltejs/kit"
-import { eq, and, ilike, desc, asc, count, sql, getTableColumns } from "drizzle-orm"
+import { eq, and, count, sql, desc, gte } from "drizzle-orm"
 import type { PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async (event) => {
@@ -11,107 +11,113 @@ export const load: PageServerLoad = async (event) => {
 		redirect(302, "/signin")
 	}
 
-	const url = new URL(event.request.url)
-	const page = parseInt(url.searchParams.get("page") || "1")
-	const search = url.searchParams.get("search") || ""
-	const sortBy = url.searchParams.get("sortBy") || "participants"
-	const sortOrder = url.searchParams.get("sortOrder") || "desc"
-	const difficultyFilter = url.searchParams.get("difficulty") || ""
-	const perPage = 6
-
-	let whereCondition = and(eq(quizzes.status, "published"), eq(quizzes.visibility, "public"))
-
-	if (search) {
-		whereCondition = and(whereCondition, ilike(quizzes.title, `%${search}%`))
-	}
-
-	if (difficultyFilter) {
-		whereCondition = and(whereCondition, eq(quizzes.difficulty, difficultyFilter as "easy" | "medium" | "hard"))
-	}
-
 	try {
-		const orderByDirection = sortOrder === "asc" ? asc : desc
-		let orderByClause
+		// Get current date for filtering recent data
+		const thirtyDaysAgo = new Date()
+		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-		switch (sortBy) {
-			case "title":
-				orderByClause = orderByDirection(quizzes.title)
-				break
-			case "rating":
-				orderByClause = orderByDirection(quizzes.rating)
-				break
-			case "createdAt":
-				orderByClause = orderByDirection(quizzes.createdAt)
-				break
-			case "participants":
-				orderByClause = orderByDirection(sql`count(distinct ${sessionParticipants.id})`)
-				break
-			default:
-				orderByClause = desc(quizzes.createdAt)
-		}
+		const [userStatsResult, recentQuizzesResult, recentSessionsResult, publicQuizzesCountResult, activeSessionsCountResult] = await Promise.all([
+			// User's own stats
+			Promise.all([
+				// Total quizzes created by user
+				db.select({ count: count() }).from(quizzes).where(eq(quizzes.creatorId, session.user.id)),
+				// Total sessions hosted by user
+				db.select({ count: count() }).from(quizSessions).where(eq(quizSessions.hostId, session.user.id)),
+				// Total participants in user's sessions
+				db.select({ count: count() }).from(sessionParticipants).leftJoin(quizSessions, eq(sessionParticipants.quizSessionId, quizSessions.id)).where(eq(quizSessions.hostId, session.user.id))
+			]),
 
-		const [results, totalCountResult] = await Promise.all([
+			// Recent quizzes created by user (last 5)
 			db
 				.select({
-					...getTableColumns(quizzes),
-					creatorName: users.name,
-					creatorImage: users.image,
-					participantCount: sql<number>`count(distinct ${sessionParticipants.id})`.as("participant_count")
+					id: quizzes.id,
+					title: quizzes.title,
+					status: quizzes.status,
+					createdAt: quizzes.createdAt,
+					questionCount: sql<number>`count(${questions.id})`.as("question_count")
 				})
 				.from(quizzes)
-				.leftJoin(users, eq(quizzes.creatorId, users.id))
-				.leftJoin(quizSessions, eq(quizzes.id, quizSessions.quizId))
+				.leftJoin(questions, eq(quizzes.id, questions.quizId))
+				.where(eq(quizzes.creatorId, session.user.id))
+				.groupBy(quizzes.id, quizzes.title, quizzes.status, quizzes.createdAt)
+				.orderBy(desc(quizzes.createdAt))
+				.limit(5),
+
+			// Recent sessions hosted by user (last 5)
+			db
+				.select({
+					id: quizSessions.id,
+					code: quizSessions.code,
+					status: quizSessions.status,
+					createdAt: quizSessions.createdAt,
+					quizTitle: quizzes.title,
+					participantCount: sql<number>`count(distinct ${sessionParticipants.id})`.as("participant_count")
+				})
+				.from(quizSessions)
+				.leftJoin(quizzes, eq(quizSessions.quizId, quizzes.id))
 				.leftJoin(sessionParticipants, eq(quizSessions.id, sessionParticipants.quizSessionId))
-				.where(whereCondition)
-				.groupBy(quizzes.id, users.id)
-				.orderBy(orderByClause)
-				.limit(perPage)
-				.offset((page - 1) * perPage),
-			db.select({ count: count() }).from(quizzes).where(whereCondition)
+				.where(eq(quizSessions.hostId, session.user.id))
+				.groupBy(quizSessions.id, quizSessions.code, quizSessions.status, quizSessions.createdAt, quizzes.title)
+				.orderBy(desc(quizSessions.createdAt))
+				.limit(5),
+
+			// Total public quizzes available
+			db
+				.select({ count: count() })
+				.from(quizzes)
+				.where(and(eq(quizzes.status, "published"), eq(quizzes.visibility, "public"))),
+
+			// Total active sessions available
+			db
+				.select({ count: count() })
+				.from(quizSessions)
+				.leftJoin(quizzes, eq(quizSessions.quizId, quizzes.id))
+				.where(and(eq(quizSessions.status, "active"), eq(quizzes.status, "published"), eq(quizzes.visibility, "public")))
 		])
 
-		const totalQuizzes = totalCountResult[0]?.count ?? 0
-		const totalPages = Math.ceil(totalQuizzes / perPage)
+		const [totalQuizzes, totalSessions, totalParticipants] = userStatsResult
 
-		const formattedQuizzes = results.map((quiz) => ({
-			id: quiz.id,
-			title: quiz.title || "Untitled Quiz",
-			author: quiz.creatorName || "Unknown Author",
-			participants: Number(quiz.participantCount),
-			difficulty: quiz.difficulty === "easy" ? "Beginner" : quiz.difficulty === "medium" ? "Intermediate" : "Advanced",
-			rating: Number(quiz.rating?.toFixed(1)) || 0.0,
-			duration: quiz.duration === 0 ? "Unlimited" : quiz.duration ? `${quiz.duration} min` : "N/A",
-			imageUrl: quiz.imageUrl,
-			createdAt: quiz.createdAt
+		const userStats = {
+			totalQuizzes: totalQuizzes[0]?.count || 0,
+			totalSessions: totalSessions[0]?.count || 0,
+			totalParticipants: totalParticipants[0]?.count || 0
+		}
+
+		const recentQuizzes = recentQuizzesResult.map((quiz) => ({
+			...quiz,
+			questionCount: Number(quiz.questionCount) || 0
 		}))
 
+		const recentSessions = recentSessionsResult.map((session) => ({
+			...session,
+			participantCount: Number(session.participantCount) || 0
+		}))
+
+		const globalStats = {
+			publicQuizzes: publicQuizzesCountResult[0]?.count || 0,
+			activeSessions: activeSessionsCountResult[0]?.count || 0
+		}
+
 		return {
-			quizzes: formattedQuizzes,
-			pagination: {
-				currentPage: page,
-				perPage,
-				totalQuizzes,
-				totalPages
-			},
-			search,
-			sortBy,
-			sortOrder,
-			difficultyFilter
+			userStats,
+			recentQuizzes,
+			recentSessions,
+			globalStats
 		}
 	} catch (error) {
-		console.error("Error fetching quizzes:", error)
+		console.error("Error loading dashboard data:", error)
 		return {
-			quizzes: [],
-			pagination: {
-				currentPage: 1,
-				perPage,
+			userStats: {
 				totalQuizzes: 0,
-				totalPages: 0
+				totalSessions: 0,
+				totalParticipants: 0
 			},
-			search: "",
-			sortBy: "participants",
-			sortOrder: "desc",
-			difficultyFilter: ""
+			recentQuizzes: [],
+			recentSessions: [],
+			globalStats: {
+				publicQuizzes: 0,
+				activeSessions: 0
+			}
 		}
 	}
 }

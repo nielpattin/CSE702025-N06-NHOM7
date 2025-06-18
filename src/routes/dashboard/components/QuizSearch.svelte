@@ -6,7 +6,8 @@
 	import { Badge } from "$lib/components/ui/badge"
 	import * as Pagination from "$lib/components/ui/pagination"
 	import * as Select from "$lib/components/ui/select"
-	import { Search, X, Filter, Star, Users, Calendar, BookOpen, ChevronUp, ChevronDown } from "@lucide/svelte"
+	import { Search, X, Filter, Star, Users, Calendar, BookOpen } from "@lucide/svelte"
+	import SortButtons from "$lib/components/ui/sort-buttons.svelte"
 	import QuizCard from "./QuizCard.svelte"
 	import QuizCardSkeleton from "./QuizCardSkeleton.svelte"
 
@@ -173,7 +174,7 @@
 <div class="w-full">
 	<div class="rounded-lg border border-gray-700 bg-gray-800/50 p-6 shadow-lg backdrop-blur">
 		<div class="mb-6">
-			<div class="relative flex items-center space-x-2">
+			<div class="relative flex items-center gap-3">
 				<div class="relative flex-1">
 					<Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
 					<Input
@@ -198,81 +199,49 @@
 					<Search class="mr-2 h-4 w-4" />
 					Search
 				</Button>
-			</div>
 
-			{#if search}
-				<div class="mt-3 flex items-center justify-between">
-					<p class="text-sm text-gray-400">
-						Showing results for: <span class="font-medium text-white">"{search}"</span>
-					</p>
-					<p class="text-sm text-gray-400">
-						{pagination.totalQuizzes} quiz{pagination.totalQuizzes === 1 ? "" : "zes"} found
-					</p>
+				<Select.Root type="single" value={currentDifficultyFilter} onValueChange={handleDifficultyFilter}>
+					<Select.Trigger class="w-[180px] border-gray-600 bg-gray-700 text-white hover:bg-gray-600">
+						<Filter class="mr-2 h-4 w-4" />
+						{getDifficultyLabel(currentDifficultyFilter)}
+					</Select.Trigger>
+					<Select.Content class="border-gray-700 bg-gray-800">
+						{#each difficultyOptions as option (option.value)}
+							<Select.Item value={option.value} label={option.label} class="text-white hover:bg-gray-700 focus:bg-gray-700">
+								{option.label}
+							</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+
+				<SortButtons options={sortOptions} {currentSortKey} {currentSortOrder} onSort={handleSort} />
+			</div>
+		</div>
+
+		{#if currentDifficultyFilter || search}
+			<div class="mb-6 flex flex-wrap items-center gap-3">
+				<span class="text-sm font-medium text-gray-400">Active filters:</span>
+				{#if currentDifficultyFilter}
+					<Badge variant="secondary" class="bg-blue-600 text-white">
+						{getDifficultyLabel(currentDifficultyFilter)}
+						<button onclick={() => handleDifficultyFilter("")} class="ml-1 hover:text-gray-300">
+							<X class="h-3 w-3" />
+						</button>
+					</Badge>
+				{/if}
+				{#if search}
+					<Badge variant="secondary" class="bg-green-600 text-white">
+						Search: "{search}"
+						<button onclick={handleSearchClear} class="ml-1 hover:text-gray-300">
+							<X class="h-3 w-3" />
+						</button>
+					</Badge>
+				{/if}
+				<div class="ml-auto text-sm text-gray-400">
+					{pagination.totalQuizzes} total quiz{pagination.totalQuizzes === 1 ? "" : "zes"}
 				</div>
-			{/if}
-		</div>
-
-		<div class="mb-6 flex flex-wrap items-center gap-3">
-			<span class="text-sm font-medium text-gray-400">Filters:</span>
-
-			<Select.Root type="single" value={currentDifficultyFilter} onValueChange={handleDifficultyFilter}>
-				<Select.Trigger class="w-[180px] border-gray-600 bg-gray-700 text-white hover:bg-gray-600">
-					<Filter class="mr-2 h-4 w-4" />
-					{getDifficultyLabel(currentDifficultyFilter)}
-				</Select.Trigger>
-				<Select.Content class="border-gray-700 bg-gray-800">
-					{#each difficultyOptions as option (option.value)}
-						<Select.Item value={option.value} label={option.label} class="text-white hover:bg-gray-700 focus:bg-gray-700">
-							{option.label}
-						</Select.Item>
-					{/each}
-				</Select.Content>
-			</Select.Root>
-
-			{#if currentDifficultyFilter || search}
-				<div class="flex items-center gap-2">
-					{#if currentDifficultyFilter}
-						<Badge variant="secondary" class="bg-blue-600 text-white">
-							{getDifficultyLabel(currentDifficultyFilter)}
-							<button onclick={() => handleDifficultyFilter("")} class="ml-1 hover:text-gray-300">
-								<X class="h-3 w-3" />
-							</button>
-						</Badge>
-					{/if}
-					{#if search}
-						<Badge variant="secondary" class="bg-green-600 text-white">
-							Search: "{search}"
-							<button onclick={handleSearchClear} class="ml-1 hover:text-gray-300">
-								<X class="h-3 w-3" />
-							</button>
-						</Badge>
-					{/if}
-				</div>
-			{/if}
-
-			<div class="ml-auto text-sm text-gray-400">
-				{pagination.totalQuizzes} total quiz{pagination.totalQuizzes === 1 ? "" : "zes"}
 			</div>
-		</div>
-
-		<div class="mb-6 flex items-center justify-between">
-			<div class="flex items-center space-x-3">
-				<span class="text-sm font-medium text-gray-400">Sort by:</span>
-				{#each sortOptions as option (option.key)}
-					<Button onclick={() => handleSort(option.key)} variant={currentSortKey === option.key ? "default" : "outline"} size="sm" class={currentSortKey === option.key ? "bg-blue-600 text-white hover:bg-blue-700" : "border-gray-600 bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white"}>
-						<option.icon class="mr-2 h-4 w-4" />
-						{option.label}
-						{#if currentSortKey === option.key}
-							{#if currentSortOrder === "asc"}
-								<ChevronUp class="ml-2 h-4 w-4" />
-							{:else}
-								<ChevronDown class="ml-2 h-4 w-4" />
-							{/if}
-						{/if}
-					</Button>
-				{/each}
-			</div>
-		</div>
+		{/if}
 
 		{#if isLoading}
 			<div class="mb-6 grid gap-6 md:grid-cols-2">

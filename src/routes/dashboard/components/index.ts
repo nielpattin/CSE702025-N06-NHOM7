@@ -1,3 +1,7 @@
 export { default as QuizCard } from "./QuizCard.svelte"
 export { default as QuizCardSkeleton } from "./QuizCardSkeleton.svelte"
 export { default as QuizSearch } from "./QuizSearch.svelte"
+export { default as QuizDashboard } from "./QuizDashboard.svelte"
+export { default as QuizFilters } from "./QuizFilters.svelte"
+export { default as QuizGrid } from "./QuizGrid.svelte"
+export { default as QuizPagination } from "./QuizPagination.svelte"
