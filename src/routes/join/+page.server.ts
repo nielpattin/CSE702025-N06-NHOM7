@@ -1,31 +1,47 @@
-import { error, redirect } from "@sveltejs/kit"
-import { db } from "$lib/server/db/index.js"
-import { quizSessions } from "$lib/server/db/schema.js"
-import { eq } from "drizzle-orm"
-import type { PageServerLoad } from "./$types.js"
+import { fail, redirect } from "@sveltejs/kit"
+import { db } from "$lib/server/db"
+import { quizSessions, quizzes, sessionParticipants } from "$lib/server/db/schema"
+import { eq, desc, count } from "drizzle-orm"
 
-export const load: PageServerLoad = async ({ url, locals }) => {
-	const code = url.searchParams.get("code")
-
-	if (!code) {
-		return {}
-	}
-
-	// Query the database to find a session with the provided code
-	const sessionResult = await db
+export const load = async () => {
+	const recentSessions = await db
 		.select({
-			id: quizSessions.id
+			id: quizSessions.id,
+			code: quizSessions.code,
+			status: quizSessions.status,
+			createdAt: quizSessions.createdAt,
+			quizTitle: quizzes.title,
+			participantCount: count(sessionParticipants.id)
 		})
 		.from(quizSessions)
-		.where(eq(quizSessions.code, code))
-		.limit(1)
+		.leftJoin(quizzes, eq(quizSessions.quizId, quizzes.id))
+		.leftJoin(sessionParticipants, eq(quizSessions.id, sessionParticipants.quizSessionId))
+		.groupBy(quizSessions.id, quizzes.title)
+		.orderBy(desc(quizSessions.createdAt))
+		.limit(5)
 
-	if (sessionResult.length === 0) {
-		throw error(404, "Session not found")
+	return {
+		recentSessions
 	}
+}
 
-	const session = sessionResult[0]
+export const actions = {
+	default: async ({ request }) => {
+		const formData = await request.formData()
+		const code = (formData.get("code") as string)?.trim().toUpperCase()
 
-	// Redirect to the play session page
-	redirect(302, `/play/session/${session.id}`)
+		if (!code || code.length < 4) {
+			return fail(400, { error: "Please enter a valid code." })
+		}
+
+		const session = await db.query.quizSessions.findFirst({
+			where: eq(quizSessions.code, code)
+		})
+
+		if (!session) {
+			return fail(404, { error: "Session not found. Please check your code." })
+		}
+
+		throw redirect(302, `/play/session/${session.id}`)
+	}
 }

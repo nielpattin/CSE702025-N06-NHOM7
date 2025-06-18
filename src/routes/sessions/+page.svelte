@@ -33,26 +33,30 @@
 
 <div class=" min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
 	<!-- Dashboard Header Component -->
-	<AppHeader title="My Sessions" showJoinCode={false} />
+	<AppHeader title="My Sessions" />
 
 	<!-- Main Content -->
 	<main class="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
-		<!-- Page Header -->
-		<div class="mb-2">
-			<h1 class="mb-2 text-4xl font-bold text-white">My Sessions</h1>
-			<p class="text-gray-400">View and manage your quiz sessions with search, sort, and pagination</p>
-		</div>
-
 		{#if isLoading || isPaginationLoading}
 			<div class="w-full">
 				<div class="mb-8">
 					<div class="rounded-lg bg-gray-800/50 p-6 shadow-lg backdrop-blur">
 						<div class="mb-6">
-							<div class="relative flex items-center space-x-2">
+							<div class="relative flex items-center space-x-4">
 								<div class="relative flex-1">
 									<Skeleton class="h-10 w-full rounded-md" />
 								</div>
 								<Skeleton class="h-10 w-20 rounded-md" />
+							</div>
+
+							<!-- Sort Controls skeleton -->
+							<div class="mt-4 flex items-center justify-between">
+								<Skeleton class="h-10 w-32 rounded-md" />
+							</div>
+
+							<!-- Total sessions skeleton -->
+							<div class="mt-3">
+								<Skeleton class="h-4 w-32 rounded" />
 							</div>
 						</div>
 
@@ -68,7 +72,7 @@
 						</div>
 
 						<div class="mb-6 grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
-							{#each Array(8) as _, i (i)}
+							{#each Array(6) as _, i (i)}
 								<div class="rounded-lg border border-gray-700 bg-gray-900/50 p-6">
 									<div class="flex items-start space-x-4">
 										<div class="flex-shrink-0">

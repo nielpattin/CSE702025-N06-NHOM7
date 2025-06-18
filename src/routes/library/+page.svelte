@@ -2,12 +2,17 @@
 	import { page } from "$app/state"
 	import { goto, invalidateAll } from "$app/navigation"
 	import AppHeader from "$lib/components/AppHeader.svelte"
-	import { LibraryFilterPanel, LibraryContent } from "./components"
+	import { LibraryQuizCard, LibraryQuizCardSkeleton } from "./components"
 	import type { QuizStatus } from "$lib/server/db/schema"
 	import * as Pagination from "$lib/components/ui/pagination"
 	import { Skeleton } from "$lib/components/ui/skeleton"
 	import { navigationStore } from "$lib/stores/navigation"
 	import { onMount } from "svelte"
+	import { Star, FileText, Archive, Search, X, Calendar, BookOpen } from "@lucide/svelte"
+	import * as Tabs from "$lib/components/ui/tabs"
+	import { Button } from "$lib/components/ui/button"
+	import { Input } from "$lib/components/ui/input"
+	import SortButtons from "$lib/components/ui/sort-buttons.svelte"
 
 	let showBackToTop = $state(false)
 	let isPageVisible = $state(false)
@@ -25,15 +30,7 @@
 		searchInput = data.search || ""
 	})
 
-	// Read filter query parameter from URL and set active filter
-	let activeFilter = $derived<"createdByMe" | "likedByMe" | "sharedWithMe">(
-		(() => {
-			const filterParam = page.url.searchParams.get("filter")
-			return filterParam === "createdByMe" || filterParam === "likedByMe" || filterParam === "sharedWithMe" ? filterParam : "createdByMe"
-		})()
-	)
-
-	// Read tab query parameter from URL and reactively set activeTab (only for createdByMe filter)
+	// Read tab query parameter from URL and reactively set activeTab
 	let activeTab = $derived<QuizStatus>(
 		(() => {
 			const tabParam = page.url.searchParams.get("tab")
@@ -57,29 +54,7 @@
 		})()
 	)
 
-	// Navigate to default filter if none is set
-	$effect(() => {
-		if (!page.url.searchParams.get("filter")) {
-			const url = new URL(page.url)
-			url.searchParams.set("filter", "createdByMe")
-			goto(url.toString(), { replaceState: true, noScroll: true })
-		}
-	})
-
-	function setActiveFilter(filterId: "createdByMe" | "likedByMe" | "sharedWithMe") {
-		// Update URL to reflect the active filter
-		const url = new URL(page.url)
-		url.searchParams.set("filter", filterId)
-		// Remove tab parameter when switching filters (will default to published for createdByMe)
-		if (filterId !== "createdByMe") {
-			url.searchParams.delete("tab")
-		}
-		goto(url.toString(), { replaceState: true, noScroll: true })
-	}
-
 	async function setActiveTab(tabId: QuizStatus) {
-		isPaginationLoading = true
-
 		window.scrollTo({ top: 0, behavior: "smooth" })
 
 		const url = new URL(page.url)
@@ -89,24 +64,22 @@
 			invalidateAll: true,
 			noScroll: true
 		})
-
-		setTimeout(() => {
-			isPaginationLoading = false
-		}, 800)
 	}
 
-	function toggleSortOrder() {
+	async function toggleSortOrder() {
 		// Toggle between 'asc' and 'desc' while preserving all other URL parameters
 		const url = new URL(page.url)
 		const newSortOrder = sortOrder === "asc" ? "desc" : "asc"
 		url.searchParams.set("sortOrder", newSortOrder)
-		goto(url.toString(), { replaceState: true, noScroll: true })
+		await goto(url.toString(), { replaceState: true, noScroll: true })
+		await invalidateAll()
 	}
 
-	function setSortKey(newSortKey: "createdAt" | "title") {
+	async function setSortKey(newSortKey: "createdAt" | "title") {
 		const url = new URL(page.url)
 		url.searchParams.set("sortBy", newSortKey)
-		goto(url.toString(), { replaceState: true, noScroll: true })
+		await goto(url.toString(), { replaceState: true, noScroll: true })
+		await invalidateAll()
 	}
 
 	async function handlePageChange(newPageNumber: number) {
@@ -180,6 +153,50 @@
 			}, 100)
 		}, 500)
 	})
+
+	const quizStatusTabs = [
+		{ id: "published" as const, label: "Published", icon: Star, color: "text-yellow-400", activeColor: "text-yellow-300" },
+		{ id: "draft" as const, label: "Drafts", icon: FileText, color: "text-blue-400", activeColor: "text-blue-300" },
+		{ id: "archived" as const, label: "Archived", icon: Archive, color: "text-gray-400", activeColor: "text-gray-300" }
+	]
+
+	let visibleQuizzes = $state<number[]>([])
+	let isLoadingQuizzes = $state(false)
+
+	function handleTabChange(tabId: QuizStatus) {
+		isLoadingQuizzes = true
+		setActiveTab(tabId)
+		setTimeout(() => {
+			isLoadingQuizzes = false
+		}, 600)
+	}
+
+	let sortedQuizzes = $derived(quizzes)
+
+	function handleSort(key: "createdAt" | "title") {
+		if (sortKey === key) {
+			toggleSortOrder()
+		} else {
+			setSortKey(key)
+		}
+	}
+
+	onMount(() => {
+		setTimeout(() => {
+			visibleQuizzes = sortedQuizzes.map((_: unknown, index: number) => index)
+		}, 100)
+	})
+
+	$effect(() => {
+		visibleQuizzes = []
+		setTimeout(() => {
+			sortedQuizzes.forEach((_: unknown, index: number) => {
+				setTimeout(() => {
+					visibleQuizzes = [...visibleQuizzes, index]
+				}, index * 100)
+			})
+		}, 100)
+	})
 </script>
 
 <svelte:head>
@@ -187,82 +204,42 @@
 	<meta name="description" content="Browse and manage your quiz collection" />
 </svelte:head>
 
-<!-- Sidebar Component -->
-
-<div class=" min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 select-none">
-	<!-- Dashboard Header Component -->
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 select-none">
 	<AppHeader title="Quiz Library" />
 
-	<!-- Main Content -->
-	<main class="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8">
-		{#if isLoading || isPaginationLoading}
-			<!-- Skeleton Loading State -->
-			<div class="flex gap-8">
-				<!-- Left Section: Filter Panel Skeleton -->
-				<div class="w-1/4">
-					<div class="rounded-lg bg-gray-800/50 p-6 shadow-lg backdrop-blur">
-						<div class="mb-6">
-							<Skeleton class="mb-3 h-8 w-32 rounded" />
-							<Skeleton class="h-4 w-48 rounded" />
-						</div>
-						<div class="space-y-3">
-							{#each Array(3) as _, i (i)}
-								<div class="flex items-center justify-between rounded-lg border border-gray-600 bg-gray-700/50 p-4">
-									<div class="flex items-center space-x-3">
-										<Skeleton class="h-5 w-5 rounded" />
-										<Skeleton class="h-5 w-24 rounded" />
-									</div>
-									<Skeleton class="h-6 w-8 rounded-full" />
-								</div>
-							{/each}
-						</div>
+	<main class="mx-auto max-w-full px-4 pt-4 sm:px-6 lg:px-8">
+		{#if isLoading}
+			<div class="w-full">
+				<div class="flex w-full flex-col md:flex-row md:items-start">
+					<!-- Skeleton for vertical tabs -->
+					<div class="flex h-auto w-fit shrink-0 space-x-2 rounded-lg bg-gray-800 p-2 md:w-48 md:flex-col md:space-y-2 md:space-x-0">
+						{#each Array(3) as _, i (i)}
+							<Skeleton class="h-12 w-full rounded-md" />
+						{/each}
 					</div>
-				</div>
 
-				<!-- Right Section: Content Skeleton -->
-				<div class="w-full">
-					<!-- Tab Navigation Skeleton -->
-					<div class="mb-8">
-						<div class="mb-4 flex h-auto w-fit space-x-2 rounded-lg bg-gray-800 p-2">
-							{#each Array(3) as _, i (i)}
-								<Skeleton class="h-10 w-48 rounded-md" />
-							{/each}
-						</div>
-
-						<!-- Search Bar Skeleton -->
-						<div class="mt-4 mb-4">
-							<div class="relative flex items-center space-x-2">
-								<div class="relative flex-1">
-									<Skeleton class="h-10 w-full rounded-md" />
-								</div>
-								<Skeleton class="h-10 w-20 rounded-md" />
+					<!-- Skeleton for content area -->
+					<div class="ml-0 flex-1 md:ml-4">
+						<!-- Search bar skeleton -->
+						<div class="mt-2 mb-4 flex items-center space-x-4">
+							<div class="relative flex-1">
+								<Skeleton class="h-10 w-full rounded-md" />
 							</div>
+							<Skeleton class="h-10 w-20 rounded-md" />
+							<Skeleton class="h-10 w-24 rounded-md" />
 						</div>
 
-						<!-- Content Area Skeleton -->
+						<!-- Content skeleton -->
 						<div class="rounded-lg bg-gray-800/50 p-3 shadow-lg backdrop-blur">
-							<!-- Sort Controls Skeleton -->
-							<div class="mb-3 flex justify-end">
-								<div class="flex items-center space-x-3">
-									<Skeleton class="h-4 w-16 rounded" />
-									<Skeleton class="h-9 w-24 rounded-lg" />
-									<Skeleton class="h-9 w-16 rounded-lg" />
-								</div>
-							</div>
-
-							<!-- Quiz Cards Skeleton -->
 							<div class="space-y-4">
 								{#each Array(4) as _, i (i)}
 									<div class="rounded-lg border border-gray-700 bg-gray-700/50 p-3 px-4 shadow-sm">
 										<div class="flex items-center space-x-4">
-											<!-- Left Section: Cover Image Skeleton -->
 											<div class="flex-shrink-0">
 												<Skeleton class="h-16 w-16 rounded-lg" />
 											</div>
 
-											<!-- Right Section: Quiz Details Skeleton -->
 											<div class="relative min-w-0 flex-1">
-												<!-- Row 1: Quiz Title and Badge -->
 												<div class="flex items-start justify-between">
 													<div class="flex items-center space-x-2">
 														<Skeleton class="h-6 w-48 rounded" />
@@ -270,21 +247,18 @@
 													</div>
 												</div>
 
-												<!-- Action Buttons Container - Positioned absolutely to center-right -->
 												<div class="absolute top-1/2 right-0 flex flex-shrink-0 -translate-y-1/2 items-center space-x-2">
 													<Skeleton class="h-9 w-20 rounded-md" />
 													<Skeleton class="h-9 w-16 rounded-md" />
 													<Skeleton class="h-9 w-9 rounded-md" />
 												</div>
 
-												<!-- Row 2: Creator and Time -->
 												<div class="mt-1 flex items-center space-x-3">
 													<Skeleton class="h-4 w-24 rounded" />
 													<Skeleton class="h-4 w-1 rounded-full" />
 													<Skeleton class="h-4 w-16 rounded" />
 												</div>
 
-												<!-- Row 3: Question Count and Description -->
 												<div class="mt-2">
 													<div class="flex items-center space-x-4">
 														<Skeleton class="h-4 w-16 rounded" />
@@ -300,30 +274,131 @@
 						</div>
 					</div>
 				</div>
-			</div>
 
-			<!-- Pagination Skeleton -->
-			<div class="mt-8 flex justify-center">
-				<div class="flex items-center space-x-2">
-					<Skeleton class="h-10 w-10 rounded-md" />
-					<Skeleton class="h-10 w-8 rounded-md" />
-					<Skeleton class="h-10 w-8 rounded-md" />
-					<Skeleton class="h-10 w-8 rounded-md" />
-					<Skeleton class="h-10 w-10 rounded-md" />
+				<!-- Pagination skeleton -->
+				<div class="mt-8 flex justify-center">
+					<div class="flex items-center space-x-2">
+						<Skeleton class="h-10 w-10 rounded-md" />
+						<Skeleton class="h-10 w-8 rounded-md" />
+						<Skeleton class="h-10 w-8 rounded-md" />
+						<Skeleton class="h-10 w-8 rounded-md" />
+						<Skeleton class="h-10 w-10 rounded-md" />
+					</div>
 				</div>
 			</div>
 		{:else}
-			<!-- Two-Column Layout -->
-			<div class="flex gap-8">
-				<!-- Left Section: Filter Panel (40% width) -->
-				<LibraryFilterPanel {activeFilter} {userQuizzesCount} onFilterChange={setActiveFilter} />
+			<div class="w-full">
+				<Tabs.Root value={activeTab} onValueChange={(value: string) => handleTabChange(value as QuizStatus)} class="flex w-full flex-col md:flex-row md:items-start">
+					<Tabs.List class="flex h-auto w-fit shrink-0 space-x-2 rounded-lg bg-gray-800 p-2 md:w-48 md:flex-col md:space-y-2 md:space-x-0">
+						{#each quizStatusTabs as tab (tab.id)}
+							<Tabs.Trigger
+								value={tab.id}
+								class="flex h-12 w-full cursor-pointer items-center justify-between rounded-md border-transparent px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-gray-700
+										data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white
+										data-[state=active]:shadow-lg {activeTab === tab.id ? 'text-white' : tab.color}"
+							>
+								<div class="flex items-center">
+									<tab.icon class="mr-2 h-4 w-4 shrink-0 {activeTab === tab.id ? tab.activeColor : tab.color}" />
+									<span class={activeTab === tab.id ? "text-white" : tab.color}>{tab.label}</span>
+								</div>
+								<span class="ml-2 min-w-[28px] shrink-0 rounded-full bg-gray-600 px-2 py-1 text-center text-xs text-gray-300">
+									{userQuizzesCount[tab.id]}
+								</span>
+							</Tabs.Trigger>
+						{/each}
+					</Tabs.List>
 
-				<!-- Right Section: Content Area (60% width) -->
-				<LibraryContent {activeFilter} {activeTab} {quizzes} {userQuizzesCount} {session} {sortKey} {sortOrder} {searchInput} search={data.search || ""} onTabChange={setActiveTab} onSortChange={setSortKey} onSortOrderChange={toggleSortOrder} onSearchChange={handleSearchChange} onSearchSubmit={handleSearch} onSearchClear={clearSearch} />
+					<div class="ml-0 flex-1 md:ml-4">
+						<div class="mt-2 flex items-center space-x-4">
+							<div class="relative flex-1">
+								<Search class="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+								<Input
+									value={searchInput}
+									oninput={(e) => handleSearchChange(e.currentTarget.value)}
+									onkeydown={(e) => {
+										if (e.key === "Enter") handleSearch()
+										if (e.key === "Escape") clearSearch()
+									}}
+									placeholder="Search your quizzes..."
+									class="pr-10 pl-10"
+								/>
+								{#if searchInput}
+									<Button variant="ghost" size="sm" onclick={clearSearch} class="text-muted-foreground hover:text-foreground absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 cursor-pointer p-0 hover:bg-transparent">
+										<X class="h-4 w-4" />
+										<span class="sr-only">Clear search</span>
+									</Button>
+								{/if}
+							</div>
+
+							<Button onclick={handleSearch} variant="default" size="sm" class="cursor-pointer">
+								<Search class="mr-2 h-4 w-4" />
+								Enter
+							</Button>
+
+							<SortButtons
+								options={[
+									{ key: "createdAt", label: "Date Created", icon: Calendar },
+									{ key: "title", label: "Title", icon: BookOpen }
+								]}
+								currentSortKey={sortKey}
+								currentSortOrder={sortOrder}
+								onSort={(key) => handleSort(key as "createdAt" | "title")}
+							/>
+						</div>
+
+						{#if data.search}
+							<div class="mt-3 flex items-center justify-between">
+								<p class="text-muted-foreground text-sm">
+									Showing results for: <span class="text-foreground font-medium">"{data.search}"</span>
+								</p>
+							</div>
+						{/if}
+
+						{#each quizStatusTabs as tab (tab.id)}
+							<Tabs.Content value={tab.id} class="">
+								<div class="rounded-lg bg-gray-800/50 p-3 shadow-lg backdrop-blur">
+									{#if isLoadingQuizzes || isPaginationLoading}
+										<div class="space-y-4">
+											{#each Array(4) as _, i (i)}
+												<LibraryQuizCardSkeleton />
+											{/each}
+										</div>
+									{:else if sortedQuizzes.length > 0}
+										<div class="space-y-4">
+											{#each sortedQuizzes as quiz, index (quiz.id)}
+												<div class="transform transition-all duration-500 ease-out {visibleQuizzes.includes(index) ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}" style="transition-delay: {index * 50}ms">
+													<LibraryQuizCard {quiz} />
+												</div>
+											{/each}
+										</div>
+									{:else}
+										<div class="py-12 text-center">
+											<div class="mx-auto flex h-24 w-24 items-center justify-center opacity-50">
+												<tab.icon class="h-16 w-16 {tab.color}" />
+											</div>
+											<h3 class="mt-4 text-lg font-medium text-white">
+												No {tab.label.toLowerCase()} quizzes
+											</h3>
+											<p class="mt-2 text-gray-400">
+												{#if tab.id === "published"}
+													You haven't published any quizzes yet. Create and publish your first quiz to see it here.
+												{:else if tab.id === "draft"}
+													No draft quizzes found. Start creating a new quiz to see drafts here.
+												{:else}
+													No archived quizzes found. Archive completed quizzes to organize your library.
+												{/if}
+											</p>
+										</div>
+									{/if}
+								</div>
+							</Tabs.Content>
+						{/each}
+					</div>
+				</Tabs.Root>
 			</div>
-			<!-- Pagination -->
+
 			{#if pagination && pagination.totalQuizzes > pagination.perPage}
-				<div class="mt-8 flex justify-center">
+				<div class="flex justify-center">
 					<Pagination.Root count={pagination.totalQuizzes} perPage={pagination.perPage} page={currentPage} onPageChange={handlePageChange}>
 						{#snippet children({ pages, currentPage: paginationCurrentPage })}
 							<Pagination.Content>
@@ -355,7 +430,6 @@
 	</main>
 </div>
 
-<!-- Back to Top Button -->
 {#if showBackToTop}
 	<button onclick={scrollToTop} class="fixed right-8 bottom-8 z-50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-xl focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none" aria-label="Back to top" title="Back to top">
 		<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

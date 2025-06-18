@@ -1,57 +1,57 @@
 <script lang="ts">
-	import { page } from "$app/state"
-	import { goto } from "$app/navigation"
 	import AppHeader from "$lib/components/AppHeader.svelte"
-	import RecentActivity from "$lib/components/RecentActivity.svelte"
+	import { RecentActivity } from "./components"
+	import { enhance } from "$app/forms"
+	import Input from "$lib/components/ui/input/input.svelte"
+	import Button from "$lib/components/ui/button/button.svelte"
+	import * as Card from "$lib/components/ui/card"
 
-	let data = $derived(page.data)
-	let session = $derived(data.session)
-	let code = $state("")
-
-	function handleSubmit(event: Event) {
-		event.preventDefault()
-		if (code.trim()) {
-			goto(`/join?code=${encodeURIComponent(code.trim())}`)
-		}
+	export let data: {
+		recentSessions: Array<{
+			id: number
+			code: string
+			status: string
+			createdAt: Date
+			quizTitle: string | null
+			participantCount: number
+		}>
 	}
+	export let form: { error?: string } | undefined
 </script>
 
-<svelte:head>
-	<title>Join Quiz</title>
-	<meta name="description" content="Join a quiz session" />
-</svelte:head>
+<AppHeader title="Join Quiz" />
+<main class="container mx-auto px-4 pt-4">
+	<div class="flex min-h-[60vh] flex-col items-center justify-center">
+		<Card.Root class="w-full max-w-md p-4 shadow-xl backdrop-blur-sm transition-colors">
+			<Card.Header class="text-center">
+				<Card.Title class="text-3xl font-bold">Join Quiz</Card.Title>
+				<Card.Description class="text-muted-foreground">Enter the quiz code to join a session</Card.Description>
+			</Card.Header>
 
-<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-	<AppHeader title="Join Quiz" showJoinCode={false} />
-
-	<!-- Main Content -->
-	<main class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-		<div class="text-center">
-			<h1 class="mb-8 text-4xl font-bold text-white">
-				Join a <span class="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Quiz</span>
-			</h1>
-
-			<!-- Join Quiz Form -->
-			<div class="mx-auto mb-12 max-w-md">
-				<div class="rounded-lg border border-gray-700 bg-gray-800 p-8 shadow-xl">
-					<div class="mb-6">
-						<h2 class="mb-2 text-2xl font-bold text-white">Enter Quiz Code</h2>
-						<p class="text-sm text-gray-400">Enter the code provided by your quiz host</p>
+			<Card.Content>
+				<form method="POST" use:enhance class="space-y-6">
+					<div class="space-y-2">
+						<label for="code" class="text-card-foreground block text-sm font-medium">Quiz Code</label>
+						<Input id="code" name="code" type="text" placeholder="ABC123" required maxlength={6} autocomplete="off" class="w-full border-gray-600 bg-gray-900/60 py-4 text-center text-xl tracking-widest text-white uppercase placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500/20" />
 					</div>
 
-					<form onsubmit={handleSubmit} class="space-y-4">
-						<input type="text" bind:value={code} placeholder="Enter quiz code" class="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-3 text-center text-lg tracking-wider text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" required />
-						<button type="submit" class="w-full rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-3 text-lg font-medium text-white transition-all hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> Join Quiz </button>
-					</form>
+					{#if form?.error}
+						<div class="rounded-lg border border-red-500/50 bg-red-900/30 p-3 text-center">
+							<p class="text-sm text-red-400">{form.error}</p>
+						</div>
+					{/if}
 
-					<div class="mt-6 border-t border-gray-700 pt-6">
-						<p class="text-sm text-gray-400">
-							Welcome back, {session?.user?.name || session?.user?.email}!
-						</p>
-					</div>
-				</div>
-			</div>
+					<Button type="submit" class="w-full cursor-pointer bg-gradient-to-r from-purple-700 to-pink-700 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:from-purple-800 hover:to-pink-800 hover:shadow-xl focus:ring-purple-500/20 dark:bg-gradient-to-r dark:from-purple-500 dark:to-pink-500 dark:text-white" style="background: linear-gradient(to right, #6d28d9, #db2777); color: #fff;">Join Quiz Now</Button>
+				</form>
+			</Card.Content>
+
+			<Card.Footer class="mt-6 text-center">
+				<p class="text-xs text-gray-500">Don't have a code? Check out the recent sessions below</p>
+			</Card.Footer>
+		</Card.Root>
+
+		<div class="mt-4 w-full max-w-6xl px-4">
+			<RecentActivity sessions={data.recentSessions} />
 		</div>
-		<RecentActivity />
-	</main>
-</div>
+	</div>
+</main>

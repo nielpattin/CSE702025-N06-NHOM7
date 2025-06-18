@@ -2,12 +2,11 @@
 	import { SessionCard } from "./index"
 	import { goto } from "$app/navigation"
 	import { page } from "$app/state"
-	import { invalidateAll } from "$app/navigation"
-	import { ChevronDoubleUpOutline, ChevronDoubleDownOutline } from "flowbite-svelte-icons"
 	import { Button } from "$lib/components/ui/button"
 	import { Input } from "$lib/components/ui/input"
 	import * as Pagination from "$lib/components/ui/pagination"
 	import { Search, X, Calendar, Users, Activity, BookOpen } from "@lucide/svelte"
+	import SortButtons from "$lib/components/ui/sort-buttons.svelte"
 	import { onMount } from "svelte"
 
 	interface SessionData {
@@ -26,6 +25,7 @@
 
 	interface PaginationInfo {
 		currentPage: number
+		perPage: number
 		totalSessions: number
 		totalPages: number
 	}
@@ -53,11 +53,11 @@
 		currentSortOrder = (sortOrder as "asc" | "desc") || "desc"
 	})
 
-	function handleSort(key: "createdAt" | "quizName" | "participantCount" | "status") {
+	function handleSort(key: string) {
 		if (currentSortKey === key) {
 			currentSortOrder = currentSortOrder === "asc" ? "desc" : "asc"
 		} else {
-			currentSortKey = key
+			currentSortKey = key as "createdAt" | "quizName" | "participantCount" | "status"
 			currentSortOrder = "desc"
 		}
 		updateUrl()
@@ -146,7 +146,7 @@
 		<div class="rounded-lg bg-gray-800/50 p-6 shadow-lg backdrop-blur">
 			<!-- Search Bar -->
 			<div class="mb-6">
-				<div class="relative flex items-center space-x-2">
+				<div class="relative flex items-center space-x-4">
 					<div class="relative flex-1">
 						<Search class="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
 						<Input
@@ -173,6 +173,11 @@
 					</Button>
 				</div>
 
+				<!-- Sort Controls -->
+				<div class="mt-4 flex items-center justify-between">
+					<SortButtons options={sortOptions} {currentSortKey} {currentSortOrder} onSort={handleSort} />
+				</div>
+
 				{#if search}
 					<div class="mt-3 flex items-center justify-between">
 						<p class="text-muted-foreground text-sm">
@@ -182,35 +187,13 @@
 							{pagination.totalSessions} session{pagination.totalSessions === 1 ? "" : "s"} found
 						</p>
 					</div>
+				{:else}
+					<div class="mt-3">
+						<div class="text-sm text-gray-400">
+							{pagination.totalSessions} total session{pagination.totalSessions === 1 ? "" : "s"}
+						</div>
+					</div>
 				{/if}
-			</div>
-
-			<!-- Sort Controls -->
-			<div class="mb-6 flex items-center justify-between">
-				<div class="flex items-center space-x-3">
-					<span class="text-sm font-medium text-gray-400">Sort by:</span>
-					{#each sortOptions as option (option.key)}
-						<button
-							onclick={() => handleSort(option.key)}
-							class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors
-							{currentSortKey === option.key ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}"
-						>
-							<option.icon class="h-4 w-4" />
-							{option.label}
-							{#if currentSortKey === option.key}
-								{#if currentSortOrder === "asc"}
-									<ChevronDoubleUpOutline class="h-4 w-4" />
-								{:else}
-									<ChevronDoubleDownOutline class="h-4 w-4" />
-								{/if}
-							{/if}
-						</button>
-					{/each}
-				</div>
-
-				<div class="text-sm text-gray-400">
-					{pagination.totalSessions} total session{pagination.totalSessions === 1 ? "" : "s"}
-				</div>
 			</div>
 
 			<!-- Sessions Grid -->
@@ -226,21 +209,31 @@
 				<!-- Pagination -->
 				{#if pagination.totalPages > 1}
 					<div class="mt-6 flex justify-center">
-						<div class="flex items-center space-x-2">
-							<Button variant="outline" size="sm" onclick={() => handlePageChange(Math.max(1, pagination.currentPage - 1))} disabled={pagination.currentPage <= 1}>Previous</Button>
-
-							{#each Array.from({ length: pagination.totalPages }, (_, i) => i + 1) as pageNum (pageNum)}
-								{#if pageNum === 1 || pageNum === pagination.totalPages || (pageNum >= pagination.currentPage - 2 && pageNum <= pagination.currentPage + 2)}
-									<Button variant={pageNum === pagination.currentPage ? "default" : "outline"} size="sm" onclick={() => handlePageChange(pageNum)}>
-										{pageNum}
-									</Button>
-								{:else if pageNum === pagination.currentPage - 3 || pageNum === pagination.currentPage + 3}
-									<span class="px-2 text-gray-400">...</span>
-								{/if}
-							{/each}
-
-							<Button variant="outline" size="sm" onclick={() => handlePageChange(Math.min(pagination.totalPages, pagination.currentPage + 1))} disabled={pagination.currentPage >= pagination.totalPages}>Next</Button>
-						</div>
+						<Pagination.Root count={pagination.totalSessions} perPage={pagination.perPage} page={pagination.currentPage} onPageChange={handlePageChange}>
+							{#snippet children({ pages, currentPage: paginationCurrentPage })}
+								<Pagination.Content>
+									<Pagination.Item class="cursor-pointer">
+										<Pagination.PrevButton />
+									</Pagination.Item>
+									{#each pages as page (page.key)}
+										{#if page.type === "ellipsis"}
+											<Pagination.Item>
+												<Pagination.Ellipsis />
+											</Pagination.Item>
+										{:else}
+											<Pagination.Item>
+												<Pagination.Link class="cursor-pointer" {page} isActive={paginationCurrentPage === page.value}>
+													{page.value}
+												</Pagination.Link>
+											</Pagination.Item>
+										{/if}
+									{/each}
+									<Pagination.Item>
+										<Pagination.NextButton class="cursor-pointer" />
+									</Pagination.Item>
+								</Pagination.Content>
+							{/snippet}
+						</Pagination.Root>
 					</div>
 				{/if}
 			{:else}

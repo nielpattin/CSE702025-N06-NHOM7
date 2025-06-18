@@ -30,14 +30,9 @@
 </svelte:head>
 
 <div class=" min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-	<AppHeader title="My Reports" showJoinCode={false} />
+	<AppHeader title="My Reports" />
 
 	<main class="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
-		<div class="mb-2">
-			<h1 class="mb-2 text-4xl font-bold text-white">My Reports</h1>
-			<p class="text-gray-400">View and analyze your quiz reports with search, sort, and pagination</p>
-		</div>
-
 		{#if isLoading || isPaginationLoading}
 			<div class="w-full">
 				<div class="mb-8">

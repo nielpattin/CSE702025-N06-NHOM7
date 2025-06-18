@@ -2,17 +2,17 @@
 	import { ReportCard } from "./index"
 	import { goto } from "$app/navigation"
 	import { page } from "$app/state"
-	import { ChevronDoubleUpOutline, ChevronDoubleDownOutline } from "flowbite-svelte-icons"
 	import { Button } from "$lib/components/ui/button"
 	import { Input } from "$lib/components/ui/input"
 	import * as Pagination from "$lib/components/ui/pagination"
 	import { Search, X, Calendar, Users, Activity, BookOpen } from "@lucide/svelte"
+	import SortButtons from "$lib/components/ui/sort-buttons.svelte"
 	import type { PageData } from "../$types"
 	import { onMount } from "svelte"
 
 	interface Props {
 		reports: PageData["sessionReports"]
-		pagination: PageData["pagination"]
+		pagination: PageData["pagination"] & { perPage: number } // Add perPage to pagination
 		search: string
 		sortBy: string
 		sortOrder: string
@@ -33,11 +33,11 @@
 		currentSortOrder = (sortOrder as "asc" | "desc") || "desc"
 	})
 
-	function handleSort(key: "createdDate" | "sessionName" | "participantCount" | "status") {
+	function handleSort(key: string) {
 		if (currentSortKey === key) {
 			currentSortOrder = currentSortOrder === "asc" ? "desc" : "asc"
 		} else {
-			currentSortKey = key
+			currentSortKey = key as "createdDate" | "sessionName" | "participantCount" | "status"
 			currentSortOrder = "desc"
 		}
 		updateUrl()
@@ -167,27 +167,7 @@
 
 			<!-- Sort Controls -->
 			<div class="mb-6 flex items-center justify-between">
-				<div class="flex items-center space-x-3">
-					<span class="text-sm font-medium text-gray-400">Sort by:</span>
-					{#each sortOptions as option (option.key)}
-						<button
-							onclick={() => handleSort(option.key)}
-							class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors
-							{currentSortKey === option.key ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'}"
-						>
-							<option.icon class="h-4 w-4" />
-							{option.label}
-							{#if currentSortKey === option.key}
-								{#if currentSortOrder === "asc"}
-									<ChevronDoubleUpOutline class="h-4 w-4" />
-								{:else}
-									<ChevronDoubleDownOutline class="h-4 w-4" />
-								{/if}
-							{/if}
-						</button>
-					{/each}
-				</div>
-
+				<SortButtons options={sortOptions} {currentSortKey} {currentSortOrder} onSort={handleSort} />
 				<div class="text-sm text-gray-400">
 					{pagination.totalReports} total report{pagination.totalReports === 1 ? "" : "s"}
 				</div>
