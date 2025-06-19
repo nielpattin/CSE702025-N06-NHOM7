@@ -173,7 +173,7 @@ export const sessionQuestions = pgTable(
 			.references(() => quizSessions.id, { onDelete: "cascade" }),
 		originalQuestionId: integer("original_question_id")
 			.notNull()
-			.references(() => questions.id),
+			.references(() => questions.id, { onDelete: "cascade" }),
 		type: varchar("type"),
 		content: text("content"),
 		timeLimit: integer("time_limit"),
@@ -215,6 +215,20 @@ export const questionAttempts = pgTable(
 		pointsAwarded: integer("points_awarded")
 	},
 	(table) => [index("idx_question_attempts_game_attempt_id").on(table.gameAttemptId), index("idx_question_attempts_session_question_id").on(table.sessionQuestionId)]
+)
+
+export const questionAttemptOptions = pgTable(
+	"question_attempt_options",
+	{
+		id: serial("id").primaryKey(),
+		questionAttemptId: integer("question_attempt_id")
+			.notNull()
+			.references(() => questionAttempts.id, { onDelete: "cascade" }),
+		selectedSessionOptionId: integer("selected_session_option_id")
+			.notNull()
+			.references(() => sessionQuestionOptions.id, { onDelete: "cascade" })
+	},
+	(table) => [index("idx_question_attempt_options_attempt_id").on(table.questionAttemptId), index("idx_question_attempt_options_option_id").on(table.selectedSessionOptionId), index("idx_question_attempt_options_unique").on(table.questionAttemptId, table.selectedSessionOptionId)]
 )
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -280,10 +294,16 @@ export const sessionQuestionOptionsRelations = relations(sessionQuestionOptions,
 	originalOption: one(questionOptions, { fields: [sessionQuestionOptions.originalOptionId], references: [questionOptions.id] })
 }))
 
-export const questionAttemptsRelations = relations(questionAttempts, ({ one }) => ({
+export const questionAttemptsRelations = relations(questionAttempts, ({ one, many }) => ({
 	gameAttempt: one(gameAttempts, { fields: [questionAttempts.gameAttemptId], references: [gameAttempts.id] }),
 	sessionQuestion: one(sessionQuestions, { fields: [questionAttempts.sessionQuestionId], references: [sessionQuestions.id] }),
-	selectedSessionOption: one(sessionQuestionOptions, { fields: [questionAttempts.selectedSessionOptionId], references: [sessionQuestionOptions.id] })
+	selectedSessionOption: one(sessionQuestionOptions, { fields: [questionAttempts.selectedSessionOptionId], references: [sessionQuestionOptions.id] }),
+	attemptOptions: many(questionAttemptOptions)
+}))
+
+export const questionAttemptOptionsRelations = relations(questionAttemptOptions, ({ one }) => ({
+	questionAttempt: one(questionAttempts, { fields: [questionAttemptOptions.questionAttemptId], references: [questionAttempts.id] }),
+	selectedSessionOption: one(sessionQuestionOptions, { fields: [questionAttemptOptions.selectedSessionOptionId], references: [sessionQuestionOptions.id] })
 }))
 
 // Quiz Tags tables

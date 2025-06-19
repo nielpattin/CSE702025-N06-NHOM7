@@ -16,6 +16,7 @@
 
 	// State management
 	let selectedOptionId = $state<number | null>(null)
+	let selectedOptionIds = $state<Set<number>>(new Set())
 	let isSubmitting = $state(false)
 	let questionStartTime = $state(Date.now())
 	let timeElapsed = $state(0)
@@ -35,7 +36,7 @@
 
 	// Check if current question is already answered
 	const isAnswered = $derived(currentQuestion?.attempt !== null)
-	const canProceed = $derived(selectedOptionId !== null || isAnswered)
+	const canProceed = $derived((currentQuestion?.type === "multiple_choice" ? selectedOptionIds.size > 0 : selectedOptionId !== null) || isAnswered)
 
 	onMount(() => {
 		// Start timer
@@ -46,7 +47,16 @@
 
 		// If question is already answered, show the previous selection
 		if (currentQuestion?.attempt) {
-			selectedOptionId = currentQuestion.attempt.selectedSessionOptionId
+			if (currentQuestion.type === "multiple_choice") {
+				// For multiple choice, we'll need to fetch the selected options from the server
+				// For now, fallback to single selection for backward compatibility
+				selectedOptionId = currentQuestion.attempt.selectedSessionOptionId
+				if (selectedOptionId) {
+					selectedOptionIds = new Set([selectedOptionId])
+				}
+			} else {
+				selectedOptionId = currentQuestion.attempt.selectedSessionOptionId
+			}
 		}
 	})
 
@@ -70,7 +80,18 @@
 	// Handle option selection
 	function selectOption(optionId: number) {
 		if (!isAnswered) {
-			selectedOptionId = optionId
+			if (currentQuestion?.type === "multiple_choice") {
+				// For multiple choice, toggle selection (checkbox behavior)
+				if (selectedOptionIds.has(optionId)) {
+					selectedOptionIds.delete(optionId)
+				} else {
+					selectedOptionIds.add(optionId)
+				}
+				selectedOptionIds = new Set(selectedOptionIds) // Trigger reactivity
+			} else {
+				// For true/false, single selection (radio behavior)
+				selectedOptionId = optionId
+			}
 		}
 	}
 
@@ -107,9 +128,9 @@
 					return
 				}
 
-				// Calculate reading time based on content length
-				const waitTime = calculateReadingTime()
-				totalWaitTime = Math.ceil(waitTime / 1000)
+				// Fixed wait time of 2 seconds
+				const waitTime = 2000
+				totalWaitTime = 2
 				resultCountdown = totalWaitTime
 
 				// Start countdown timer
@@ -215,14 +236,24 @@
 							}}
 						>
 							<input type="hidden" name="questionId" value={currentQuestion.id} />
-							<input type="hidden" name="selectedOptionId" value={selectedOptionId} />
+							{#if currentQuestion.type === "multiple_choice"}
+								{#each Array.from(selectedOptionIds) as optionId (optionId)}
+									<input type="hidden" name="selectedOptionIds[]" value={optionId} />
+								{/each}
+							{:else}
+								<input type="hidden" name="selectedOptionId" value={selectedOptionId} />
+							{/if}
 							<input type="hidden" name="timeTaken" value={timeElapsed} />
 
 							<div class="space-y-3">
 								{#each currentQuestion.options as option (option.id)}
 									<label class="block cursor-pointer">
-										<div class="border-border hover:bg-card flex items-center gap-4 rounded-lg border p-4 transition-all hover:border-blue-500 {selectedOptionId === option.id ? 'border-blue-500 bg-blue-900/20' : ''}">
-											<input type="radio" name="option" value={option.id} checked={selectedOptionId === option.id} onchange={() => selectOption(option.id)} class="h-4 w-4 text-blue-600" />
+										<div class="border-border hover:bg-card flex items-center gap-4 rounded-lg border p-4 transition-all hover:border-blue-500 {selectedOptionIds.has(option.id) ? 'border-blue-500 bg-blue-900/20' : ''}">
+											{#if currentQuestion.type === "multiple_choice"}
+												<input type="checkbox" name="option" value={option.id} checked={selectedOptionIds.has(option.id)} onchange={() => selectOption(option.id)} class="h-4 w-4 text-blue-600" />
+											{:else}
+												<input type="radio" name="option" value={option.id} checked={selectedOptionId === option.id} onchange={() => selectOption(option.id)} class="h-4 w-4 text-blue-600" />
+											{/if}
 											<span class="text-white">{option.content}</span>
 										</div>
 									</label>
@@ -249,14 +280,24 @@
 						<!-- Already Answered - Show Selection -->
 						<div class="space-y-3">
 							{#each currentQuestion.options as option (option.id)}
-								<div class="flex items-center gap-4 rounded-lg border p-4 {selectedOptionId === option.id ? 'border-blue-500 bg-blue-900/20' : 'border-border bg-secondary/20'}">
-									<div class="h-4 w-4 rounded-full border-2 {selectedOptionId === option.id ? 'border-blue-500 bg-blue-500' : 'border-gray-500'}">
-										{#if selectedOptionId === option.id}
-											<div class="h-full w-full scale-50 rounded-full bg-white"></div>
-										{/if}
-									</div>
+								<div class="flex items-center gap-4 rounded-lg border p-4 {currentQuestion.attempt?.selectedOptionIds?.includes(option.id) ? 'border-blue-500 bg-blue-900/20' : 'border-border bg-secondary/20'}">
+									{#if currentQuestion.type === "multiple_choice"}
+										<div class="flex h-4 w-4 items-center justify-center rounded-sm border-2 {currentQuestion.attempt?.selectedOptionIds?.includes(option.id) ? 'border-blue-500 bg-blue-500' : 'border-gray-500'}">
+											{#if currentQuestion.attempt?.selectedOptionIds?.includes(option.id)}
+												<svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+												</svg>
+											{/if}
+										</div>
+									{:else}
+										<div class="h-4 w-4 rounded-full border-2 {currentQuestion.attempt?.selectedSessionOptionId === option.id ? 'border-blue-500 bg-blue-500' : 'border-gray-500'}">
+											{#if currentQuestion.attempt?.selectedSessionOptionId === option.id}
+												<div class="h-full w-full scale-50 rounded-full bg-white"></div>
+											{/if}
+										</div>
+									{/if}
 									<span class="text-white">{option.content}</span>
-									{#if selectedOptionId === option.id}
+									{#if currentQuestion.attempt?.selectedOptionIds?.includes(option.id) || currentQuestion.attempt?.selectedSessionOptionId === option.id}
 										<span class="ml-auto text-sm text-blue-400">Your answer</span>
 									{/if}
 								</div>

@@ -82,7 +82,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 }
 
 export const actions: Actions = {
-	joinSession: async ({ request, params, locals }) => {
+	joinSession: async ({ request, params, locals, cookies }) => {
 		const sessionId = parseInt(params.sessionId)
 
 		if (isNaN(sessionId)) {
@@ -169,50 +169,65 @@ export const actions: Actions = {
 					return fail(400, { error: "Name must be 100 characters or less" })
 				}
 
-				if (guestId) {
-					const existingGuestParticipant = await db
+				let currentGuestId = cookies.get("guest_id")
+
+				let existingGuestParticipant
+				if (currentGuestId) {
+					existingGuestParticipant = await db
 						.select({ id: sessionParticipants.id })
 						.from(sessionParticipants)
-						.where(and(eq(sessionParticipants.quizSessionId, sessionId), eq(sessionParticipants.guestId, guestId)))
+						.where(and(eq(sessionParticipants.quizSessionId, sessionId), eq(sessionParticipants.guestId, currentGuestId)))
 						.limit(1)
-
-					if (existingGuestParticipant.length > 0) {
-						const existingAttempt = await db
-							.select({ id: gameAttempts.id })
-							.from(gameAttempts)
-							.where(and(eq(gameAttempts.quizSessionId, sessionId), eq(gameAttempts.participantId, existingGuestParticipant[0].id), eq(gameAttempts.status, "in_progress")))
-							.limit(1)
-
-						if (existingAttempt.length > 0) {
-							throw redirect(302, `/play/session/${sessionId}/${existingAttempt[0].id}`)
-						} else {
-							const newAttempt = await db
-								.insert(gameAttempts)
-								.values({
-									quizSessionId: sessionId,
-									participantId: existingGuestParticipant[0].id,
-									attemptNumber: 1,
-									status: "in_progress",
-									startedAt: new Date()
-								})
-								.returning({ id: gameAttempts.id })
-
-							throw redirect(302, `/play/session/${sessionId}/${newAttempt[0].id}`)
-						}
-					}
 				}
 
-				const participant = await db
-					.insert(sessionParticipants)
-					.values({
-						quizSessionId: sessionId,
-						userId: null,
-						guestId: guestId,
-						name: trimmedName
-					})
-					.returning({ id: sessionParticipants.id })
+				if (existingGuestParticipant && existingGuestParticipant.length > 0) {
+					// If existing guest participant found, use it
+					const existingAttempt = await db
+						.select({ id: gameAttempts.id })
+						.from(gameAttempts)
+						.where(and(eq(gameAttempts.quizSessionId, sessionId), eq(gameAttempts.participantId, existingGuestParticipant[0].id), eq(gameAttempts.status, "in_progress")))
+						.limit(1)
 
-				participantId = participant[0].id
+					if (existingAttempt.length > 0) {
+						throw redirect(302, `/play/session/${sessionId}/${existingAttempt[0].id}`)
+					} else {
+						const newAttempt = await db
+							.insert(gameAttempts)
+							.values({
+								quizSessionId: sessionId,
+								participantId: existingGuestParticipant[0].id,
+								attemptNumber: 1,
+								status: "in_progress",
+								startedAt: new Date()
+							})
+							.returning({ id: gameAttempts.id })
+
+						throw redirect(302, `/play/session/${sessionId}/${newAttempt[0].id}`)
+					}
+				} else {
+					// No existing guest participant found for the cookie, or no cookie present.
+					// Generate a new guest ID and set it as a cookie.
+					currentGuestId = crypto.randomUUID()
+					cookies.set("guest_id", currentGuestId, {
+						path: "/",
+						maxAge: 60 * 60 * 24 * 365, // 1 year
+						httpOnly: true,
+						secure: true,
+						sameSite: "lax"
+					})
+
+					const participant = await db
+						.insert(sessionParticipants)
+						.values({
+							quizSessionId: sessionId,
+							userId: null,
+							guestId: currentGuestId,
+							name: trimmedName
+						})
+						.returning({ id: sessionParticipants.id })
+
+					participantId = participant[0].id
+				}
 			}
 
 			const gameAttempt = await db

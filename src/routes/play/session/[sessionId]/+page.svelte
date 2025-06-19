@@ -32,13 +32,13 @@
 				<PlaySessionJoinForm userSession={data.userSession} />
 			{/if}
 
-			<PlayParticipantsList {participants} />
-
-			<PlaySessionInstructions hasUserJoined={hasUserJoined()} userSession={data.userSession} session={quizSession} />
-
 			{#if hasUserJoined() && data.userSession?.user}
 				<PlaySessionReattemptForm />
 			{/if}
+
+			<PlayParticipantsList {participants} />
+
+			<PlaySessionInstructions hasUserJoined={hasUserJoined()} userSession={data.userSession} session={quizSession} />
 		</div>
 	{/if}
 </div>

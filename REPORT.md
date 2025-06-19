@@ -37,12 +37,12 @@ Hệ thống có hai vai trò chính:
 #### Chức năng dành cho User (Host & Player)
 
 - **FR1: Quản lý người dùng**
-  - Đăng nhập/Đăng ký bằng tài khoản Google.
+  - Đăng nhập/Đăng ký bằng tài khoản Google, Github
   - Tự động tạo tài khoản khi đăng nhập lần đầu.
   - Quản lý thông tin cá nhân cơ bản.
 - **FR2: Quản lý Quiz (Host)**
   - Tạo quiz mới với tiêu đề, mô tả.
-  - Thêm câu hỏi (trắc nghiệm nhiều lựa chọn, đúng/sai) và hình ảnh.
+  - Thêm câu hỏi (trắc nghiệm nhiều lựa chọn, đúng/sai)
   - Thiết lập thời gian, điểm số cho từng câu hỏi.
   - Chỉnh sửa, xóa, và quản lý các quiz đã tạo.
 - **FR3: Tham gia Quiz (Player)**
@@ -299,3 +299,81 @@ sequenceDiagram
     System->>Database: UPDATE game_attempt (score)
     deactivate System
 ```
+
+---
+
+## 4. Công nghệ sử dụng
+
+Dự án được xây dựng trên một ngăn xếp công nghệ hiện đại, tập trung vào hiệu năng, trải nghiệm phát triển và khả năng mở rộng.
+
+| Hạng mục       | Công nghệ                                                                                                                                                                                         | Lý do lựa chọn                                                                                                                                                               |
+| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Framework**  | [**SvelteKit 5**](https://kit.svelte.dev/)                                                                                                                                                        | Một meta-framework mạnh mẽ xây dựng trên Svelte, cung cấp routing, server-side rendering (SSR), và API endpoints tích hợp sẵn.                                               |
+| **UI**         | - [**Tailwind CSS**](https://tailwindcss.com/)<br>- [**shadcn-svelte**](https://www.shadcn-svelte.com/)<br>- [**Bits UI**](https://www.bits-ui.com/)<br>- [**Lucide Icons**](https://lucide.dev/) | Cung cấp một hệ thống utility-first để xây dựng giao diện nhanh chóng. shadcn-svelte và Bits UI cung cấp các components Headless UI dễ tùy biến và có khả năng tiếp cận cao. |
+| **Backend**    | - **SvelteKit Server Routes**<br>- [**Auth.js (SvelteKitAuth)**](https://authjs.dev/)                                                                                                             | Tận dụng môi trường Node.js của SvelteKit để xử lý logic backend, API và tương tác với database. Auth.js đơn giản hóa việc tích hợp xác thực OAuth.                          |
+| **Database**   | - [**PostgreSQL**](https://www.postgresql.org/)<br>- [**Drizzle ORM**](https://orm.drizzle.team/)                                                                                                 | PostgreSQL là một hệ quản trị CSDL quan hệ mạnh mẽ và tin cậy. Drizzle là một ORM "headless" siêu nhẹ, an toàn về kiểu cho TypeScript.                                       |
+| **Tooling**    | - **pnpm, Vite**<br>- **ESLint, Prettier**<br>- **Husky, lint-staged**                                                                                                                            | `pnpm` quản lý package hiệu quả. `Vite` cung cấp HMR siêu nhanh. Các công cụ linting và pre-commit hooks đảm bảo chất lượng và tính nhất quán của code.                      |
+| **Deployment** | [**Docker**](https://www.docker.com/)                                                                                                                                                             | Đóng gói ứng dụng và các dịch vụ phụ thuộc (như database) vào các container để đảm bảo môi trường phát triển và production nhất quán.                                        |
+
+---
+
+## 5. Kiến trúc hệ thống
+
+Hệ thống được thiết kế theo kiến trúc Monolithic với SvelteKit đóng vai trò trung tâm, xử lý cả logic frontend và backend.
+
+### a. Sơ đồ kiến trúc tổng quan
+
+```mermaid
+graph TD
+    subgraph "User's Browser"
+        A[SvelteKit Frontend]
+    end
+
+    subgraph "Server (Vercel/Docker)"
+        B[SvelteKit Backend]
+        C[Auth.js]
+        D[Drizzle ORM]
+        E[PostgreSQL Database]
+    end
+
+    A -- HTTP Requests --> B
+    B -- Authentication --> C
+    B -- Database Queries --> D
+    D -- SQL --> E
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#ccf,stroke:#333,stroke-width:2px
+    style E fill:#cff,stroke:#333,stroke-width:2px
+```
+
+- **Client (Browser):** Giao diện người dùng được xây dựng bằng Svelte, render bởi SvelteKit. Nó tương tác với backend thông qua các `load` functions và form actions.
+- **Server:**
+  - **SvelteKit Backend:** Xử lý các yêu cầu HTTP, cung cấp API endpoints, thực thi logic nghiệp vụ.
+  - **Auth.js:** Tích hợp vào SvelteKit để xử lý các luồng xác thực (đăng nhập, đăng xuất, quản lý session).
+  - **Drizzle ORM:** Đóng vai trò là lớp trung gian giữa ứng dụng và database, chuyển đổi các lời gọi hàm TypeScript thành các câu lệnh SQL an toàn và hiệu quả.
+- **Database:** PostgreSQL lưu trữ toàn bộ dữ liệu của ứng dụng, từ thông tin người dùng đến nội dung quiz và kết quả.
+
+### b. Luồng dữ liệu chính
+
+1.  **Tải trang:** Khi người dùng truy cập một URL, SvelteKit sẽ chạy các hàm `load` tương ứng trên server để lấy dữ liệu từ database thông qua Drizzle.
+2.  **Render:** Dữ liệu được truyền xuống client, SvelteKit render trang HTML và gửi về cho trình duyệt.
+3.  **Tương tác:** Các hành động của người dùng (ví dụ: tạo quiz, trả lời câu hỏi) được xử lý thông qua SvelteKit Form Actions. Các action này chạy trên server, thực hiện các thay đổi cần thiết trên database và sau đó cập nhật lại giao diện.
+
+---
+
+## 6. Kết luận và Hướng phát triển
+
+### a. Kết luận
+
+Dự án **Quiz Learn** đã thành công trong việc xây dựng một nền tảng trắc nghiệm tương tác hoàn chỉnh, đáp ứng đầy đủ các yêu cầu cốt lõi đã đề ra. Hệ thống cho phép người dùng tạo, quản lý, chia sẻ và tham gia các bài quiz một cách hiệu quả. Việc lựa chọn SvelteKit và các công nghệ hiện đại khác đã mang lại một sản phẩm có hiệu năng cao, trải nghiệm người dùng mượt mà và một codebase dễ bảo trì, mở rộng.
+
+### b. Hướng phát triển trong tương lai
+
+Để tiếp tục nâng cao giá trị và sự hấp dẫn của sản phẩm, một số hướng phát triển tiềm năng có thể được xem xét:
+
+- **Tương tác thời gian thực:** Tích hợp WebSockets (ví dụ: sử dụng `socket.io`) để xây dựng các tính năng real-time như bảng xếp hạng cập nhật trực tiếp, sảnh chờ tương tác, và chế độ "live game" do Host điều khiển.
+- **Mở rộng các loại câu hỏi:** Thêm các dạng câu hỏi mới như điền vào chỗ trống, sắp xếp thứ tự, câu hỏi mở để làm phong phú thêm nội dung quiz.
+- **Chế độ chơi theo đội (Team Mode):** Cho phép người tham gia được chia thành các đội và thi đấu với nhau.
+- **Thư viện Quiz công khai:** Xây dựng một "marketplace" nơi người dùng có thể chia sẻ quiz của mình cho cộng đồng và tìm kiếm, sử dụng các quiz do người khác tạo.
+- **Gamification nâng cao:** Thêm hệ thống huy hiệu, điểm kinh nghiệm, và các yếu tố game hóa khác để tăng cường sự gắn kết của người dùng.
+- **Phân tích và báo cáo nâng cao:** Cung cấp các biểu đồ và phân tích sâu hơn về hiệu suất của câu hỏi và người tham gia, giúp Host có cái nhìn chi tiết hơn.

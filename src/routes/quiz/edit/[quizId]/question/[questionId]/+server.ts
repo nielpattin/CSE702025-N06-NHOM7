@@ -119,9 +119,6 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 			await db.delete(sessionQuestionOptions).where(inArray(sessionQuestionOptions.sessionQuestionId, sessionQuestionIds))
 		}
 
-		// Delete session questions that reference this question
-		await db.delete(sessionQuestions).where(eq(sessionQuestions.originalQuestionId, questionId))
-
 		// Get all option IDs for this question
 		const optionsToDelete = await db.select({ id: questionOptions.id }).from(questionOptions).where(eq(questionOptions.questionId, questionId))
 

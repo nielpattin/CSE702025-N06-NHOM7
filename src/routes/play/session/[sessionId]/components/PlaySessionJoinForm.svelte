@@ -15,21 +15,7 @@
 	let { userSession }: { userSession: UserSession | null } = $props()
 
 	let participantName = $state("")
-	let guestId = $state("")
 	let isJoining = $state(false)
-
-	onMount(() => {
-		if (!userSession?.user) {
-			const existingGuestId = localStorage.getItem("guestId")
-			if (existingGuestId) {
-				guestId = existingGuestId
-			} else {
-				const newGuestId = crypto.randomUUID()
-				guestId = newGuestId
-				localStorage.setItem("guestId", newGuestId)
-			}
-		}
-	})
 </script>
 
 <div class="bg-card text-card-foreground mx-auto max-w-md rounded-lg border shadow-sm">
@@ -60,9 +46,6 @@
 				</label>
 				<Input id="name" name="name" bind:value={participantName} placeholder={userSession?.user ? "Display name for this session" : "Your name"} disabled={isJoining} required={!userSession?.user} />
 			</div>
-			{#if !userSession?.user}
-				<input type="hidden" name="guestId" value={guestId} />
-			{/if}
 			<Button type="submit" disabled={isJoining || (!userSession?.user && !participantName.trim())} class="w-full">
 				{#if isJoining}
 					<Loader2 class="mr-2 h-4 w-4 animate-spin" />

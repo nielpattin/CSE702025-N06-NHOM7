@@ -1,10 +1,10 @@
 import { error, fail, redirect } from "@sveltejs/kit"
 import { db } from "$lib/server/db/index.js"
-import { gameAttempts, quizSessions, sessionParticipants, sessionQuestions, sessionQuestionOptions, questionAttempts, users } from "$lib/server/db/schema.js"
-import { eq, and, asc } from "drizzle-orm"
+import { gameAttempts, quizSessions, sessionParticipants, sessionQuestions, sessionQuestionOptions, questionAttempts, users, questionAttemptOptions } from "$lib/server/db/schema.js"
+import { eq, and, asc, inArray } from "drizzle-orm"
 import type { PageServerLoad, Actions } from "./$types.js"
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, locals, cookies }) => {
 	const sessionId = parseInt(params.sessionId)
 	const attemptId = parseInt(params.attemptId)
 
@@ -52,15 +52,18 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	const { attempt, session, participant } = attemptResult[0]
 
-	// Verify user ownership of this attempt
+	// Verify user ownership of this attempt or guest access
 	if (authSession?.user) {
 		// Authenticated user - check if they own this participant record
 		if (participant.userId !== authSession.user.id) {
-			throw error(403, "Access denied")
+			throw error(403, "Access denied: Authenticated user does not own this session.")
 		}
 	} else {
-		// Guest user - we'll need to check guest ID in the client
-		// For now, we'll allow access but this should be enhanced with guest session tracking
+		// Guest user - check guest ID from cookies
+		const guestIdFromCookie = cookies.get("guest_id")
+		if (!guestIdFromCookie || participant.guestId !== guestIdFromCookie) {
+			throw error(403, "Access denied: Guest ID mismatch or not provided.")
+		}
 	}
 
 	// Check if session is still active or marked for deletion (allowing ongoing games)
@@ -126,33 +129,66 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.select({
 			id: questionAttempts.id,
 			sessionQuestionId: questionAttempts.sessionQuestionId,
-			selectedSessionOptionId: questionAttempts.selectedSessionOptionId,
+			selectedSessionOptionId: questionAttempts.selectedSessionOptionId, // For backward compatibility
 			correct: questionAttempts.correct,
 			timeTakenMs: questionAttempts.timeTakenMs,
-			pointsAwarded: questionAttempts.pointsAwarded
+			pointsAwarded: questionAttempts.pointsAwarded,
+			joinedSelectedOptionId: questionAttemptOptions.selectedSessionOptionId // The option ID from the join table
 		})
 		.from(questionAttempts)
+		.leftJoin(questionAttemptOptions, eq(questionAttemptOptions.questionAttemptId, questionAttempts.id))
 		.where(eq(questionAttempts.gameAttemptId, attemptId))
 
-	// Create a map of answered questions
-	const answeredQuestionsMap = new Map<number, (typeof existingAttempts)[0]>()
+	// Group selected options by question attempt
+	const groupedSelectedOptions = new Map<number, number[]>()
 	for (const qa of existingAttempts) {
-		answeredQuestionsMap.set(qa.sessionQuestionId, qa)
+		if (qa.id && qa.joinedSelectedOptionId) {
+			if (!groupedSelectedOptions.has(qa.id)) {
+				groupedSelectedOptions.set(qa.id, [])
+			}
+			groupedSelectedOptions.get(qa.id)!.push(qa.joinedSelectedOptionId)
+		} else if (qa.selectedSessionOptionId) {
+			// For backward compatibility for single choice questions
+			if (!groupedSelectedOptions.has(qa.id!)) {
+				groupedSelectedOptions.set(qa.id!, [])
+			}
+			groupedSelectedOptions.get(qa.id!)!.push(qa.selectedSessionOptionId)
+		}
+	}
+
+	// Create a map of answered questions, including all selected options for multiple choice
+	const answeredQuestionsMap = new Map<number, Omit<(typeof existingAttempts)[0], "joinedSelectedOptionId"> & { selectedOptionIds: number[] }>()
+	for (const qa of existingAttempts) {
+		if (!answeredQuestionsMap.has(qa.sessionQuestionId)) {
+			// Process each unique question attempt once
+			answeredQuestionsMap.set(qa.sessionQuestionId, {
+				id: qa.id!,
+				sessionQuestionId: qa.sessionQuestionId,
+				selectedSessionOptionId: qa.selectedSessionOptionId,
+				correct: qa.correct,
+				timeTakenMs: qa.timeTakenMs,
+				pointsAwarded: qa.pointsAwarded,
+				selectedOptionIds: groupedSelectedOptions.get(qa.id!) || []
+			})
+		}
 	}
 
 	// Combine questions with their options and attempt status
-	const questionsWithOptions = questions.map((question) => ({
-		...question,
-		options: (questionOptionsMap.get(question.id) || [])
-			.map((option) => ({
-				id: option.id,
-				content: option.content,
-				order: option.order
-				// Don't expose correct answers to client
-			}))
-			.sort((a, b) => (a.order || 0) - (b.order || 0)),
-		attempt: answeredQuestionsMap.get(question.id) || null
-	}))
+	const questionsWithOptions = questions.map((question) => {
+		const attempt = answeredQuestionsMap.get(question.id) || null
+		return {
+			...question,
+			options: (questionOptionsMap.get(question.id) || [])
+				.map((option) => ({
+					id: option.id,
+					content: option.content,
+					order: option.order,
+					correct: option.correct // Expose correct answers to client for review
+				}))
+				.sort((a, b) => (a.order || 0) - (b.order || 0)),
+			attempt: attempt
+		}
+	})
 
 	// Determine current question (first unanswered question)
 	let currentQuestionIndex = 0
@@ -189,11 +225,21 @@ export const actions: Actions = {
 
 		const formData = await request.formData()
 		const questionId = parseInt(formData.get("questionId")?.toString() || "")
-		const selectedOptionId = parseInt(formData.get("selectedOptionId")?.toString() || "")
 		const timeTaken = parseInt(formData.get("timeTaken")?.toString() || "0")
 
-		if (isNaN(questionId) || isNaN(selectedOptionId)) {
-			return fail(400, { error: "Invalid question or option ID" })
+		// Handle single or multiple selected options based on question type
+		const selectedOptionId = formData.get("selectedOptionId")?.toString()
+		const selectedOptionIds = formData
+			.getAll("selectedOptionIds[]")
+			.map(Number)
+			.filter((s) => !isNaN(s))
+
+		if (isNaN(questionId)) {
+			return fail(400, { error: "Invalid question ID" })
+		}
+
+		if (selectedOptionId === null && selectedOptionIds.length === 0) {
+			return fail(400, { error: "No option selected" })
 		}
 
 		try {
@@ -238,34 +284,67 @@ export const actions: Actions = {
 				return fail(400, { error: "Question already answered" })
 			}
 
-			// Get the correct answer and points for this question
-			const optionResult = await db
+			// Get the question and its options
+			const questionWithOptions = await db
 				.select({
-					option: sessionQuestionOptions,
-					question: sessionQuestions
+					question: sessionQuestions,
+					option: sessionQuestionOptions
 				})
-				.from(sessionQuestionOptions)
-				.innerJoin(sessionQuestions, eq(sessionQuestionOptions.sessionQuestionId, sessionQuestions.id))
-				.where(eq(sessionQuestionOptions.id, selectedOptionId))
-				.limit(1)
+				.from(sessionQuestions)
+				.leftJoin(sessionQuestionOptions, eq(sessionQuestionOptions.sessionQuestionId, sessionQuestions.id))
+				.where(eq(sessionQuestions.id, questionId))
 
-			if (optionResult.length === 0) {
-				return fail(400, { error: "Invalid option selected" })
+			if (questionWithOptions.length === 0 || !questionWithOptions[0].question) {
+				return fail(404, { error: "Question not found" })
 			}
 
-			const { option, question } = optionResult[0]
-			const isCorrect = option.correct || false
+			const question = questionWithOptions[0].question
+			const allQuestionOptions = questionWithOptions.map((row) => row.option).filter(Boolean) as (typeof sessionQuestionOptions.$inferSelect)[]
+
+			let isCorrect: boolean
+			let actualSelectedOptionId: number | null = null // For single choice backward compatibility
+
+			if (question.type === "multiple_choice") {
+				// For multiple choice, all correct options must be selected, and no incorrect options
+				const correctOptionIds = new Set(allQuestionOptions.filter((opt) => opt.correct).map((opt) => opt.id))
+				const userSelectedOptionIds = new Set(selectedOptionIds)
+
+				const allCorrectSelected = [...correctOptionIds].every((id) => userSelectedOptionIds.has(id))
+				const noIncorrectSelected = [...userSelectedOptionIds].every((id) => correctOptionIds.has(id))
+
+				isCorrect = allCorrectSelected && noIncorrectSelected
+			} else {
+				// For true/false or single choice multiple choice (legacy), only one option is selected
+				const selectedOption = allQuestionOptions.find((opt) => opt.id === parseInt(selectedOptionId || ""))
+				isCorrect = selectedOption?.correct || false
+				actualSelectedOptionId = selectedOption?.id || null
+			}
+
 			const pointsAwarded = isCorrect ? question.points || 0 : 0
 
 			// Save the question attempt
-			await db.insert(questionAttempts).values({
-				gameAttemptId: attemptId,
-				sessionQuestionId: questionId,
-				selectedSessionOptionId: selectedOptionId,
-				correct: isCorrect,
-				timeTakenMs: timeTaken,
-				pointsAwarded: pointsAwarded
-			})
+			const [newAttempt] = await db
+				.insert(questionAttempts)
+				.values({
+					gameAttemptId: attemptId,
+					sessionQuestionId: questionId,
+					selectedSessionOptionId: actualSelectedOptionId, // Will be null for new multiple choice
+					correct: isCorrect,
+					timeTakenMs: timeTaken,
+					pointsAwarded: pointsAwarded
+				})
+				.returning({ id: questionAttempts.id })
+
+			// If multiple choice, save selected options to the new linking table
+			if (question.type === "multiple_choice" && newAttempt?.id) {
+				const values = selectedOptionIds.map((optionId) => ({
+					questionAttemptId: newAttempt.id,
+					selectedSessionOptionId: optionId
+				}))
+				if (values.length > 0) {
+					await db.insert(questionAttemptOptions).values(values)
+				}
+			}
 
 			// Get updated data to return to client
 			// Fetch session questions in order
