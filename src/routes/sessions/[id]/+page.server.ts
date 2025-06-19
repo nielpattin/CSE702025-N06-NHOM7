@@ -54,7 +54,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	}
 
 	return {
-		session: quizSession
+		quizSession: quizSession
 	}
 }
 

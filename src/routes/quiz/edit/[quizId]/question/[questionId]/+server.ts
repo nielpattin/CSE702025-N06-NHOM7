@@ -1,7 +1,7 @@
 import { error, json } from "@sveltejs/kit"
 import { db } from "$lib/server/db"
-import { questions, questionOptions, quizzes } from "$lib/server/db/schema"
-import { eq, and } from "drizzle-orm"
+import { questions, questionOptions, quizzes, sessionQuestionOptions, sessionQuestions, questionAttempts } from "$lib/server/db/schema"
+import { eq, and, inArray } from "drizzle-orm"
 import type { RequestHandler } from "./$types"
 
 export const PATCH: RequestHandler = async ({ params, locals, request }) => {
@@ -104,7 +104,35 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 			return json({ error: "Question not found" }, { status: 404 })
 		}
 
-		// Delete question options first (foreign key constraint)
+		// Get all session questions that reference this question
+		const sessionQuestionsToDelete = await db.select({ id: sessionQuestions.id }).from(sessionQuestions).where(eq(sessionQuestions.originalQuestionId, questionId))
+
+		const sessionQuestionIds = sessionQuestionsToDelete.map((sq) => sq.id)
+
+		// Delete question attempts that reference session questions
+		if (sessionQuestionIds.length > 0) {
+			await db.delete(questionAttempts).where(inArray(questionAttempts.sessionQuestionId, sessionQuestionIds))
+		}
+
+		// Delete session question options that reference session questions
+		if (sessionQuestionIds.length > 0) {
+			await db.delete(sessionQuestionOptions).where(inArray(sessionQuestionOptions.sessionQuestionId, sessionQuestionIds))
+		}
+
+		// Delete session questions that reference this question
+		await db.delete(sessionQuestions).where(eq(sessionQuestions.originalQuestionId, questionId))
+
+		// Get all option IDs for this question
+		const optionsToDelete = await db.select({ id: questionOptions.id }).from(questionOptions).where(eq(questionOptions.questionId, questionId))
+
+		const optionIds = optionsToDelete.map((option) => option.id)
+
+		// Delete any remaining session question options that reference these option IDs
+		if (optionIds.length > 0) {
+			await db.delete(sessionQuestionOptions).where(inArray(sessionQuestionOptions.originalOptionId, optionIds))
+		}
+
+		// Delete question options (foreign key constraint)
 		await db.delete(questionOptions).where(eq(questionOptions.questionId, questionId))
 
 		// Delete the question

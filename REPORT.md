@@ -4,12 +4,15 @@
 
 Dưới đây là bảng phân chia công việc chi tiết cho từng thành viên dựa trên tệp [`PlanAndTodo.md`](PlanAndTodo.md).
 
-| Tên                  | GitHub Username | Chuyên môn                    | Nhiệm vụ chi tiết                                                                                                                                                                                                                                                                                                                                                                                |
-| :------------------- | :-------------- | :---------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Trần Thành Long**  | `nielpattin`    | Backend/Core Systems/Database | **Thiết lập dự án:** Auth.js, PostgreSQL & Drizzle ORM, cấu trúc SvelteKit, env, linting.<br>**Hệ thống Authentication:** Quản lý vai trò (User/Admin), protected routes, admin panel.<br>**Database:** Thiết kế schema (10+ bảng), 18+ migrations, seeding script.<br>**Core Backend Logic:** Logic tạo và quản lý quiz, quản lý session, hệ thống tính điểm và lưu trữ kết quả.                |
-| **Vương Quang Quý**  | `akitosuref`    | Quiz Management UI            | **Quiz Editor:** Giao diện chỉnh sửa câu hỏi, cài đặt quiz (thời gian, điểm), quản lý câu hỏi và đáp án.<br>**Quiz Player Interface:** Giao diện hiển thị câu hỏi, timer, thanh tiến trình, flow hoàn thành quiz, và trang hiển thị kết quả.<br>**Quiz Management:** Các hành động với quiz (Start Session, Edit, Delete), quản lý trạng thái (draft, published, archived).                      |
-| **Nguyễn Xuân Mạnh** | `xuanmanh-2110` | Auth & Results UI             | **Landing Pages & Authentication:** Landing page, trang đăng nhập với Google/Github OAuth, trang profile người dùng.<br>**Join & Participation:** Giao diện nhập code, sảnh chờ session.<br>**Library Interface:** Thư viện quiz với filter, sắp xếp, tìm kiếm, và pagination.<br>**Basic Results Interface:** Giao diện xem kết quả cá nhân và review từng câu hỏi.                             |
-| **Vũ Văn Sơn**       | `sunyn582`      | Dashboard & Sessions UI       | **Dashboard Infrastructure:** Layout chính, sidebar, header.<br>**Dashboard Features:** Welcome section, trending quizzes, thanh tìm kiếm, hoạt động gần đây.<br>**Sessions Management:** Giao diện liệt kê, chi tiết, và tạo session; quản lý người tham gia và theo dõi trạng thái session.<br>**Reports Interface:** Giao diện xem báo cáo theo session và theo dõi hiệu suất người tham gia. |
+| Tuần      | Nhiệm vụ chính                     | Trần Thành Long (Backend)                                                                                                      | Vương Quang Quý (Quiz UI)                                                                            | Nguyễn Xuân Mạnh (Auth/Results UI)                                                        | Vũ Văn Sơn (Dashboard/Sessions UI)                                                             |
+| :-------- | :--------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------- |
+| **1-2**   | **Khởi tạo & Nền tảng**            | - Thiết lập project SvelteKit, Drizzle ORM, Auth.js<br>- Cấu hình ESLint, Prettier, Husky<br>- Schema DB ban đầu (Users, Auth) | - Nghiên cứu thư viện component<br>- Dựng layout cơ bản cho trang Quiz Editor                        | - Thiết kế Landing Page<br>- Dựng trang đăng nhập với các provider OAuth (Google, Github) | - Thiết kế layout chính cho Dashboard<br>- Tạo Sidebar và Header components                    |
+| **3-4**   | **Core Features - Backend & DB**   | - Hoàn thiện schema DB (Quiz, Questions, Sessions)<br>- Logic tạo/quản lý Quiz<br>- Logic tạo và theo dõi Session              | - Xây dựng form tạo/sửa câu hỏi<br>- Giao diện quản lý các lựa chọn (answers)                        | - Hoàn thiện luồng đăng nhập/đăng xuất<br>- Xây dựng trang Profile người dùng             | - Dựng các section chính trên Dashboard (Welcome, Trending)<br>- Tích hợp thanh tìm kiếm       |
+| **5-6**   | **Xây dựng giao diện cốt lõi**     | - API cho việc tạo/lấy dữ liệu Quiz<br>- API cho việc tham gia Session<br>- Hoàn thiện vai trò User/Admin                      | - Hoàn thiện Quiz Editor (thêm/sửa/xóa câu hỏi)<br>- Giao diện cài đặt Quiz (thời gian, điểm)        | - Giao diện nhập mã code tham gia<br>- Xây dựng sảnh chờ (session lobby)                  | - Xây dựng trang liệt kê Sessions<br>- Giao diện chi tiết một Session                          |
+| **7-8**   | **Hoàn thiện luồng chơi Quiz**     | - Logic tính điểm và theo dõi lượt chơi (Attempts)<br>- Snapshot Quiz content khi tạo Session<br>- Tối ưu query DB             | - Xây dựng giao diện chơi Quiz (hiển thị câu hỏi, timer)<br>- Luồng trả lời và chuyển câu hỏi        | - Xây dựng trang thư viện Quiz (Library)<br>- Thêm bộ lọc, sắp xếp, tìm kiếm cho thư viện | - Giao diện quản lý người tham gia trong Session<br>- Bắt đầu xây dựng trang Báo cáo (Reports) |
+| **9-10**  | **Tích hợp & Báo cáo**             | - API cho trang báo cáo<br>- Hoàn thiện Admin panel (quản lý user)<br>- Seeding script cho DB                                  | - Giao diện hiển thị kết quả sau khi chơi<br>- Hoàn thiện các action trên Quiz (Start, Edit, Delete) | - Giao diện xem kết quả cá nhân<br>- Review lại từng câu trả lời                          | - Hoàn thiện trang liệt kê Reports<br>- Giao diện báo cáo chi tiết theo Session                |
+| **11-12** | **Hoàn thiện & Tối ưu**            | - Tối ưu hiệu năng backend<br>- Logic dọn dẹp session hết hạn<br>- Review và vá lỗi bảo mật                                    | - Tối ưu UI/UX cho Quiz Editor và Player<br>- Thêm chức năng nhân bản Quiz                           | - Tối ưu UI/UX cho trang Library và Results<br>- Hoàn thiện responsive trên các giao diện | - Tối ưu và hoàn thiện Dashboard<br>- Thêm các biểu đồ/thống kê cơ bản cho trang Reports       |
+| **13-16** | **Kiểm thử, Sửa lỗi & Triển khai** | - Viết test (nếu có)<br>- Rà soát toàn bộ API<br>- Chuẩn bị cho production                                                     | - Kiểm thử chéo các luồng Quiz<br>- Sửa lỗi UI/UX                                                    | - Kiểm thử luồng xác thực và tham gia<br>- Sửa lỗi UI/UX                                  | - Kiểm thử toàn bộ luồng Dashboard và Session<br>- Sửa lỗi UI/UX                               |
 
 ---
 
@@ -97,164 +100,171 @@ sequenceDiagram
 
 ### c. Thiết kế hướng đối tượng (Sơ đồ quan hệ thực thể)
 
-Sơ đồ ERD dưới đây mô tả các thực thể chính và mối quan hệ giữa chúng trong cơ sở dữ liệu, thể hiện thiết kế hướng đối tượng của hệ thống.
+Sơ đồ ERD dưới đây được cập nhật để phản ánh chính xác schema database hiện tại của dự án, thể hiện thiết kế hướng đối tượng của hệ thống.
 
 ```mermaid
 erDiagram
-    %% Auth.js Tables
     users {
         text id PK "UUID"
-        text email UK "Unique email address"
-        text name "Display name"
-        text image "Profile picture URL"
-        timestamp emailVerified "Email verification timestamp"
-        text role "ENUM: Admin, User"
-        timestamp created_at
-        timestamp updated_at
+        text email UK
+        text name
+        text image
+        timestamp emailVerified
+        text role "Admin, User"
+        timestamp createdAt
+        timestamp updatedAt
     }
-
     accounts {
-        text userId FK "References users.id"
-        text type "Account type (oidc, oauth)"
-        text provider "OAuth provider (google, github)"
-        text providerAccountId "Provider account ID"
-        text refresh_token "OAuth refresh token"
-        text access_token "OAuth access token"
-        int expires_at "Token expiration"
-        text token_type "Token type"
-        text scope "OAuth scope"
-        text id_token "ID token"
-        text session_state "Session state"
+        text userId FK "user.id"
+        text type
+        text provider
+        text providerAccountId
+        text refresh_token
+        text access_token
+        integer expires_at
+        text token_type
+        text scope
+        text id_token
+        text session_state
     }
-
     sessions {
-        text sessionToken PK "Session token"
-        text userId FK "References users.id"
-        timestamp expires "Session expiration"
+        text sessionToken PK
+        text userId FK "user.id"
+        timestamp expires
     }
-
-    %% Application Tables
     quizzes {
-        serial id PK "Auto-increment ID"
-        varchar title "Quiz title (256 chars)"
-        text description "Quiz description"
-        text creator_id FK "References users.id"
-        varchar status "ENUM: draft, published, archived"
-        varchar visibility "ENUM: public, private, unlisted"
-        timestamp created_at
-        timestamp updated_at
+        serial id PK
+        varchar title
+        text description
+        text creatorId FK "user.id"
+        varchar status "draft, published, archived"
+        visibility visibility "public, private"
+        difficulty difficulty "easy, medium, hard"
+        integer duration
+        real rating
+        integer participants
+        text imageUrl
+        timestamp createdAt
+        timestamp updatedAt
     }
-
     questions {
-        serial id PK "Auto-increment ID"
-        int quiz_id FK "References quizzes.id"
-        varchar type "ENUM: multiple_choice, true_false"
-        varchar content "Question text (5000 chars)"
-        int time_limit "Time limit in seconds"
-        int points "Points for correct answer"
-        timestamp created_at
-        timestamp updated_at
+        serial id PK
+        integer quizId FK "quizzes.id"
+        varchar type "multiple_choice, true_false"
+        varchar content
+        integer timeLimit
+        integer points
+        timestamp createdAt
+        timestamp updatedAt
     }
-
     question_options {
-        serial id PK "Auto-increment ID"
-        int question_id FK "References questions.id"
-        int order "Option order"
-        varchar content "Option text (2500 chars)"
-        boolean correct "Correct answer flag"
+        serial id PK
+        integer questionId FK "questions.id"
+        integer order
+        varchar content
+        boolean correct
     }
-
     quiz_sessions {
-        serial id PK "Auto-increment ID"
-        int quiz_id FK "References quizzes.id"
-        text host_id FK "References users.id"
-        varchar shareable_code UK "7-digit code (0-9)"
-        jsonb settings_overrides "Custom session settings"
-        timestamp created_at
-        timestamp updated_at
-        timestamp end_time
+        serial id PK
+        integer quizId FK "quizzes.id"
+        text hostId FK "user.id"
+        varchar code UK
+        varchar status "active, inactive, expired, deleting"
+        timestamp expiresAt
+        timestamp createdAt
+        timestamp updatedAt
     }
-
-    session_participants {
-        serial id PK "Auto-increment ID"
-        int quiz_session_id FK "References quiz_sessions.id"
-        varchar player_id UK "Guest/registered player identifier"
-        text user_id FK "References users.id (NULL for guests)"
-        varchar nickname "Display name for session"
-        int total_attempts "Number of attempts made"
-        int best_score "Highest score achieved"
-        jsonb data "Report data: correct, incorrect, attempts, total_time_ms, questions_per_sec"
-        timestamp created_at
-        timestamp updated_at
+    participants {
+        serial id PK
+        integer quizSessionId FK "quiz_sessions.id"
+        text userId FK "user.id"
+        text guestId
+        varchar name
+        timestamp createdAt
+        timestamp updatedAt
     }
-
     game_attempts {
-        serial id PK "Auto-increment ID"
-        int quiz_session_id FK "References quiz_sessions.id"
-        varchar player_id FK "References session_participants.player_id"
-        int attempt_number "Attempt sequence number"
-        int score "Total score for attempt"
-        varchar status "ENUM: in_progress, completed, abandoned"
-        timestamp started_at "Attempt start time"
-        timestamp completed_at "Attempt completion time"
-        timestamp updated_at
+        serial id PK
+        integer quizSessionId FK "quiz_sessions.id"
+        integer participantId FK "participants.id"
+        integer attemptNumber
+        integer score
+        varchar status "in_progress, completed, abandoned"
+        timestamp startedAt
+        timestamp completedAt
+        timestamp updatedAt
     }
-
-    question_attempts {
-        serial id PK "Auto-increment ID"
-        int game_attempt_id FK "References game_attempts.id"
-        int session_question_id FK "References session_questions.id"
-        int selected_session_option_id FK "References session_question_options.id (NULL if no answer)"
-        boolean correct "Answer correctness snapshot"
-        int time_taken_ms "Response time in milliseconds"
-        int points_awarded "Points earned for this question"
-    }
-
-    %% Session-specific tables for temporary questions/options
     session_questions {
-        serial id PK "Auto-increment ID"
-        int quiz_session_id FK "References quiz_sessions.id"
-        int original_question_id FK "References questions.id"
-        varchar type "Question type snapshot"
-        text content "Question content snapshot"
-        int time_limit "Time limit snapshot"
-        int points "Points value snapshot"
+        serial id PK
+        integer quizSessionId FK "quiz_sessions.id"
+        integer originalQuestionId FK "questions.id"
+        varchar type
+        text content
+        integer timeLimit
+        integer points
     }
-
     session_question_options {
-        serial id PK "Auto-increment ID"
-        int session_question_id FK "References session_questions.id"
-        int original_option_id FK "References question_options.id"
-        int order "Option order snapshot"
-        varchar content "Option text snapshot"
-        boolean correct "Correct answer snapshot"
+        serial id PK
+        integer sessionQuestionId FK "session_questions.id"
+        integer originalOptionId FK "question_options.id"
+        integer order
+        varchar content
+        boolean correct
+    }
+    question_attempts {
+        serial id PK
+        integer gameAttemptId FK "game_attempts.id"
+        integer sessionQuestionId FK "session_questions.id"
+        integer selectedSessionOptionId FK "session_question_options.id"
+        boolean correct
+        integer timeTakenMs
+        integer pointsAwarded
+    }
+    quiz_tags {
+        serial id PK
+        varchar name UK
+        text description
+        varchar color
+        varchar icon
+        timestamp createdAt
+        timestamp updatedAt
+    }
+    quiz_tag_assignments {
+        serial id PK
+        integer quizId FK "quizzes.id"
+        integer tagId FK "quiz_tags.id"
+        timestamp assignedAt
     }
 
-    %% Relationships
-    users ||--o{ accounts : has
-    users ||--o{ sessions : has
-    users ||--o{ quizzes : creates
-    users ||--o{ quiz_sessions : hosts
-    users ||--o| session_participants : participates
+    users ||--o{ accounts : "has"
+    users ||--o{ sessions : "has"
+    users ||--o{ quizzes : "creates"
+    users ||--o{ quiz_sessions : "hosts"
+    users ||--o{ participants : "participates_as"
 
-    quizzes ||--o{ questions : contains
-    quizzes ||--o{ quiz_sessions : used_in
+    quizzes ||--o{ questions : "contains"
+    quizzes ||--o{ quiz_sessions : "is_used_in"
+    quizzes ||--o{ quiz_tag_assignments : "is_assigned"
 
-    questions ||--o{ question_options : has
-    questions ||--o{ session_questions : source_for
+    questions ||--o{ question_options : "has"
+    questions ||--o{ session_questions : "is_snapshotted_as"
 
-    quiz_sessions ||--o{ session_participants : has
-    quiz_sessions ||--o{ game_attempts : contains
-    quiz_sessions ||--o{ session_questions : snapshots
+    question_options ||--o{ session_question_options : "is_snapshotted_as"
 
-    session_participants ||--o{ game_attempts : makes
+    quiz_sessions ||--o{ participants : "has"
+    quiz_sessions ||--o{ game_attempts : "contains"
+    quiz_sessions ||--o{ session_questions : "snapshots"
 
-    session_questions ||--o{ session_question_options : has
-    session_questions ||--o{ question_attempts : attempted_in
+    participants ||--o{ game_attempts : "makes"
 
-    question_options ||--o{ session_question_options : source_for
-    game_attempts ||--o{ question_attempts : consists_of
-    session_question_options ||--o| question_attempts : selected_in
+    game_attempts ||--o{ question_attempts : "consists_of"
+
+    session_questions ||--o{ session_question_options : "has"
+    session_questions ||--o{ question_attempts : "is_attempted_in"
+
+    session_question_options ||--o| question_attempts : "is_selected_in"
+
+    quiz_tags ||--o{ quiz_tag_assignments : "is_assigned"
 ```
 
 ### d. Data flow và cơ sở dữ liệu

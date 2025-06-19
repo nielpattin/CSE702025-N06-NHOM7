@@ -2,7 +2,6 @@
 	import { page } from "$app/state"
 	import { signOut } from "@auth/sveltekit/client"
 	import { goto } from "$app/navigation"
-	import { enhance } from "$app/forms"
 	import * as Sidebar from "$lib/components/ui/sidebar"
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu"
 	import { Home, Plus, BookOpen, Target, BarChart3, Crown, User, Settings, LogOut, ChevronUp, Search } from "@lucide/svelte"
@@ -35,6 +34,9 @@
 	function isItemActive(itemHref: string): boolean {
 		if (itemHref === "/browse") {
 			return currentPath === "/browse" || currentPath.startsWith("/browse/")
+		}
+		if (itemHref === "/sessions") {
+			return currentPath === "/sessions" || currentPath.startsWith("/sessions/")
 		}
 		return currentPath === itemHref
 	}

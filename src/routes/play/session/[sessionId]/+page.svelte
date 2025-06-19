@@ -28,11 +28,11 @@
 		<div class="space-y-8">
 			<PlaySessionHeader session={quizSession} />
 
-			<PlayParticipantsList {participants} />
-
 			{#if !hasUserJoined()}
 				<PlaySessionJoinForm userSession={data.userSession} />
 			{/if}
+
+			<PlayParticipantsList {participants} />
 
 			<PlaySessionInstructions hasUserJoined={hasUserJoined()} userSession={data.userSession} session={quizSession} />
 

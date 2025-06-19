@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { Button } from "$lib/components/ui/button"
-	import { Copy, Check } from "@lucide/svelte"
+	import { Copy, Check, Play } from "@lucide/svelte"
 
 	type Session = {
+		id: number
 		code: string
 		status: string
 		createdAt: Date | null
@@ -95,6 +96,10 @@
 		</div>
 	</div>
 	<div class="flex flex-col items-end gap-2">
+		<Button href="/play/session/{session.id}" class="bg-green-600 text-white hover:bg-green-700">
+			<Play class="mr-2 h-4 w-4" />
+			Play Session
+		</Button>
 		<span class="inline-flex items-center rounded-full bg-blue-900 px-3 py-1 text-xs font-medium text-blue-200">
 			{session.quiz.status}
 		</span>
