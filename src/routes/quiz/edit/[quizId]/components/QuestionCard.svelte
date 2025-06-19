@@ -128,7 +128,7 @@
 						<div class="bg-popover border-border absolute top-full left-0 z-50 mt-1 w-40 rounded-md border p-1 shadow-lg" role="menu" aria-label="Time limit options">
 							<div class="max-h-60 overflow-y-auto">
 								{#each timeOptions as option (option.value)}
-									<button type="button" onclick={() => selectTimeLimit(option.value)} class="hover:bg-accent hover:text-accent-foreground block w-full rounded-sm px-3 py-2 text-left text-sm transition-colors {question.timeLimit === option.value ? 'bg-accent font-medium' : ''}" role="menuitem" aria-selected={question.timeLimit === option.value}>
+									<button type="button" onclick={() => selectTimeLimit(option.value)} class="hover:bg-accent hover:text-accent-foreground block w-full rounded-sm px-3 py-2 text-left text-sm transition-colors {question.timeLimit === option.value ? 'bg-accent font-medium' : ''}" role="menuitemradio" aria-checked={question.timeLimit === option.value}>
 										{option.label}
 									</button>
 								{/each}
@@ -159,7 +159,7 @@
 						<div class="bg-popover border-border absolute top-full left-0 z-50 mt-1 w-24 rounded-md border p-1 shadow-lg" role="menu" aria-label="Points options">
 							<div class="max-h-60 overflow-y-auto">
 								{#each pointOptions as pointValue (pointValue)}
-									<button type="button" onclick={() => selectPoints(pointValue)} class="hover:bg-accent hover:text-accent-foreground block w-full rounded-sm px-3 py-2 text-left text-sm transition-colors {question.points === pointValue ? 'bg-accent font-medium' : ''}" role="menuitem" aria-selected={question.points === pointValue}>
+									<button type="button" onclick={() => selectPoints(pointValue)} class="hover:bg-accent hover:text-accent-foreground block w-full rounded-sm px-3 py-2 text-left text-sm transition-colors {question.points === pointValue ? 'bg-accent font-medium' : ''}" role="menuitemradio" aria-checked={question.points === pointValue}>
 										{pointValue}
 									</button>
 								{/each}

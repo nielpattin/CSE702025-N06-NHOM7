@@ -19,34 +19,34 @@
 					{#each breadcrumbs as breadcrumb, index (breadcrumb.label)}
 						<li>
 							{#if breadcrumb.href && index < breadcrumbs.length - 1}
-								<a href={breadcrumb.href} class="text-gray-400 transition-colors hover:text-white">
+								<a href={breadcrumb.href} class="hover:text-foreground text-muted-foreground transition-colors">
 									{breadcrumb.label}
 								</a>
 							{:else}
-								<span class="font-medium text-white">{breadcrumb.label}</span>
+								<span class="text-foreground font-medium">{breadcrumb.label}</span>
 							{/if}
 						</li>
 						{#if index < breadcrumbs.length - 1}
 							<li>
-								<span class="text-gray-500">/</span>
+								<span class="text-muted-foreground">/</span>
 							</li>
 						{/if}
 					{/each}
 				</ol>
 			</nav>
-			<h1 class="mb-2 text-3xl font-bold text-white">Participant Attempts</h1>
+			<h1 class="text-foreground mb-2 text-3xl font-bold">Participant Attempts</h1>
 			<div class="flex items-center space-x-4">
 				{#if data.participant.user?.image}
 					<img src={data.participant.user.image} alt={data.participant.name} class="border-border h-12 w-12 rounded-full border-2" />
 				{:else}
-					<div class="border-border bg-muted flex h-12 w-12 items-center justify-center rounded-full border-2 text-xl font-semibold text-white">
+					<div class="border-border bg-muted text-foreground flex h-12 w-12 items-center justify-center rounded-full border-2 text-xl font-semibold">
 						{data.participant.name?.charAt(0).toUpperCase()}
 					</div>
 				{/if}
 				<div>
-					<div class="text-xl font-semibold text-white">{data.participant.name}</div>
+					<div class="text-foreground text-xl font-semibold">{data.participant.name}</div>
 					{#if data.participant.user?.name}
-						<div class="text-sm text-gray-400">{data.participant.user.name}</div>
+						<div class="text-muted-foreground text-sm">{data.participant.user.name}</div>
 					{/if}
 				</div>
 			</div>
@@ -54,9 +54,9 @@
 
 		<div class="space-y-4">
 			{#if data.attempts.length === 0}
-				<div class="border-border bg-card rounded-lg border py-12 text-center text-gray-400">No attempts found for this participant.</div>
+				<div class="border-border bg-card text-muted-foreground rounded-lg border py-12 text-center">No attempts found for this participant.</div>
 			{:else}
-				<div class="grid grid-cols-5 items-center gap-4 px-6 pb-4 text-sm font-semibold text-gray-400 uppercase">
+				<div class="text-muted-foreground grid grid-cols-5 items-center gap-4 px-6 pb-4 text-sm font-semibold uppercase">
 					<span class="text-left">Attempt #</span>
 					<span class="text-center"></span>
 					<span class="text-center">Answer Accuracy</span>
@@ -68,7 +68,7 @@
 					{@const incorrectAnswers = attempt.totalQuestions - correctAnswers}
 					<a href="/reports/{data.participant.quizSessionId}/players/{data.participant.id}/attempts/{attempt.id}" class="border-border bg-card hover:bg-muted grid cursor-pointer grid-cols-5 items-center gap-4 rounded-lg border px-4 py-2 transition-colors">
 						<div class="flex items-center">
-							<span class="text-base font-semibold text-white">
+							<span class="text-foreground text-base font-semibold">
 								Attempt {data.attempts.length - i}
 							</span>
 						</div>
@@ -82,13 +82,13 @@
 						</div>
 
 						<div class="flex items-center justify-center">
-							<span class="text-lg font-bold text-white">
+							<span class="text-foreground text-lg font-bold">
 								{attempt.correctAnswers ?? 0} / {attempt.totalQuestions ?? 0}
 							</span>
 						</div>
 
 						<div class="flex items-center justify-center">
-							<span class="text-lg font-bold text-white">
+							<span class="text-foreground text-lg font-bold">
 								{attempt.score ?? 0} / {attempt.totalPoints ?? 0}
 							</span>
 						</div>

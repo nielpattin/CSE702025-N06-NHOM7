@@ -15,7 +15,7 @@
 		{/if}
 	</div>
 
-	<div class="mt-1 flex justify-center gap-6 text-sm text-gray-200">
+	<div class="text-muted-foreground mt-1 flex justify-center gap-6 text-sm">
 		<div class="flex items-center gap-1">
 			<div class="h-3 w-3 rounded-sm bg-green-400"></div>
 			<span>{correct}</span>

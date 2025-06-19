@@ -6,3 +6,11 @@ export type SessionReport = InferSelectModel<typeof sessions> & {
 }
 
 export type UserProfile = InferSelectModel<typeof users>
+
+export interface Tag {
+	id: number
+	name: string
+	description: string | null
+	color: string | null
+	icon: string | null
+}

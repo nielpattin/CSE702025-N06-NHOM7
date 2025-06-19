@@ -71,8 +71,8 @@
 
 	<!-- Tags Selection -->
 	<div class="space-y-2">
-		<label class="text-sm font-medium">Categories</label>
-		<TagSelector {availableTags} selectedTagIds={currentTagIds} onTagsChange={handleTagsChange} variant="default" />
+		<label for="quiz-categories" class="text-sm font-medium">Categories</label>
+		<TagSelector id="quiz-categories" {availableTags} selectedTagIds={currentTagIds} onTagsChange={handleTagsChange} disabled={!isEditing || isSubmitting} />
 		<!-- Hidden input to send tag IDs -->
 		{#each currentTagIds as tagId (tagId)}
 			<input type="hidden" name="tagIds" value={tagId} />

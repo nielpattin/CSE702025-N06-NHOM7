@@ -15,7 +15,7 @@
 </script>
 
 <!-- Header -->
-<header class="bg-background dark:bg-background sticky top-0 z-50 border-b border-gray-700 shadow-lg select-none">
+<header class="dark:bg-background border-border sticky top-0 z-50 border-b shadow-lg select-none" style="background-color: var(--background) !important;">
 	<nav class="mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex h-16 items-center justify-between">
 			<!-- Logo Section -->
@@ -31,9 +31,9 @@
 
 			<!-- Right Side Actions -->
 			<div class="flex items-center space-x-4">
-				<Button href="/join">Join</Button>
+				<Button href="/join" variant="outline">Join</Button>
 				{#if session?.user}
-					<Button href="/dashboard" class="bg-gradient-to-r from-blue-600 to-cyan-500 text-white transition-colors hover:from-blue-700 hover:to-cyan-600">Dashboard</Button>
+					<Button href="/dashboard" variant="default">Dashboard</Button>
 				{/if}
 
 				<!-- User Info -->
@@ -42,7 +42,7 @@
 						{#if session.user.image}
 							<img src={session.user.image} alt={session.user.name || "User"} class="h-8 w-8 rounded-full" />
 						{:else}
-							<div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-600 text-sm font-medium text-white">
+							<div class="bg-muted text-muted-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium">
 								{(session.user.name || session.user.email || "U").charAt(0).toUpperCase()}
 							</div>
 						{/if}

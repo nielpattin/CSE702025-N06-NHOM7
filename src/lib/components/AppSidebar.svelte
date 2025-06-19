@@ -74,7 +74,7 @@
 											<item.icon class="mr-2 h-4 w-4" />
 											<span>{item.name}</span>
 											{#if item.adminOnly}
-												<span class="ml-auto text-base text-red-400">ADMIN</span>
+												<span class="text-destructive ml-auto text-base">ADMIN</span>
 											{/if}
 										</a>
 									{/snippet}
@@ -98,7 +98,7 @@
 											<img src={session.user.image} alt="Profile" class="h-8 w-8 rounded-full" />
 										{:else}
 											<div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-600">
-												<span class="text-sm font-bold text-white">
+												<span class="text-primary-foreground text-sm font-bold">
 													{session.user.name?.charAt(0) || session.user.email?.charAt(0) || "U"}
 												</span>
 											</div>
@@ -121,8 +121,8 @@
 								<span>Settings</span>
 							</DropdownMenu.Item>
 							<DropdownMenu.Separator />
-							<DropdownMenu.Item onclick={handleSignOut} class="cursor-pointer text-red-400">
-								<LogOut class="mr-2 h-4 w-4 text-red-400" />
+							<DropdownMenu.Item onclick={handleSignOut} class="text-destructive cursor-pointer">
+								<LogOut class="text-destructive mr-2 h-4 w-4" />
 								<span>Sign out</span>
 							</DropdownMenu.Item>
 						</DropdownMenu.Content>

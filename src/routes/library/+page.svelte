@@ -173,9 +173,9 @@
 	})
 
 	const quizStatusTabs = [
-		{ id: "published" as const, label: "Published", icon: Star, color: "text-yellow-500 dark:text-yellow-400", activeColor: "text-primary-foreground" },
-		{ id: "draft" as const, label: "Drafts", icon: FileText, color: "text-blue-500 dark:text-blue-400", activeColor: "text-primary-foreground" },
-		{ id: "archived" as const, label: "Archived", icon: Archive, color: "text-gray-500 dark:text-gray-400", activeColor: "text-primary-foreground" }
+		{ id: "published" as const, label: "Published", icon: Star, color: "text-foreground", activeColor: "text-white" },
+		{ id: "draft" as const, label: "Drafts", icon: FileText, color: "text-foreground", activeColor: "text-white" },
+		{ id: "archived" as const, label: "Archived", icon: Archive, color: "text-foreground", activeColor: "text-white" }
 	]
 
 	let visibleQuizzes = $state<number[]>([])
@@ -310,15 +310,10 @@
 				<Tabs.Root value={activeTab} onValueChange={(value: string) => handleTabChange(value as QuizStatus)} class="flex w-full flex-col md:flex-row md:items-start">
 					<Tabs.List class="bg-card border-border mt-2 flex h-auto w-fit shrink-0 space-x-2 rounded-lg border p-2 md:w-48 md:flex-col md:space-y-2 md:space-x-0">
 						{#each quizStatusTabs as tab (tab.id)}
-							<Tabs.Trigger
-								value={tab.id}
-								class="hover:bg-muted data-[state=active]:from-primary data-[state=active]:to-accent data-[state=active]:text-primary-foreground flex h-12 w-full cursor-pointer items-center justify-between rounded-md border-transparent px-4 py-3 text-sm
-										font-medium transition-all duration-200 data-[state=active]:bg-gradient-to-r
-										data-[state=active]:shadow-lg {activeTab === tab.id ? 'text-primary-foreground' : tab.color}"
-							>
+							<Tabs.Trigger value={tab.id} class="hover:bg-muted flex h-12 w-full cursor-pointer items-center justify-between rounded-md px-4 py-3 text-sm font-medium transition-all duration-200 data-[state=active]:shadow-lg {activeTab === tab.id ? 'text-white' : tab.color}" style={activeTab === tab.id ? "background-color: #004d5a !important;" : ""}>
 								<div class="flex items-center">
-									<tab.icon class="mr-2 h-4 w-4 shrink-0 {activeTab === tab.id ? tab.activeColor : tab.color}" />
-									<span class={activeTab === tab.id ? "text-primary-foreground" : tab.color}>{tab.label}</span>
+									<tab.icon class="mr-2 h-4 w-4 shrink-0 {activeTab === tab.id ? 'text-white' : tab.color}" />
+									<span class={activeTab === tab.id ? "text-white" : tab.color}>{tab.label}</span>
 								</div>
 								<span class="bg-muted text-muted-foreground ml-2 min-w-[28px] shrink-0 rounded-full px-2 py-1 text-center text-xs">
 									{userQuizzesCount[tab.id]}

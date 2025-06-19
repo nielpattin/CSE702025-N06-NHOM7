@@ -70,17 +70,17 @@
 		if (isExpired || status === "expired") {
 			return {
 				text: "Expired",
-				class: "bg-red-900 text-red-200"
+				class: "bg-red-700 text-white"
 			}
 		} else if (status === "active") {
 			return {
 				text: "Active",
-				class: "bg-green-900 text-green-200"
+				class: "bg-green-700 text-white"
 			}
 		} else {
 			return {
 				text: status,
-				class: "bg-secondary text-gray-200"
+				class: "bg-secondary text-foreground"
 			}
 		}
 	}
@@ -124,7 +124,7 @@
 </script>
 
 <div
-	class="border-border bg-card hover:border-border hover:bg-secondary/70 block cursor-pointer rounded-lg border p-6 transition-all duration-200 hover:shadow-lg"
+	class="border-border bg-card !important hover:border-border hover:bg-secondary/70 block cursor-pointer rounded-lg border p-6 transition-all duration-200 hover:shadow-lg"
 	onclick={(e) => {
 		// Navigate to session if not clicking on form or dropdown elements
 		if (!(e.target as HTMLElement).closest("form") && !(e.target as HTMLElement).closest("[data-dropdown-menu-content]") && !(e.target as HTMLElement).closest('button[aria-haspopup="menu"]')) {
@@ -151,7 +151,7 @@
 			<!-- Row 1: Quiz Name, Status, and Action Buttons -->
 			<div class="flex items-start justify-between">
 				<div class="flex min-w-0 flex-1 items-start space-x-4">
-					<h3 class="truncate text-lg font-semibold text-white">
+					<h3 class="text-foreground truncate text-lg font-semibold">
 						{session.quizName || "Untitled Quiz"}
 					</h3>
 					<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {statusInfo.class}">
@@ -234,7 +234,7 @@
 			</form>
 			<!-- Row 2: Participant Count and Expiry Time -->
 			<div class="mt-3 flex items-center justify-between">
-				<div class="flex items-center space-x-4 text-sm text-gray-400">
+				<div class="text-foreground flex items-center space-x-4 text-sm">
 					<span class="flex items-center">
 						<svg class="mr-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
 							<path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"></path>
@@ -242,7 +242,7 @@
 						{session.participantCount} participant{session.participantCount === 1 ? "" : "s"}
 					</span>
 				</div>
-				<span class="text-sm text-gray-500">
+				<span class="text-foreground text-sm">
 					{formatDate(session.expiresAt)}
 				</span>
 			</div>

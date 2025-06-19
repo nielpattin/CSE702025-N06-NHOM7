@@ -89,16 +89,16 @@
 
 <!-- Session Expiration with Calendar Icon -->
 <div class="bg-muted rounded-lg p-4">
-	<h3 class="mb-2 text-sm font-medium text-gray-300">Session Expiration</h3>
-	<p class="text-lg font-semibold text-white">{formatDateForDisplay(currentDateTime())}</p>
+	<h3 class="text-muted-foreground mb-2 text-sm font-medium">Session Expiration</h3>
+	<p class="text-foreground text-lg font-semibold">{formatDateForDisplay(currentDateTime())}</p>
 
 	<div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
 		<div>
-			<Label for="date-picker" class="mb-2 block text-sm font-medium text-gray-300">Due Date</Label>
+			<Label for="date-picker" class="text-muted-foreground mb-2 block text-sm font-medium">Due Date</Label>
 			<Datepicker id="date-picker" bind:value={selectedDate} />
 		</div>
 		<div>
-			<Label for="time-picker" class="mb-2 block text-sm font-medium text-gray-300">Due Time</Label>
+			<Label for="time-picker" class="text-muted-foreground mb-2 block text-sm font-medium">Due Time</Label>
 			<Timepicker id="time-picker" bind:value={selectedTime} />
 		</div>
 	</div>

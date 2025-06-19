@@ -136,10 +136,10 @@
 			<div class="border-border bg-card rounded-lg border shadow-lg">
 				<div class="border-border border-b">
 					<nav class="-mb-px flex">
-						<button onclick={() => handleTabChange("participants")} class="w-1/2 border-b-2 px-6 py-4 text-center text-sm font-medium transition-colors {activeTab === 'participants' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-300'}">
+						<button onclick={() => handleTabChange("participants")} class="w-1/2 border-b-2 px-6 py-4 text-center text-sm font-medium transition-colors {activeTab === 'participants' ? 'dark:border-primary dark:text-primary border-blue-700 text-blue-700' : 'dark:text-muted-foreground dark:hover:border-border dark:hover:text-foreground border-transparent text-gray-700 hover:border-gray-500 hover:text-gray-900 dark:border-transparent'}">
 							Participants ({data.participants.length})
 						</button>
-						<button onclick={() => handleTabChange("questions")} class="w-1/2 border-b-2 px-6 py-4 text-center text-sm font-medium transition-colors {activeTab === 'questions' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:border-gray-500 hover:text-gray-300'}">
+						<button onclick={() => handleTabChange("questions")} class="w-1/2 border-b-2 px-6 py-4 text-center text-sm font-medium transition-colors {activeTab === 'questions' ? 'dark:border-primary dark:text-primary border-blue-700 text-blue-700' : 'dark:text-muted-foreground dark:hover:border-border dark:hover:text-foreground border-transparent text-gray-700 hover:border-gray-500 hover:text-gray-900 dark:border-transparent'}">
 							Questions ({data.questions.length})
 						</button>
 					</nav>
@@ -150,11 +150,11 @@
 					{#if activeTab === "participants"}
 						{#if data.participants.length === 0}
 							<div class="py-12 text-center">
-								<svg class="mx-auto h-12 w-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg class="text-muted-foreground mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 715 0z"></path>
 								</svg>
-								<h3 class="mt-2 text-sm font-medium text-white">No participants</h3>
-								<p class="mt-1 text-sm text-gray-400">No one has joined this session yet.</p>
+								<h3 class="dark:text-foreground mt-2 text-sm font-medium text-gray-900">No participants</h3>
+								<p class="text-muted-foreground mt-1 text-sm">No one has joined this session yet.</p>
 							</div>
 						{:else}
 							<ParticipantsTable participants={data.participants} {getAccuracyStrokeColor} {visibleParticipants} />

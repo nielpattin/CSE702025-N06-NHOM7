@@ -77,7 +77,7 @@
 					</h3>
 					<div class="flex-shrink-0">
 						{#if quiz.visibility === "public"}
-							<Badge variant="default" class="bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-100 dark:hover:bg-green-800">
+							<Badge variant="default" class="text-foreground bg-green-500/20">
 								<Globe class="mr-1 h-3 w-3" />
 								Public
 							</Badge>
@@ -105,7 +105,7 @@
 						}}
 					>
 						<input type="hidden" name="quizId" value={quiz.id} />
-						<Button type="submit" class="hover:bg-primary-hover cursor-pointer">
+						<Button type="submit" class="bg-primary text-primary-foreground hover:bg-primary-hover cursor-pointer">
 							<Send class="me-2 h-4 w-4 " />
 							Publish
 						</Button>

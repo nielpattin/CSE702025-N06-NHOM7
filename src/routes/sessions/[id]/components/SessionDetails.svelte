@@ -50,16 +50,16 @@
 
 <div class="mb-6 flex items-start justify-between">
 	<div>
-		<h2 class="mb-2 text-2xl font-semibold text-white">{session.quiz.title}</h2>
+		<h2 class="text-foreground mb-2 text-2xl font-semibold">{session.quiz.title}</h2>
 		{#if session.quiz.description}
-			<p class="mb-4 text-gray-400">{session.quiz.description}</p>
+			<p class="text-muted-foreground mb-4">{session.quiz.description}</p>
 		{/if}
-		<div class="flex flex-wrap gap-4 text-sm text-gray-400">
+		<div class="text-muted-foreground flex flex-wrap gap-4 text-sm">
 			<div class="flex items-center gap-2">
 				<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.74 5.74L10.5 17H8v-2.5L15.26 7.26A6 6 0 0117 7z" />
 				</svg>
-				Session Code: <span class="font-mono font-semibold text-white">{session.code}</span>
+				Session Code: <span class="text-foreground font-mono font-semibold">{session.code}</span>
 				<Button size="sm" variant="outline" onclick={copyShareableLink} class="ml-2 h-6 px-2">
 					{#if copySuccess}
 						<Check class="mr-1 h-3 w-3" />
@@ -87,10 +87,10 @@
 		<!-- Shareable Link -->
 		<div class="bg-muted mt-4 rounded-lg p-4">
 			<div class="flex items-center justify-between">
-				<span class="text-sm font-medium text-gray-300">Share Link:</span>
+				<span class="text-muted-foreground text-sm font-medium">Share Link:</span>
 			</div>
 			<div class="mt-2 flex items-center gap-2">
-				<span class="flex-1 font-mono text-sm break-all text-gray-400">{shareableLink}</span>
+				<span class="text-muted-foreground flex-1 font-mono text-sm break-all">{shareableLink}</span>
 			</div>
 		</div>
 	</div>
@@ -98,7 +98,7 @@
 		<span class="inline-flex items-center rounded-full bg-blue-900 px-3 py-1 text-xs font-medium text-blue-200">
 			{session.quiz.status}
 		</span>
-		<span class="bg-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-medium text-gray-300">
+		<span class="bg-muted text-muted-foreground inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
 			{session.quiz.visibility}
 		</span>
 	</div>

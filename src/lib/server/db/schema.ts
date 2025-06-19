@@ -236,7 +236,8 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 export const quizzesRelations = relations(quizzes, ({ many, one }) => ({
 	questions: many(questions),
 	creator: one(users, { fields: [quizzes.creatorId], references: [users.id] }),
-	quizSessions: many(quizSessions)
+	quizSessions: many(quizSessions),
+	tagAssignments: many(quizTagAssignments)
 }))
 
 export const questionsRelations = relations(questions, ({ one, many }) => ({
@@ -283,4 +284,40 @@ export const questionAttemptsRelations = relations(questionAttempts, ({ one }) =
 	gameAttempt: one(gameAttempts, { fields: [questionAttempts.gameAttemptId], references: [gameAttempts.id] }),
 	sessionQuestion: one(sessionQuestions, { fields: [questionAttempts.sessionQuestionId], references: [sessionQuestions.id] }),
 	selectedSessionOption: one(sessionQuestionOptions, { fields: [questionAttempts.selectedSessionOptionId], references: [sessionQuestionOptions.id] })
+}))
+
+// Quiz Tags tables
+export const quizTags = pgTable("quiz_tags", {
+	id: serial("id").primaryKey(),
+	name: varchar("name", { length: 50 }).notNull().unique(),
+	description: text("description"),
+	color: varchar("color", { length: 7 }), // Hex color
+	icon: varchar("icon", { length: 50 }),
+	createdAt: timestamp("created_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow()
+})
+
+export const quizTagAssignments = pgTable(
+	"quiz_tag_assignments",
+	{
+		id: serial("id").primaryKey(),
+		quizId: integer("quiz_id")
+			.notNull()
+			.references(() => quizzes.id, { onDelete: "cascade" }),
+		tagId: integer("tag_id")
+			.notNull()
+			.references(() => quizTags.id, { onDelete: "cascade" }),
+		assignedAt: timestamp("assigned_at").defaultNow()
+	},
+	(table) => [index("idx_quiz_tag_assignments_quiz_id").on(table.quizId), index("idx_quiz_tag_assignments_tag_id").on(table.tagId)]
+)
+
+// Add relations for quiz tags
+export const quizTagsRelations = relations(quizTags, ({ many }) => ({
+	assignments: many(quizTagAssignments)
+}))
+
+export const quizTagAssignmentsRelations = relations(quizTagAssignments, ({ one }) => ({
+	quiz: one(quizzes, { fields: [quizTagAssignments.quizId], references: [quizzes.id] }),
+	tag: one(quizTags, { fields: [quizTagAssignments.tagId], references: [quizTags.id] })
 }))

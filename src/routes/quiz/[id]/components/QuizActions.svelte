@@ -8,13 +8,13 @@
 
 <div class="flex justify-end">
 	<div class="flex gap-3 overflow-x-auto">
-		<button class="bg-muted hover:bg-muted inline-flex cursor-pointer items-center gap-2 rounded-md px-3 py-1.5 text-base font-medium text-gray-300 transition-colors hover:text-white">
+		<button class="bg-muted hover:bg-muted text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-2 rounded-md px-3 py-1.5 text-base font-medium transition-colors">
 			<ShareNodesOutline class="h-4 w-4" />
 			Share
 		</button>
 
 		{#if isOwner}
-			<a href="/quiz/edit/{quiz.id}" class="bg-muted hover:bg-muted inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-base font-medium text-gray-300 transition-colors hover:text-white">
+			<a href="/quiz/edit/{quiz.id}" class="bg-muted hover:bg-muted text-muted-foreground hover:text-foreground inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-base font-medium transition-colors">
 				<EditOutline class="h-4 w-4" />
 				Edit
 			</a>
@@ -22,7 +22,7 @@
 
 		<form id="startSessionForm" method="POST" action="?/startSession" use:enhance style="display: inline;">
 			<input type="hidden" name="quizId" value={quiz.id} />
-			<button type="submit" class="bg-muted hover:bg-muted inline-flex cursor-pointer items-center gap-2 rounded-md px-3 py-1.5 text-base font-medium text-gray-300 transition-colors hover:text-white">
+			<button type="submit" class="bg-muted hover:bg-muted text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-2 rounded-md px-3 py-1.5 text-base font-medium transition-colors">
 				<PlayOutline class="h-4 w-4" />
 				Start
 			</button>

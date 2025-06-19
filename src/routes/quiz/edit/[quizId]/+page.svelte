@@ -145,16 +145,13 @@
 
 <div class="space-y-6">
 	<!-- Header with back button -->
-	<div class="flex items-center justify-between">
-		<Button href="/quiz/{data.quiz.id}" variant="outline" class="gap-2">
-			<ArrowLeft class="h-4 w-4" />
-			Back to Quiz
-		</Button>
-
-		<Button href="/quiz/edit/{data.quiz.id}/question/new" class="gap-2">
-			<Plus class="h-4 w-4" />
-			Add Question
-		</Button>
+	<div class="sticky top-0 z-[51] -mx-4 -mt-4 px-4 py-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8" style="background-color: var(--background) !important;">
+		<div class="flex items-center justify-between">
+			<Button href="/quiz/{data.quiz.id}" variant="outline" class="gap-2">
+				<ArrowLeft class="h-4 w-4" />
+				Back to Quiz
+			</Button>
+		</div>
 	</div>
 
 	<!-- Quiz Details Form -->

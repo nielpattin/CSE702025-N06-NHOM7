@@ -6,39 +6,39 @@
 	function getDifficultyBadgeClass(difficulty: string | null) {
 		switch (difficulty?.toLowerCase()) {
 			case "easy":
-				return "bg-green-900/30 text-green-200"
+				return "bg-green-500/20 text-foreground"
 			case "medium":
-				return "bg-yellow-900/30 text-yellow-200"
+				return "bg-yellow-500/20 text-foreground"
 			case "hard":
-				return "bg-red-900/30 text-red-200"
+				return "bg-red-500/20 text-foreground"
 			default:
-				return "bg-muted text-gray-200"
+				return "bg-muted text-foreground"
 		}
 	}
 
 	function getVisibilityBadgeClass(visibility: string | null) {
 		switch (visibility?.toLowerCase()) {
 			case "public":
-				return "bg-blue-900/30 text-blue-200"
+				return "bg-blue-500/20 text-foreground"
 			case "private":
-				return "bg-muted text-gray-200"
+				return "bg-muted text-foreground"
 			case "unlisted":
-				return "bg-purple-900/30 text-purple-200"
+				return "bg-purple-500/20 text-foreground"
 			default:
-				return "bg-muted text-gray-200"
+				return "bg-muted text-foreground"
 		}
 	}
 
 	function getStatusBadgeClass(status: string | null) {
 		switch (status?.toLowerCase()) {
 			case "published":
-				return "bg-green-900/30 text-green-200"
+				return "bg-green-500/20 text-foreground"
 			case "draft":
-				return "bg-yellow-900/30 text-yellow-200"
+				return "bg-yellow-500/20 text-foreground"
 			case "archived":
-				return "bg-muted text-gray-200"
+				return "bg-muted text-foreground"
 			default:
-				return "bg-muted text-gray-200"
+				return "bg-muted text-foreground"
 		}
 	}
 </script>

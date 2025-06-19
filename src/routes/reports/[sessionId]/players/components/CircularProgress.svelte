@@ -13,7 +13,7 @@
 		<circle cx={size / 2} cy={size / 2} r={radius} stroke={color ?? "#e5e7eb"} stroke-width={strokeWidth} fill="none" stroke-dasharray={strokeDasharray} stroke-dashoffset={strokeDashoffset} stroke-linecap="round" class="transition-all duration-500 ease-in-out" />
 	</svg>
 	<div class="absolute inset-0 flex items-center justify-center">
-		<span class="text-xs font-bold text-white">
+		<span class="text-foreground text-xs font-bold">
 			{percentage}%
 		</span>
 	</div>

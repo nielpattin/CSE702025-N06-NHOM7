@@ -42,16 +42,16 @@
 			{#each breadcrumbs as breadcrumb, index (breadcrumb.label)}
 				<li>
 					{#if breadcrumb.href && index < breadcrumbs.length - 1}
-						<a href={breadcrumb.href} class="text-gray-400 transition-colors hover:text-white">
+						<a href={breadcrumb.href} class="text-muted-foreground hover:text-foreground transition-colors">
 							{breadcrumb.label}
 						</a>
 					{:else}
-						<span class="font-medium text-white">{breadcrumb.label}</span>
+						<span class="text-foreground font-medium">{breadcrumb.label}</span>
 					{/if}
 				</li>
 				{#if index < breadcrumbs.length - 1}
 					<li>
-						<span class="text-gray-500">/</span>
+						<span class="text-muted-foreground">/</span>
 					</li>
 				{/if}
 			{/each}
@@ -59,14 +59,14 @@
 	</nav>
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold text-white">{title}</h1>
-			<p class="mt-2 text-gray-300">Session created on {formatDate(quizSession.createdAt)}</p>
+			<h1 class="text-foreground text-3xl font-bold">{title}</h1>
+			<p class="text-muted-foreground mt-2">Session created on {formatDate(quizSession.createdAt)}</p>
 		</div>
 		<div class="flex items-center space-x-2">
 			<span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium {quizSession.status === 'active' ? 'bg-green-100 text-green-800' : quizSession.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">
 				{quizSession.status}
 			</span>
-			<span class="text-gray-300">Code: {quizSession.code}</span>
+			<span class="text-muted-foreground">Code: {quizSession.code}</span>
 		</div>
 	</div>
 </div>
@@ -83,7 +83,7 @@
 				</div>
 			</div>
 			<div class="ml-4">
-				<p class="text-sm font-medium text-gray-400">Avg. Accuracy</p>
+				<p class="text-muted-foreground text-sm font-medium">Avg. Accuracy</p>
 				<p class="text-2xl font-bold {sessionAccuracyColor}">{stats.accuracy}%</p>
 			</div>
 		</div>
@@ -99,8 +99,8 @@
 				</div>
 			</div>
 			<div class="ml-4">
-				<p class="text-sm font-medium text-gray-400">Participants</p>
-				<p class="text-2xl font-bold text-white">{stats.totalParticipants}</p>
+				<p class="text-muted-foreground text-sm font-medium">Participants</p>
+				<p class="text-foreground text-2xl font-bold">{stats.totalParticipants}</p>
 			</div>
 		</div>
 	</div>
@@ -115,8 +115,8 @@
 				</div>
 			</div>
 			<div class="ml-4">
-				<p class="text-sm font-medium text-gray-400">Questions</p>
-				<p class="text-2xl font-bold text-white">{stats.totalQuestions}</p>
+				<p class="text-muted-foreground text-sm font-medium">Questions</p>
+				<p class="text-foreground text-2xl font-bold">{stats.totalQuestions}</p>
 			</div>
 		</div>
 	</div>

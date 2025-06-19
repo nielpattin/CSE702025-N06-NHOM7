@@ -15,16 +15,16 @@
 
 <div class="flex flex-wrap justify-end gap-4 text-sm">
 	<div class="flex items-center gap-1">
-		<span class="font-medium text-white">
+		<span class="text-foreground font-medium">
 			{quiz.participants?.toLocaleString() || 0}
 		</span>
-		<span class="text-gray-400">Participants</span>
+		<span class="text-muted-foreground">Participants</span>
 	</div>
 
 	<div class="flex items-center gap-1">
-		<span class="font-medium text-white">
+		<span class="text-foreground font-medium">
 			{formatDuration(quiz.duration)}
 		</span>
-		<span class="text-gray-400">Duration</span>
+		<span class="text-muted-foreground">Duration</span>
 	</div>
 </div>
