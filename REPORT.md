@@ -37,12 +37,12 @@ Hệ thống có hai vai trò chính:
 #### Chức năng dành cho User (Host & Player)
 
 - **FR1: Quản lý người dùng**
-  - Đăng nhập/Đăng ký bằng tài khoản Google, Github
+  - Đăng nhập/Đăng ký bằng tài khoản Google, Github.
   - Tự động tạo tài khoản khi đăng nhập lần đầu.
   - Quản lý thông tin cá nhân cơ bản.
 - **FR2: Quản lý Quiz (Host)**
   - Tạo quiz mới với tiêu đề, mô tả.
-  - Thêm câu hỏi (trắc nghiệm nhiều lựa chọn, đúng/sai)
+  - Thêm câu hỏi (trắc nghiệm nhiều lựa chọn, đúng/sai) và hình ảnh.
   - Thiết lập thời gian, điểm số cho từng câu hỏi.
   - Chỉnh sửa, xóa, và quản lý các quiz đã tạo.
 - **FR3: Tham gia Quiz (Player)**
@@ -66,7 +66,7 @@ Hệ thống có hai vai trò chính:
 
 ---
 
-## 3. Đặc tả và thiết kế
+## 3. Đặc tả và thiết kế chi tiết
 
 ### a. Usecase và mô tả
 
@@ -77,28 +77,7 @@ Hệ thống có hai vai trò chính:
 | **Tham gia Session** | Người tham gia (Player) sử dụng mã mời hoặc link để truy cập vào session. Họ nhập một nickname và có thể bắt đầu làm bài. Hệ thống cho phép làm lại nhiều lần cho đến khi session hết hạn.                                           |
 | **Xem báo cáo**      | Host có thể xem báo cáo chi tiết của một session, bao gồm danh sách người tham gia, số lần thử, và điểm số cao nhất. Player có thể xem lại lịch sử các lần làm bài của mình để so sánh tiến độ.                                      |
 
-### b. Flow chi tiết: Luồng tạo Session và Snapshot câu hỏi
-
-Dưới đây là sơ đồ sequence mô tả chi tiết luồng xử lý khi một Host tạo session mới. Hệ thống sẽ "chụp lại" (snapshot) toàn bộ nội dung của quiz tại thời điểm đó để đảm bảo tính toàn vẹn, ngay cả khi quiz gốc bị chỉnh sửa sau này.
-
-```mermaid
-sequenceDiagram
-    participant Host
-    participant System
-    participant Database
-
-    Host->>System: Create Session (with quiz_id)
-    activate System
-    System->>Database: CREATE quiz_session
-    Database-->>System: return quiz_session_id
-    System->>Database: SELECT questions, question_options FROM quiz WHERE id = quiz_id
-    Database-->>System: return quiz content
-    System->>Database: INSERT session_questions (with quiz_session_id)
-    System->>Database: INSERT session_question_options
-    deactivate System
-```
-
-### c. Thiết kế hướng đối tượng (Sơ đồ quan hệ thực thể)
+### b. Sơ đồ quan hệ thực thể (ERD)
 
 Sơ đồ ERD dưới đây được cập nhật để phản ánh chính xác schema database hiện tại của dự án, thể hiện thiết kế hướng đối tượng của hệ thống.
 
@@ -136,7 +115,7 @@ erDiagram
         serial id PK
         varchar title
         text description
-        text creatorId FK "user.id"
+        text creatorId FK "users.id"
         varchar status "draft, published, archived"
         visibility visibility "public, private"
         difficulty difficulty "easy, medium, hard"
@@ -167,7 +146,7 @@ erDiagram
     quiz_sessions {
         serial id PK
         integer quizId FK "quizzes.id"
-        text hostId FK "user.id"
+        text hostId FK "users.id"
         varchar code UK
         varchar status "active, inactive, expired, deleting"
         timestamp expiresAt
@@ -177,7 +156,7 @@ erDiagram
     participants {
         serial id PK
         integer quizSessionId FK "quiz_sessions.id"
-        text userId FK "user.id"
+        text userId FK "users.id"
         text guestId
         varchar name
         timestamp createdAt
@@ -220,6 +199,11 @@ erDiagram
         integer timeTakenMs
         integer pointsAwarded
     }
+    question_attempt_options {
+        serial id PK
+        integer questionAttemptId FK "question_attempts.id"
+        integer selectedSessionOptionId FK "session_question_options.id"
+    }
     quiz_tags {
         serial id PK
         varchar name UK
@@ -259,22 +243,78 @@ erDiagram
 
     game_attempts ||--o{ question_attempts : "consists_of"
 
+    question_attempts ||--o{ question_attempt_options : "has_multiple_selections"
+
     session_questions ||--o{ session_question_options : "has"
     session_questions ||--o{ question_attempts : "is_attempted_in"
 
     session_question_options ||--o| question_attempts : "is_selected_in"
+    session_question_options ||--o{ question_attempt_options : "is_one_of_selections"
 
     quiz_tags ||--o{ quiz_tag_assignments : "is_assigned"
 ```
 
-### d. Data flow và cơ sở dữ liệu
+### c. Mô tả chi tiết các bảng (Data Dictionary)
 
-Luồng dữ liệu và cơ sở dữ liệu được thể hiện qua hai sơ đồ chính:
+Dưới đây là mô tả chi tiết về mục đích và các trường quan trọng của từng bảng trong cơ sở dữ liệu.
 
-1.  **Sơ đồ ERD (ở mục 3c):** Mô tả cấu trúc và các mối quan hệ của cơ sở dữ liệu PostgreSQL.
-2.  **Sơ đồ Sequence (ở mục 3b):** Minh họa luồng dữ liệu tương tác giữa người dùng, hệ thống và cơ sở dữ liệu trong một kịch bản cụ thể (tạo session).
+#### Nhóm bảng Xác thực & Người dùng
 
-Ngoài ra, luồng dữ liệu khi người chơi làm bài cũng rất quan trọng:
+| Bảng         | Mô tả                                                                                        |
+| :----------- | :------------------------------------------------------------------------------------------- |
+| **users**    | Lưu trữ thông tin cốt lõi của người dùng, bao gồm cả vai trò (Admin/User).                   |
+| **accounts** | Hỗ trợ OAuth, liên kết tài khoản người dùng với các nhà cung cấp bên ngoài (Google, Github). |
+| **sessions** | Lưu trữ thông tin phiên đăng nhập của người dùng theo chuẩn của Auth.js.                     |
+
+#### Nhóm bảng Quản lý Quiz
+
+| Bảng                     | Mô tả                                                                                                              |
+| :----------------------- | :----------------------------------------------------------------------------------------------------------------- |
+| **quizzes**              | Lưu trữ nội dung chính của một bài quiz, bao gồm tiêu đề, mô tả, và các thiết lập như độ khó, trạng thái.          |
+| **questions**            | Chứa các câu hỏi thuộc về một quiz. Mỗi câu hỏi có loại (trắc nghiệm, đúng/sai), nội dung, và các thiết lập riêng. |
+| **question_options**     | Chứa các lựa chọn trả lời cho một câu hỏi. Mỗi lựa chọn có nội dung và một cờ `correct` để xác định đáp án đúng.   |
+| **quiz_tags**            | Định nghĩa các thẻ (tags) để phân loại quiz (ví dụ: "Toán", "Lịch sử").                                            |
+| **quiz_tag_assignments** | Bảng trung gian để gán các thẻ cho quiz, tạo mối quan hệ nhiều-nhiều.                                              |
+
+#### Nhóm bảng Vận hành Session & Chơi game
+
+| Bảng                         | Mô tả                                                                                                                                         |
+| :--------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- |
+| **quiz_sessions**            | Đại diện cho một phiên chơi quiz được khởi tạo từ một quiz gốc. Mỗi session có một mã tham gia (`code`) duy nhất và thời gian hết hạn.        |
+| **participants**             | Lưu trữ thông tin người tham gia một session, có thể là người dùng đã đăng ký (`userId`) hoặc người chơi khách (`guestId`).                   |
+| **game_attempts**            | Ghi lại mỗi lượt chơi của một người tham gia trong một session. Một người có thể chơi nhiều lần.                                              |
+| **question_attempts**        | Ghi lại câu trả lời cụ thể của người chơi cho một câu hỏi trong một lượt chơi, bao gồm đáp án đã chọn, thời gian trả lời và điểm số đạt được. |
+| **question_attempt_options** | Bảng trung gian hỗ trợ cho câu hỏi trắc nghiệm cho phép chọn nhiều đáp án.                                                                    |
+
+#### Nhóm bảng Snapshot
+
+| Bảng                         | Mô tả                                                                                                                                                                                     |
+| :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **session_questions**        | "Chụp lại" (snapshot) nội dung của một câu hỏi tại thời điểm session được tạo. Điều này đảm bảo rằng nếu câu hỏi gốc trong quiz bị thay đổi, nó không ảnh hưởng đến session đang diễn ra. |
+| **session_question_options** | Snapshot các lựa chọn trả lời tương ứng với `session_questions`.                                                                                                                          |
+
+### d. Luồng dữ liệu (Data Flow)
+
+#### Luồng tạo Session và Snapshot câu hỏi
+
+```mermaid
+sequenceDiagram
+    participant Host
+    participant System
+    participant Database
+
+    Host->>System: Create Session (with quiz_id)
+    activate System
+    System->>Database: CREATE quiz_session
+    Database-->>System: return quiz_session_id
+    System->>Database: SELECT questions, question_options FROM quiz WHERE id = quiz_id
+    Database-->>System: return quiz content
+    System->>Database: INSERT session_questions (with quiz_session_id)
+    System->>Database: INSERT session_question_options
+    deactivate System
+```
+
+#### Luồng người chơi làm bài
 
 ```mermaid
 sequenceDiagram
@@ -292,9 +332,9 @@ sequenceDiagram
 
     Note over Player, System: System presents questions to Player...
 
-    Player->>System: Submit Answer (attempt_id, question_id, option_id)
+    Player->>System: Submit Answer (attempt_id, question_id, option_id(s))
     activate System
-    System->>Database: CREATE question_attempt
+    System->>Database: CREATE question_attempt (and question_attempt_options if needed)
     System->>System: Calculate score
     System->>Database: UPDATE game_attempt (score)
     deactivate System

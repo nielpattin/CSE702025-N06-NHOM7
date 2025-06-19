@@ -26,6 +26,11 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				with: {
 					participants: true
 				}
+			},
+			tagAssignments: {
+				with: {
+					tag: true
+				}
 			}
 		}
 	})

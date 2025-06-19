@@ -48,6 +48,19 @@
 							<P class="text-muted-foreground">{data.quiz.description}</P>
 						</div>
 					{/if}
+
+					{#if data.quiz.tagAssignments && data.quiz.tagAssignments.length > 0}
+						<div class="mb-6">
+							<Heading tag="h3" class="text-foreground mb-2 text-lg font-semibold">Categories</Heading>
+							<div class="flex flex-wrap gap-2">
+								{#each data.quiz.tagAssignments as assignment (assignment.id)}
+									<span class="bg-primary text-primary-foreground rounded-full px-3 py-1 text-sm font-medium">
+										{assignment.tag.name}
+									</span>
+								{/each}
+							</div>
+						</div>
+					{/if}
 				</div>
 
 				<!-- Badges and Stats -->
