@@ -1,18 +1,109 @@
 # Báo cáo Dự án: Quiz Learn
 
-## 1. Bảng phân chia công việc chi tiết
+## 1. Phân chia công việc chi tiết
 
-Dưới đây là bảng phân chia công việc chi tiết cho từng thành viên dựa trên tệp [`PlanAndTodo.md`](PlanAndTodo.md).
+### **Tuần 1: Khởi tạo & Core Features**
 
-| Tuần      | Nhiệm vụ chính                     | Trần Thành Long (Backend)                                                                                                      | Vương Quang Quý (Quiz UI)                                                                            | Nguyễn Xuân Mạnh (Auth/Results UI)                                                        | Vũ Văn Sơn (Dashboard/Sessions UI)                                                             |
-| :-------- | :--------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------- |
-| **1-2**   | **Khởi tạo & Nền tảng**            | - Thiết lập project SvelteKit, Drizzle ORM, Auth.js<br>- Cấu hình ESLint, Prettier, Husky<br>- Schema DB ban đầu (Users, Auth) | - Nghiên cứu thư viện component<br>- Dựng layout cơ bản cho trang Quiz Editor                        | - Thiết kế Landing Page<br>- Dựng trang đăng nhập với các provider OAuth (Google, Github) | - Thiết kế layout chính cho Dashboard<br>- Tạo Sidebar và Header components                    |
-| **3-4**   | **Core Features - Backend & DB**   | - Hoàn thiện schema DB (Quiz, Questions, Sessions)<br>- Logic tạo/quản lý Quiz<br>- Logic tạo và theo dõi Session              | - Xây dựng form tạo/sửa câu hỏi<br>- Giao diện quản lý các lựa chọn (answers)                        | - Hoàn thiện luồng đăng nhập/đăng xuất<br>- Xây dựng trang Profile người dùng             | - Dựng các section chính trên Dashboard (Welcome, Trending)<br>- Tích hợp thanh tìm kiếm       |
-| **5-6**   | **Xây dựng giao diện cốt lõi**     | - API cho việc tạo/lấy dữ liệu Quiz<br>- API cho việc tham gia Session<br>- Hoàn thiện vai trò User/Admin                      | - Hoàn thiện Quiz Editor (thêm/sửa/xóa câu hỏi)<br>- Giao diện cài đặt Quiz (thời gian, điểm)        | - Giao diện nhập mã code tham gia<br>- Xây dựng sảnh chờ (session lobby)                  | - Xây dựng trang liệt kê Sessions<br>- Giao diện chi tiết một Session                          |
-| **7-8**   | **Hoàn thiện luồng chơi Quiz**     | - Logic tính điểm và theo dõi lượt chơi (Attempts)<br>- Snapshot Quiz content khi tạo Session<br>- Tối ưu query DB             | - Xây dựng giao diện chơi Quiz (hiển thị câu hỏi, timer)<br>- Luồng trả lời và chuyển câu hỏi        | - Xây dựng trang thư viện Quiz (Library)<br>- Thêm bộ lọc, sắp xếp, tìm kiếm cho thư viện | - Giao diện quản lý người tham gia trong Session<br>- Bắt đầu xây dựng trang Báo cáo (Reports) |
-| **9-10**  | **Tích hợp & Báo cáo**             | - API cho trang báo cáo<br>- Hoàn thiện Admin panel (quản lý user)<br>- Seeding script cho DB                                  | - Giao diện hiển thị kết quả sau khi chơi<br>- Hoàn thiện các action trên Quiz (Start, Edit, Delete) | - Giao diện xem kết quả cá nhân<br>- Review lại từng câu trả lời                          | - Hoàn thiện trang liệt kê Reports<br>- Giao diện báo cáo chi tiết theo Session                |
-| **11-12** | **Hoàn thiện & Tối ưu**            | - Tối ưu hiệu năng backend<br>- Logic dọn dẹp session hết hạn<br>- Review và vá lỗi bảo mật                                    | - Tối ưu UI/UX cho Quiz Editor và Player<br>- Thêm chức năng nhân bản Quiz                           | - Tối ưu UI/UX cho trang Library và Results<br>- Hoàn thiện responsive trên các giao diện | - Tối ưu và hoàn thiện Dashboard<br>- Thêm các biểu đồ/thống kê cơ bản cho trang Reports       |
-| **13-16** | **Kiểm thử, Sửa lỗi & Triển khai** | - Viết test (nếu có)<br>- Rà soát toàn bộ API<br>- Chuẩn bị cho production                                                     | - Kiểm thử chéo các luồng Quiz<br>- Sửa lỗi UI/UX                                                    | - Kiểm thử luồng xác thực và tham gia<br>- Sửa lỗi UI/UX                                  | - Kiểm thử toàn bộ luồng Dashboard và Session<br>- Sửa lỗi UI/UX                               |
+- **Trần Thành Long (Backend)**
+
+  - Thiết lập project SvelteKit, Drizzle ORM, Auth.js
+  - Cấu hình ESLint, Prettier, Husky
+  - Hoàn thiện schema DB (Users, Quiz, Questions, Sessions)
+  - Logic tạo/quản lý Quiz và Session
+  - API cho việc tạo/lấy dữ liệu Quiz
+  - API cho việc tham gia Session
+  - Hoàn thiện vai trò User/Admin
+
+- **Vương Quang Quý (Quiz UI)**
+
+  - Nghiên cứu thư viện component
+  - Dựng layout cơ bản cho trang Quiz Editor
+  - Xây dựng form tạo/sửa câu hỏi
+  - Giao diện quản lý các lựa chọn (answers)
+  - Hoàn thiện Quiz Editor (thêm/sửa/xóa câu hỏi)
+  - Giao diện cài đặt Quiz (thời gian, điểm)
+
+- **Nguyễn Xuân Mạnh (Auth/Results UI)**
+
+  - Thiết kế Landing Page
+  - Dựng trang đăng nhập với các provider OAuth (Google, Github)
+  - Hoàn thiện luồng đăng nhập/đăng xuất
+  - Xây dựng trang Profile người dùng
+  - Giao diện nhập mã code tham gia
+  - Xây dựng sảnh chờ (session lobby)
+
+- **Vũ Văn Sơn (Dashboard/Sessions UI)**
+  - Thiết kế layout chính cho Dashboard
+  - Tạo Sidebar và Header components
+  - Dựng các section chính trên Dashboard (Welcome, Trending)
+  - Tích hợp thanh tìm kiếm
+  - Xây dựng trang liệt kê Sessions
+  - Giao diện chi tiết một Session
+
+### **Tuần 2: Luồng chơi & Báo cáo**
+
+- **Trần Thành Long (Backend)**
+
+  - Logic tính điểm và theo dõi lượt chơi (Attempts)
+  - Snapshot Quiz content khi tạo Session
+  - Tối ưu query DB
+  - API cho trang báo cáo
+  - Hoàn thiện Admin panel (quản lý user)
+  - Seeding script cho DB
+
+- **Vương Quang Quý (Quiz UI)**
+
+  - Xây dựng giao diện chơi Quiz (hiển thị câu hỏi, timer)
+  - Luồng trả lời và chuyển câu hỏi
+  - Giao diện hiển thị kết quả sau khi chơi
+  - Hoàn thiện các action trên Quiz (Start, Edit, Delete)
+  - Thêm chức năng nhân bản Quiz
+
+- **Nguyễn Xuân Mạnh (Auth/Results UI)**
+
+  - Xây dựng trang thư viện Quiz (Library)
+  - Thêm bộ lọc, sắp xếp, tìm kiếm cho thư viện
+  - Giao diện xem kết quả cá nhân
+  - Review lại từng câu trả lời
+  - Tối ưu UI/UX cho trang Library và Results
+
+- **Vũ Văn Sơn (Dashboard/Sessions UI)**
+  - Giao diện quản lý người tham gia trong Session
+  - Xây dựng trang Báo cáo (Reports)
+  - Hoàn thiện trang liệt kê Reports
+  - Giao diện báo cáo chi tiết theo Session
+  - Thêm các biểu đồ/thống kê cơ bản cho trang Reports
+
+### **Tuần 3: Tối ưu & Triển khai**
+
+- **Trần Thành Long (Backend)**
+
+  - Tối ưu hiệu năng backend
+  - Logic dọn dẹp session hết hạn
+  - Review và vá lỗi bảo mật
+  - Viết test (nếu có)
+  - Rà soát toàn bộ API
+  - Chuẩn bị cho production
+
+- **Vương Quang Quý (Quiz UI)**
+
+  - Tối ưu UI/UX cho Quiz Editor và Player
+  - Kiểm thử chéo các luồng Quiz
+  - Sửa lỗi UI/UX
+  - Hoàn thiện responsive design
+
+- **Nguyễn Xuân Mạnh (Auth/Results UI)**
+
+  - Hoàn thiện responsive trên các giao diện
+  - Kiểm thử luồng xác thực và tham gia
+  - Sửa lỗi UI/UX
+  - Tối ưu performance cho Library và Results
+
+- **Vũ Văn Sơn (Dashboard/Sessions UI)**
+  - Tối ưu và hoàn thiện Dashboard
+  - Kiểm thử toàn bộ luồng Dashboard và Session
+  - Sửa lỗi UI/UX
+  - Hoàn thiện tính năng Reports
 
 ---
 
@@ -70,12 +161,150 @@ Hệ thống có hai vai trò chính:
 
 ### a. Usecase và mô tả
 
-| Usecase              | Mô tả                                                                                                                                                                                                                                |
-| :------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Quản lý Quiz**     | Người dùng có thể tạo một quiz mới, thêm các câu hỏi thuộc loại trắc nghiệm hoặc đúng/sai, đính kèm hình ảnh, thiết lập điểm số và thời gian cho mỗi câu. Họ cũng có thể chỉnh sửa, xóa và sắp xếp các quiz trong thư viện của mình. |
-| **Tổ chức Session**  | Từ một quiz đã tạo, người dùng (Host) có thể khởi tạo một "self-paced session", thiết lập thời gian kết thúc và nhận một mã mời hoặc link để chia sẻ cho người khác.                                                                 |
-| **Tham gia Session** | Người tham gia (Player) sử dụng mã mời hoặc link để truy cập vào session. Họ nhập một nickname và có thể bắt đầu làm bài. Hệ thống cho phép làm lại nhiều lần cho đến khi session hết hạn.                                           |
-| **Xem báo cáo**      | Host có thể xem báo cáo chi tiết của một session, bao gồm danh sách người tham gia, số lần thử, và điểm số cao nhất. Player có thể xem lại lịch sử các lần làm bài của mình để so sánh tiến độ.                                      |
+#### 1. Quản lý Quiz (Quiz Management)
+
+**Tác nhân:** Host (User)
+**Điều kiện tiên quyết:** Người dùng phải đăng nhập vào hệ thống.
+
+**Luồng công việc:**
+
+- **Tạo Quiz:**
+
+  - Người dùng khởi tạo quá trình tạo quiz từ dashboard, hoặc sidebar (Create Quiz).
+  - Hệ thống tự động tạo một quiz mới có tiêu đề "Untitled Quiz" ở trạng thái "draft"
+  - Người dùng được chuyển hướng đến trang chỉnh sửa quiz
+
+- **Chỉnh sửa thông tin Quiz:**
+
+  - Cập nhật tiêu đề và mô tả quiz
+  - Gán các thẻ (tags) để phân loại quiz
+  - Lưu thông tin vào cơ sở dữ liệu
+
+- **Quản lý câu hỏi:**
+
+  - Thêm câu hỏi mới (chuyển đến câu hỏi editor)
+  - Chỉnh sửa câu hỏi hiện có
+  - Xóa câu hỏi không cần thiết
+  - Điều chỉnh thời gian và điểm số cho từng câu hỏi
+
+- **Editor câu hỏi chi tiết:**
+  - Nhập nội dung câu hỏi
+  - Chọn loại câu hỏi (Trắc nghiệm nhiều lựa chọn hoặc Đúng/Sai)
+  - Thiết lập điểm số và thời gian giới hạn
+  - Quản lý các lựa chọn trả lời và đánh dấu đáp án đúng
+
+#### 2. Tổ chức Session (Organize Session)
+
+**Tác nhân:** Host (User)
+**Điều kiện tiên quyết:**
+
+- Người dùng phải đăng nhập
+- Người dùng phải là chủ sở hữu của quiz
+- Quiz phải có trạng thái "published"
+
+**Luồng công việc:**
+
+- **Khởi tạo Session:**
+
+  - Host điều hướng đến trang chi tiết quiz của họ
+  - Nhấn nút "Start" để bắt đầu một session mới
+  - Hệ thống xác thực quyền sở hữu và trạng thái quiz
+
+- **Tạo Session:**
+
+  - Tạo mã tham gia ngẫu nhiên 6 ký tự duy nhất
+  - Tạo bản ghi session mới với trạng thái "inactive"
+  - Thiết lập thời gian hết hạn mặc định (24 giờ)
+
+- **Snapshot nội dung:**
+
+  - Sao chép tất cả câu hỏi từ quiz gốc vào bảng session_questions
+  - Sao chép tất cả lựa chọn trả lời vào bảng session_question_options
+  - Đảm bảo nội dung session không bị ảnh hưởng khi quiz gốc thay đổi
+
+- **Chuyển hướng đến quản lý:**
+  - Host được chuyển đến trang quản lý session
+  - Hiển thị mã tham gia và các thông tin session
+  - Cho phép điều chỉnh thời gian hết hạn
+
+#### 3. Tham gia Session (Join Session)
+
+**Tác nhân:** Player (User hoặc Guest)
+**Điều kiện tiên quyết:**
+
+- Host đã tạo session và session đang hoạt động
+- Player có mã tham gia hợp lệ
+
+**Luồng công việc:**
+
+- **Nhập mã tham gia:**
+
+  - Player truy cập trang /join
+  - Nhập mã session 6 ký tự
+  - Hệ thống xác thực mã và chuyển hướng đến lobby session
+
+- **Tham gia Session (Lobby):**
+
+  - Hiển thị thông tin về quiz
+  - Player nhập tên hiển thị
+    - **Người dùng đã đăng ký:** Tên được điền sẵn, có thể thay đổi
+    - **Khách:** Bắt buộc nhập nickname, hệ thống tạo guest_id duy nhất
+  - Tạo bản ghi participant và game_attempt với trạng thái "in_progress"
+
+- **Chơi Quiz:**
+
+  - Hiển thị từng câu hỏi một cách tuần tự
+  - Player chọn đáp án và nhấn "Submit"
+  - Hệ thống ghi nhận câu trả lời, tính điểm và hiển thị kết quả tức thì
+  - Tự động chuyển đến câu hỏi tiếp theo
+
+- **Hoàn thành Quiz:**
+
+  - Sau câu hỏi cuối cùng, đánh dấu attempt là "completed"
+  - Tính tổng điểm và chuyển hướng đến trang kết quả
+  - Hiển thị tóm tắt chi tiết về hiệu suất
+
+- **Xem kết quả:**
+  - Hiển thị điểm số tổng, số câu đúng/sai
+  - Xem lại từng câu hỏi với đáp án đã chọn và đáp án đúng
+  - Tùy chọn thử lại (cho người dùng đã đăng ký)
+
+#### 4. Xem báo cáo (View Reports)
+
+**Tác nhân:** Host (User)
+**Điều kiện tiên quyết:**
+
+- Người dùng phải đăng nhập
+- Người dùng phải là Host của session muốn xem báo cáo
+
+**Luồng công việc:**
+
+- **Dashboard báo cáo Session:**
+
+  - Host truy cập trang /reports
+  - Xem danh sách tất cả session đã tạo
+  - Hỗ trợ tìm kiếm và sắp xếp theo nhiều tiêu chí
+  - Hiển thị thông tin tổng quan: tên session, ngày tạo, số người tham gia, trạng thái
+
+- **Báo cáo tóm tắt người chơi:**
+
+  - Chọn session cụ thể để xem chi tiết
+  - Hiển thị danh sách tất cả người tham gia
+  - Thống kê cho mỗi người: tên, số lần thử, điểm cao nhất, độ chính xác
+  - Sắp xếp theo thứ hạng điểm số
+
+- **Lịch sử thử của người tham gia:**
+
+  - Chọn người chơi cụ thể
+  - Xem tất cả các lần thử của họ trong session
+  - So sánh tiến bộ qua các lần thử
+  - Thống kê chi tiết: điểm số, độ chính xác, thời gian hoàn thành
+
+- **Phân tích chi tiết một lần thử:**
+  - Chọn lần thử cụ thể để xem từng câu hỏi
+  - Hiển thị câu trả lời của người chơi vs đáp án đúng
+  - Thống kê: điểm được trao, thời gian trả lời từng câu
+  - Tóm tắt tổng thể về hiệu suất của lần thử đó
 
 ### b. Sơ đồ quan hệ thực thể (ERD)
 

@@ -15,6 +15,7 @@ Dự án này nhằm mục đích phát triển một ứng dụng web trắc ng
 
 - [Architecture.md](Architecture.md)
 - [PlanAndTodo.md](PlanAndTodo.md)
+- [Báo Cáo](REPORT.md)
 
 ## Developing
 
