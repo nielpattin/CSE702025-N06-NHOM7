@@ -1,9 +1,11 @@
 <script lang="ts">
 	import type { PageData, ActionData } from "./$types"
-	import { Toast, Button } from "flowbite-svelte"
-	import { slide } from "svelte/transition"
-	import { ArrowLeftOutline } from "flowbite-svelte-icons"
-	import { AddQuestionButton, QuizDetailsForm, QuestionsList } from "./components"
+	import { Button } from "$lib/components/ui/button"
+	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card"
+	import { ArrowLeft, Plus } from "@lucide/svelte"
+	import { QuizDetailsForm, QuestionsList, EmptyQuestionsState } from "./components"
+	import { toast } from "svelte-sonner"
+	import { Toaster } from "$lib/components/ui/sonner"
 
 	interface Question {
 		id: number
@@ -24,22 +26,12 @@
 	}>()
 
 	let questions: Question[] = $state(data.questions)
-	let toastStatus = $state(false)
-	let toastMessage = $state("")
 
 	$effect(() => {
 		if (form && "success" in form && form.success) {
-			toastMessage = "Quiz title updated successfully!"
-			toastStatus = true
-			setTimeout(() => {
-				toastStatus = false
-			}, 3000)
+			toast.success("Quiz title updated successfully!")
 		} else if (form && "error" in form && form.error) {
-			toastMessage = form.error
-			toastStatus = true
-			setTimeout(() => {
-				toastStatus = false
-			}, 3000)
+			toast.error(form.error)
 		}
 	})
 
@@ -64,18 +56,84 @@
 	const pointOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50, 100, 200, 500, 1000]
 
 	// Function to handle time limit changes
-	function handleTimeChange(questionId: number, timeValue: number) {
+	async function handleTimeChange(questionId: number, timeValue: number) {
 		const questionIndex = questions.findIndex((q: Question) => q.id === questionId)
-		if (questionIndex !== -1) {
-			questions[questionIndex].timeLimit = timeValue
+		if (questionIndex === -1) return
+
+		try {
+			const response = await fetch(`/quiz/edit/${data.quiz.id}/question/${questionId}`, {
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					timeLimit: timeValue
+				})
+			})
+
+			if (response.ok) {
+				// Update local state
+				questions[questionIndex].timeLimit = timeValue
+				const timeLabel = timeOptions.find((opt) => opt.value === timeValue)?.label || `${timeValue}s`
+				toast.success(`Time limit updated to ${timeLabel}`)
+			} else {
+				const errorData = await response.json()
+				toast.error(errorData.error || "Failed to update time limit")
+			}
+		} catch (error) {
+			console.error("Error updating time limit:", error)
+			toast.error("Failed to update time limit")
 		}
 	}
 
 	// Function to handle points changes
-	function handlePointsChange(questionId: number, pointsValue: number) {
+	async function handlePointsChange(questionId: number, pointsValue: number) {
 		const questionIndex = questions.findIndex((q: Question) => q.id === questionId)
-		if (questionIndex !== -1) {
-			questions[questionIndex].points = pointsValue
+		if (questionIndex === -1) return
+
+		try {
+			const response = await fetch(`/quiz/edit/${data.quiz.id}/question/${questionId}`, {
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					points: pointsValue
+				})
+			})
+
+			if (response.ok) {
+				// Update local state
+				questions[questionIndex].points = pointsValue
+				toast.success(`Points updated to ${pointsValue}`)
+			} else {
+				const errorData = await response.json()
+				toast.error(errorData.error || "Failed to update points")
+			}
+		} catch (error) {
+			console.error("Error updating points:", error)
+			toast.error("Failed to update points")
+		}
+	}
+
+	// Function to handle question deletion
+	async function handleDeleteQuestion(questionId: number) {
+		try {
+			const response = await fetch(`/quiz/edit/${data.quiz.id}/question/${questionId}`, {
+				method: "DELETE"
+			})
+
+			if (response.ok) {
+				// Remove question from local state
+				questions = questions.filter((q: Question) => q.id !== questionId)
+				toast.success("Question deleted successfully!")
+			} else {
+				const errorData = await response.json()
+				toast.error(errorData.error || "Failed to delete question")
+			}
+		} catch (error) {
+			console.error("Error deleting question:", error)
+			toast.error("Failed to delete question")
 		}
 	}
 </script>
@@ -85,19 +143,53 @@
 	<meta name="description" content="Edit quiz details and manage questions" />
 </svelte:head>
 
-<Toast color={form && "success" in form && form.success ? "green" : "red"} class={form && "success" in form && form.success ? "!border !border-emerald-500 !bg-emerald-600 !text-emerald-50 !shadow-lg !shadow-emerald-500/20" : "!border !border-red-500 !bg-red-600 !text-red-50 !shadow-lg !shadow-red-500/20"} transition={slide} position="bottom-right" bind:toastStatus>
-	{toastMessage}
-</Toast>
+<div class="space-y-6">
+	<!-- Header with back button -->
+	<div class="flex items-center justify-between">
+		<Button href="/quiz/{data.quiz.id}" variant="outline" class="gap-2">
+			<ArrowLeft class="h-4 w-4" />
+			Back to Quiz
+		</Button>
 
-<div class="mb-6">
-	<Button href="/quiz/{data.quiz.id}" class="!border-0 !bg-gradient-to-r !from-gray-600 !to-gray-700 !text-white !shadow-md hover:!from-gray-700 hover:!to-gray-800 focus:!ring-0 focus:!outline-none">
-		<ArrowLeftOutline class="me-2 h-4 w-4" />
-		Back to Quiz
-	</Button>
+		<Button href="/quiz/edit/{data.quiz.id}/question/new" class="gap-2">
+			<Plus class="h-4 w-4" />
+			Add Question
+		</Button>
+	</div>
+
+	<!-- Quiz Details Form -->
+	<Card>
+		<CardHeader>
+			<CardTitle>Quiz Details</CardTitle>
+			<CardDescription>Update your quiz title and settings</CardDescription>
+		</CardHeader>
+		<CardContent>
+			<QuizDetailsForm quizTitle={data.quiz.title} quizDescription={data.quiz.description || ""} availableTags={data.availableTags} selectedTagIds={data.selectedTagIds} />
+		</CardContent>
+	</Card>
+
+	<!-- Questions Section -->
+	<Card>
+		<CardHeader>
+			<CardTitle class="flex items-center justify-between">
+				<span>Questions ({questions.length})</span>
+				{#if questions.length > 0}
+					<Button href="/quiz/edit/{data.quiz.id}/question/new" variant="outline" size="sm" class="gap-2">
+						<Plus class="h-4 w-4" />
+						Add Question
+					</Button>
+				{/if}
+			</CardTitle>
+			<CardDescription>Manage the questions for your quiz</CardDescription>
+		</CardHeader>
+		<CardContent>
+			{#if questions.length > 0}
+				<QuestionsList {questions} quizId={data.quiz.id} {timeOptions} {pointOptions} onTimeChange={handleTimeChange} onPointsChange={handlePointsChange} onDeleteQuestion={handleDeleteQuestion} />
+			{:else}
+				<EmptyQuestionsState quizId={data.quiz.id} />
+			{/if}
+		</CardContent>
+	</Card>
 </div>
 
-<QuizDetailsForm quizTitle={data.quiz.title} />
-
-<AddQuestionButton quizId={data.quiz.id} />
-
-<QuestionsList {questions} quizId={data.quiz.id} {timeOptions} {pointOptions} onTimeChange={handleTimeChange} onPointsChange={handlePointsChange} />
+<Toaster richColors />

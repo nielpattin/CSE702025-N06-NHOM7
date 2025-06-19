@@ -1,13 +1,22 @@
 <script lang="ts">
+	import { Card, CardContent } from "$lib/components/ui/card"
+	import { Badge } from "$lib/components/ui/badge"
+	import { Check, X, Info } from "@lucide/svelte"
+
 	type QuestionOption = {
 		id?: number
 		content: string
 		correct: boolean
 	}
 
-	let { options, onOptionsChange } = $props<{
+	let {
+		options,
+		onOptionsChange,
+		class: className
+	} = $props<{
 		options: QuestionOption[]
 		onOptionsChange: (options: QuestionOption[]) => void
+		class?: string
 	}>()
 
 	const trueOption = $derived(options.find((o: QuestionOption) => o.content === "True"))
@@ -30,43 +39,63 @@
 	}
 </script>
 
-<div class="space-y-4">
-	<div class="rounded-lg border border-green-600 bg-green-900/20 p-4 shadow-md">
-		<div class="flex items-center justify-between">
+<div class="{className} grid grid-cols-1 gap-4 md:grid-cols-2">
+	<!-- True Option -->
+	<Card class="relative w-full cursor-pointer border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/20" onclick={setTrueCorrect}>
+		<CardContent class="p-4">
 			<div class="flex items-center gap-4">
-				<div class="flex h-12 w-12 items-center justify-center rounded-full bg-green-600">
-					<span class="text-xl font-bold text-white">T</span>
+				<div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-600 text-white">
+					<Check class="h-5 w-5" />
 				</div>
-				<span class="text-xl font-semibold text-white">True</span>
+				<div>
+					<h3 class="text-lg font-semibold">True</h3>
+					<p class="text-muted-foreground text-sm">Select if this is the correct answer</p>
+				</div>
 			</div>
-			<div class="flex flex-col items-center gap-2">
-				<span class="text-sm font-medium text-gray-300">Correct Answer</span>
-				<input type="checkbox" checked={trueOption?.correct} onchange={setTrueCorrect} class="border-border bg-muted h-5 w-5 rounded text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800" />
-			</div>
-		</div>
-	</div>
+			{#if trueOption?.correct}
+				<div class="absolute -top-1 -right-1">
+					<Badge variant="default" class="bg-green-600 text-white">
+						<Check class="h-3 w-3" />
+					</Badge>
+				</div>
+			{/if}
+		</CardContent>
+	</Card>
 
-	<div class="rounded-lg border border-red-600 bg-red-900/20 p-4 shadow-md">
-		<div class="flex items-center justify-between">
+	<!-- False Option -->
+	<Card class="relative w-full cursor-pointer border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-950/20" onclick={setFalseCorrect}>
+		<CardContent class="p-4">
 			<div class="flex items-center gap-4">
-				<div class="flex h-12 w-12 items-center justify-center rounded-full bg-red-600">
-					<span class="text-xl font-bold text-white">F</span>
+				<div class="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-white">
+					<X class="h-5 w-5" />
 				</div>
-				<span class="text-xl font-semibold text-white">False</span>
+				<div>
+					<h3 class="text-lg font-semibold">False</h3>
+					<p class="text-muted-foreground text-sm">Select if this is the correct answer</p>
+				</div>
 			</div>
-			<div class="flex flex-col items-center gap-2">
-				<span class="text-sm font-medium text-gray-300">Correct Answer</span>
-				<input type="checkbox" checked={falseOption?.correct} onchange={setFalseCorrect} class="border-border bg-muted h-5 w-5 rounded text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800" />
-			</div>
-		</div>
-	</div>
+			{#if falseOption?.correct}
+				<div class="absolute -top-1 -right-1">
+					<Badge variant="default" class="bg-red-600 text-white">
+						<Check class="h-3 w-3" />
+					</Badge>
+				</div>
+			{/if}
+		</CardContent>
+	</Card>
 
-	<div class="mt-4 rounded-lg border border-blue-600 bg-blue-900/20 p-4">
-		<p class="text-sm font-medium text-blue-300">
-			<svg class="mr-2 inline h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-			</svg>
-			<span class="font-bold">Note:</span> Only one answer can be correct for True/False questions.
-		</p>
+	<!-- Info Note -->
+	<div class="col-span-2">
+		<Card class="border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20">
+			<CardContent class="p-4">
+				<div class="flex items-start gap-3">
+					<Info class="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+					<div>
+						<p class="text-sm font-medium text-blue-900 dark:text-blue-100">Note: Only one answer can be correct for True/False questions.</p>
+						<p class="mt-1 text-xs text-blue-700 dark:text-blue-300">Select either True or False as the correct answer for this question.</p>
+					</div>
+				</div>
+			</CardContent>
+		</Card>
 	</div>
 </div>

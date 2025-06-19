@@ -129,3 +129,54 @@
 		@apply bg-background text-foreground;
 	}
 }
+
+@layer utilities {
+	/* Custom scrollbar styles */
+	.scrollbar-custom {
+		scrollbar-width: thin;
+		scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+	}
+
+	.scrollbar-custom::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.scrollbar-custom::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.scrollbar-custom::-webkit-scrollbar-thumb {
+		background-color: rgba(255, 255, 255, 0.3);
+		border-radius: 3px;
+		transition: background-color 0.2s ease;
+	}
+
+	.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+		background-color: rgba(255, 255, 255, 0.5);
+	}
+
+	.scrollbar-custom::-webkit-scrollbar-corner {
+		background: transparent;
+	}
+
+	/* Custom placeholder styling */
+	.placeholder-bright::placeholder {
+		color: #fde047; /* yellow-300 */
+		opacity: 1;
+	}
+
+	.placeholder-bright::-webkit-input-placeholder {
+		color: #fde047; /* yellow-300 */
+		opacity: 1;
+	}
+
+	.placeholder-bright::-moz-placeholder {
+		color: #fde047; /* yellow-300 */
+		opacity: 1;
+	}
+
+	.placeholder-bright:-ms-input-placeholder {
+		color: #fde047; /* yellow-300 */
+		opacity: 1;
+	}
+}

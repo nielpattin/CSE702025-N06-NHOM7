@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { Button } from "$lib/components/ui/button"
+	import { Card, CardContent } from "$lib/components/ui/card"
+	import { Badge } from "$lib/components/ui/badge"
+	import { Plus } from "@lucide/svelte"
 	import AnswerOption from "./AnswerOption.svelte"
 
 	type QuestionOption = {
@@ -7,10 +11,17 @@
 		correct: boolean
 	}
 
-	let { options, onOptionsChange } = $props<{
+	let {
+		options,
+		onOptionsChange,
+		class: className
+	} = $props<{
 		options: QuestionOption[]
 		onOptionsChange: (options: QuestionOption[]) => void
+		class?: string
 	}>()
+
+	const colors = ["bg-[#2a62a6]", "bg-[#2a9696]", "bg-[#e69a2a]", "bg-[#d5546d]", "bg-[#8a2a8a]"]
 
 	function updateOption(index: number, updatedOption: Partial<QuestionOption>) {
 		const newOptions = options.map((option: QuestionOption, i: number) => (i === index ? { ...option, ...updatedOption } : option))
@@ -28,20 +39,21 @@
 	}
 </script>
 
-<div class="space-y-4">
+<div class="flex h-full gap-4 {className}">
 	{#each options as option, index (index)}
-		<AnswerOption {option} {index} canRemove={options.length > 2} onContentChange={(content) => updateOption(index, { content })} onCorrectChange={(correct) => updateOption(index, { correct })} onRemove={() => removeOption(index)} />
+		<div class="h-full w-full min-w-0 flex-1">
+			<AnswerOption {option} {index} canRemove={options.length > 1} onContentChange={(content) => updateOption(index, { content })} onCorrectChange={(correct) => updateOption(index, { correct })} onRemove={() => removeOption(index)} cardClass="h-72" colorClass={colors[index % colors.length]} />
+		</div>
 	{/each}
 
-	<div class="mt-6 flex items-center justify-between rounded-lg border border-blue-600 bg-blue-900/20 p-4">
-		<span class="text-sm font-medium text-blue-300">
-			{options.length} of 5 options (minimum 2 required)
-		</span>
-		<button type="button" class="rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-2 text-sm font-medium text-white transition-all hover:from-green-700 hover:to-emerald-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50" onclick={addOption} disabled={options.length >= 5}>
-			<svg class="mr-2 inline h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-			</svg>
-			Add Answer Option
-		</button>
-	</div>
+	{#if options.length < 5}
+		<div class="h-full flex-1">
+			<Card class="bg-muted/20 hover:bg-muted/30 relative flex h-full min-h-64 cursor-pointer items-center justify-center border-dashed transition-colors" onclick={addOption}>
+				<CardContent class="flex h-full w-full flex-col items-center justify-center p-4">
+					<Plus class="text-muted-foreground h-12 w-12" />
+					<span class="text-muted-foreground mt-2 text-lg font-semibold">Add Option</span>
+				</CardContent>
+			</Card>
+		</div>
+	{/if}
 </div>

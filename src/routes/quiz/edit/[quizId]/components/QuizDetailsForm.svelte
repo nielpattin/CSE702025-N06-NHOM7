@@ -1,76 +1,114 @@
 <script lang="ts">
-	import { enhance, applyAction } from "$app/forms"
+	import { enhance } from "$app/forms"
 	import { invalidateAll } from "$app/navigation"
-	import { Toast, Spinner } from "flowbite-svelte"
-	import { slide } from "svelte/transition"
+	import { Button } from "$lib/components/ui/button"
+	import { Input } from "$lib/components/ui/input"
+	import { Textarea } from "$lib/components/ui/textarea"
+	import { TagSelector } from "$lib/components/ui/tag-selector"
+	import { Edit, Save, Loader2 } from "@lucide/svelte"
+	import { toast } from "svelte-sonner"
+	import type { Tag } from "$lib/types"
 
-	let { quizTitle } = $props<{
+	interface ActionData {
+		error?: string
+		success?: boolean
+	}
+
+	let {
+		quizTitle,
+		quizDescription = "",
+		availableTags = [],
+		selectedTagIds = []
+	} = $props<{
 		quizTitle: string
+		quizDescription?: string
+		availableTags: Tag[]
+		selectedTagIds?: number[]
 	}>()
 
 	let currentTitle = $state(quizTitle)
+	let currentDescription = $state(quizDescription)
+	let currentTagIds = $state([...selectedTagIds])
 	let isEditing = $state(false)
 	let isSubmitting = $state(false)
-	let toastStatus = $state(false)
-	let toastMessage = $state("")
-	let submissionSuccessful = $state(false)
+
+	function handleTagsChange(tagIds: number[]) {
+		currentTagIds = tagIds
+	}
 </script>
 
 <form
 	method="POST"
+	action="?/updateQuizDetails"
 	use:enhance={() => {
 		isSubmitting = true
-		submissionSuccessful = false
-		let submissionPromise: Promise<void>
-		const minLoadingTime = new Promise<void>((resolve) => {
-			setTimeout(resolve, 1000)
-		})
-
 		return async ({ result }) => {
-			submissionPromise = new Promise<void>((resolve) => {
-				resolve()
-			})
-
-			await Promise.all([submissionPromise, minLoadingTime])
 			isSubmitting = false
 			isEditing = false
-			await applyAction(result)
 
 			if (result.type === "success") {
-				submissionSuccessful = true
-				toastMessage = "Quiz title updated successfully."
-				toastStatus = true
-				setTimeout(() => {
-					toastStatus = false
-				}, 3000)
+				toast.success("Quiz details updated successfully!")
 				await invalidateAll()
+			} else if (result.type === "failure" && result.data) {
+				const data = result.data as ActionData
+				toast.error(data.error || "Failed to update quiz details")
 			}
 		}
 	}}
-	class="mb-8"
-	id="quiz-form"
+	class="space-y-6"
 >
-	<div class="mb-4">
-		<label for="quiz-title" class="mb-3 block text-lg font-medium text-white">Quiz Title</label>
-		<div class="flex items-end gap-3">
-			<div class="flex-1">
-				<input type="text" id="quiz-title" name="title" class="border-border bg-muted w-full rounded-lg border px-4 py-3 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" bind:value={currentTitle} placeholder="Enter quiz title..." required disabled={!isEditing || isSubmitting} />
-			</div>
-			{#if isEditing}
-				<button type="submit" disabled={isSubmitting} class="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-sm font-medium whitespace-nowrap text-white shadow-md transition-all hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none">
-					{#if isSubmitting}
-						<Spinner class="mr-2" size="4" />
-						Saving...
-					{:else}
-						Save Changes
-					{/if}
-				</button>
-			{:else}
-				<button type="button" onclick={() => (isEditing = true)} class="rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 px-4 py-3 text-sm font-medium whitespace-nowrap text-white shadow-md transition-all hover:from-gray-700 hover:to-gray-800 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none"> Edit </button>
-			{/if}
-		</div>
+	<!-- Title Field -->
+	<div class="space-y-2">
+		<label for="quiz-title" class="text-sm font-medium">Quiz Title</label>
+		<Input id="quiz-title" name="title" bind:value={currentTitle} placeholder="Enter quiz title..." required disabled={!isEditing || isSubmitting} />
 	</div>
-	<Toast color="green" class="!border !border-emerald-500 !bg-emerald-600 !text-emerald-50 !shadow-lg !shadow-emerald-500/20" transition={slide} position="bottom-right" bind:toastStatus>
-		{toastMessage}
-	</Toast>
+
+	<!-- Description Field -->
+	<div class="space-y-2">
+		<label for="quiz-description" class="text-sm font-medium">Description (Optional)</label>
+		<Textarea id="quiz-description" name="description" bind:value={currentDescription} placeholder="Enter quiz description..." disabled={!isEditing || isSubmitting} rows={3} />
+	</div>
+
+	<!-- Tags Selection -->
+	<div class="space-y-2">
+		<label class="text-sm font-medium">Categories</label>
+		<TagSelector {availableTags} selectedTagIds={currentTagIds} onTagsChange={handleTagsChange} variant="default" />
+		<!-- Hidden input to send tag IDs -->
+		{#each currentTagIds as tagId (tagId)}
+			<input type="hidden" name="tagIds" value={tagId} />
+		{/each}
+	</div>
+
+	<!-- Action Buttons -->
+	<div class="flex gap-3">
+		{#if isEditing}
+			<Button type="submit" disabled={isSubmitting} class="gap-2">
+				{#if isSubmitting}
+					<Loader2 class="h-4 w-4 animate-spin" />
+					Saving...
+				{:else}
+					<Save class="h-4 w-4" />
+					Save Changes
+				{/if}
+			</Button>
+			<Button
+				type="button"
+				variant="outline"
+				onclick={() => {
+					isEditing = false
+					currentTitle = quizTitle
+					currentDescription = quizDescription
+					currentTagIds = [...selectedTagIds]
+				}}
+				disabled={isSubmitting}
+			>
+				Cancel
+			</Button>
+		{:else}
+			<Button type="button" variant="outline" onclick={() => (isEditing = true)} class="gap-2">
+				<Edit class="h-4 w-4" />
+				Edit Details
+			</Button>
+		{/if}
+	</div>
 </form>

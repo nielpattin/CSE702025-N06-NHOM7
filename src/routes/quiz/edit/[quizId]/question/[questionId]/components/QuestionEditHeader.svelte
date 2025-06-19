@@ -1,4 +1,10 @@
 <script lang="ts">
+	import { Button } from "$lib/components/ui/button"
+	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "$lib/components/ui/card"
+	import { Input } from "$lib/components/ui/input"
+	import * as Select from "$lib/components/ui/select"
+	import { ArrowLeft, Save, Clock, Trophy } from "@lucide/svelte"
+
 	let { quizId, questionType, points, timeLimit, isSubmitting, onTypeChange, onPointsChange, onTimeLimitChange } = $props<{
 		quizId: string | number
 		questionType: "multiple_choice" | "true_false"
@@ -11,37 +17,63 @@
 	}>()
 </script>
 
-<header class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-	<div class="flex items-center gap-4">
-		<a href="/quiz/edit/{quizId}" class="bg-muted hover:bg-muted inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none">
-			<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-			</svg>
-			Back to Quiz Editor
-		</a>
-		<h1 class="text-2xl font-bold text-white">Edit Question</h1>
-	</div>
+<div class="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-b backdrop-blur">
+	<div class="container mx-auto max-w-4xl p-4">
+		<div class="flex items-center justify-between">
+			<Button href="/quiz/edit/{quizId}" variant="ghost" size="sm" class="gap-2">
+				<ArrowLeft class="h-4 w-4" />
+				Back to Quiz Editor
+			</Button>
 
-	<div class="flex flex-wrap items-center gap-4">
-		<div class="flex flex-col">
-			<label for="question-type" class="mb-2 text-sm font-medium text-gray-300">Question Type</label>
-			<select id="question-type" class="border-border bg-muted rounded-lg border px-3 py-2 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" value={questionType} onchange={(e) => onTypeChange(e.currentTarget.value as "multiple_choice" | "true_false")}>
-				<option value="multiple_choice">Multiple Choice</option>
-				<option value="true_false">True/False</option>
-			</select>
-		</div>
-		<div class="flex flex-col">
-			<label for="question-points" class="mb-2 text-sm font-medium text-gray-300">Points</label>
-			<input id="question-points" type="number" value={points} oninput={(e) => onPointsChange(Number(e.currentTarget.value))} class="border-border bg-muted w-20 rounded-lg border px-3 py-2 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" min="1" />
-		</div>
-		<div class="flex flex-col">
-			<label for="time-limit" class="mb-2 text-sm font-medium text-gray-300">Time Limit (seconds)</label>
-			<input id="time-limit" type="number" value={timeLimit} oninput={(e) => onTimeLimitChange(Number(e.currentTarget.value))} class="border-border bg-muted w-24 rounded-lg border px-3 py-2 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" min="5" />
-		</div>
-		<div class="flex flex-col justify-end">
-			<button type="submit" disabled={isSubmitting} class="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-2 text-sm font-medium text-white shadow-md transition-all hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50">
-				{isSubmitting ? "Saving..." : "Save Question"}
-			</button>
+			<div class="flex items-center gap-4">
+				<div class="text-muted-foreground hidden items-center gap-4 text-sm sm:flex">
+					<span class="flex items-center gap-1">
+						<Trophy class="h-3 w-3" />
+						{points} pts
+					</span>
+					<span class="flex items-center gap-1">
+						<Clock class="h-3 w-3" />
+						{timeLimit}s
+					</span>
+				</div>
+			</div>
 		</div>
 	</div>
-</header>
+</div>
+
+<Card class="border-border/50">
+	<CardHeader>
+		<CardTitle>Question Settings</CardTitle>
+		<CardDescription>Configure the basic settings for your question</CardDescription>
+	</CardHeader>
+	<CardContent>
+		<div class="grid gap-4 sm:grid-cols-3">
+			<div class="space-y-2">
+				<label for="question-type" class="text-muted-foreground text-sm font-medium">Question Type</label>
+				<Select.Root type="single" value={questionType} onValueChange={(value: string | undefined) => value && onTypeChange(value as "multiple_choice" | "true_false")}>
+					<Select.Trigger id="question-type">
+						{questionType === "multiple_choice" ? "Multiple Choice" : "True/False"}
+					</Select.Trigger>
+					<Select.Content>
+						<Select.Item value="multiple_choice">Multiple Choice</Select.Item>
+						<Select.Item value="true_false">True/False</Select.Item>
+					</Select.Content>
+				</Select.Root>
+			</div>
+			<div class="space-y-2">
+				<label for="question-points" class="text-muted-foreground flex items-center gap-1 text-sm font-medium">
+					<Trophy class="h-3 w-3" />
+					Points
+				</label>
+				<Input id="question-points" type="number" value={points} oninput={(e: Event) => onPointsChange(Number((e.currentTarget as HTMLInputElement).value))} min="1" class="w-full" />
+			</div>
+			<div class="space-y-2">
+				<label for="time-limit" class="text-muted-foreground flex items-center gap-1 text-sm font-medium">
+					<Clock class="h-3 w-3" />
+					Time Limit (seconds)
+				</label>
+				<Input id="time-limit" type="number" value={timeLimit} oninput={(e: Event) => onTimeLimitChange(Number((e.currentTarget as HTMLInputElement).value))} min="5" class="w-full" />
+			</div>
+		</div>
+	</CardContent>
+</Card>

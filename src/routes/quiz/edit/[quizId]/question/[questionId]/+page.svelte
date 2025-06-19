@@ -1,7 +1,10 @@
 <script lang="ts">
 	import type { PageData, ActionData } from "./$types"
 	import { enhance } from "$app/forms"
-	import { AlertMessage } from "../../../../components"
+	import { Button } from "$lib/components/ui/button"
+	import { Save } from "@lucide/svelte"
+	import { toast } from "svelte-sonner"
+	import { Toaster } from "$lib/components/ui/sonner"
 	import { QuestionEditHeader, AnswerOptionsContainer, QuestionContentForm } from "./components"
 
 	type QuestionOption = {
@@ -24,7 +27,6 @@
 	let { quiz } = data
 	let question = $state<Question>(data.question as Question)
 	let isSubmitting = $state(false)
-	let showSuccess = $state(false)
 
 	// Handle question type changes and ensure correct options structure
 	$effect(() => {
@@ -46,18 +48,21 @@
 	// Handle form submission
 	function handleEnhance() {
 		isSubmitting = true
-		showSuccess = false
 		return async ({ result, update }: { result: { type: string; [key: string]: unknown }; update: () => Promise<void> }) => {
 			isSubmitting = false
 			if (result.type === "success") {
-				showSuccess = true
-				setTimeout(() => {
-					showSuccess = false
-				}, 3000)
+				toast.success("Question saved successfully!")
 			}
 			await update()
 		}
 	}
+
+	// Handle form errors
+	$effect(() => {
+		if (form?.error) {
+			toast.error(form.error)
+		}
+	})
 
 	// Handler functions for component props
 	function handleTypeChange(type: "multiple_choice" | "true_false") {
@@ -82,39 +87,45 @@
 </script>
 
 <svelte:head>
-	<title>Edit Question - Quiz Learn</title>
+	<title>{question.id === "new" ? "Create New Question" : "Edit Question"} - Quiz Learn</title>
 	<meta name="description" content="Edit quiz question and answer options" />
 </svelte:head>
 
-<form method="POST" class="space-y-8" use:enhance={handleEnhance}>
-	<!-- Hidden inputs for form data -->
-	<input type="hidden" name="content" bind:value={question.content} />
-	<input type="hidden" name="type" bind:value={question.type} />
-	<input type="hidden" name="points" bind:value={question.points} />
-	<input type="hidden" name="time_limit" bind:value={question.timeLimit} />
+<div class="bg-background min-h-screen">
+	<div class="w-full px-0 py-4">
+		<form method="POST" class="space-y-8" use:enhance={handleEnhance}>
+			<!-- Hidden inputs for form data -->
+			<input type="hidden" name="content" bind:value={question.content} />
+			<input type="hidden" name="type" bind:value={question.type} />
+			<input type="hidden" name="points" bind:value={question.points} />
+			<input type="hidden" name="time_limit" bind:value={question.timeLimit} />
 
-	<!-- Hidden inputs for options -->
-	{#each question.options as option, index (index)}
-		<input type="hidden" name="option-content-{index}" bind:value={option.content} />
-		<input type="hidden" name="option-correct-{index}" value={option.correct ? "on" : ""} />
-	{/each}
+			<!-- Hidden inputs for options -->
+			{#each question.options as option, index (index)}
+				<input type="hidden" name="option-content-{index}" bind:value={option.content} />
+				<input type="hidden" name="option-correct-{index}" value={option.correct ? "on" : ""} />
+			{/each}
 
-	<!-- Success Message -->
-	{#if showSuccess}
-		<AlertMessage type="success" message="Question saved successfully!" />
-	{/if}
+			<!-- Question Edit Header -->
+			<QuestionEditHeader quizId={quiz.id} questionType={question.type} points={question.points} timeLimit={question.timeLimit} {isSubmitting} onTypeChange={handleTypeChange} onPointsChange={handlePointsChange} onTimeLimitChange={handleTimeLimitChange} />
 
-	<!-- Error Message -->
-	{#if form?.error}
-		<AlertMessage type="error" message={form.error} />
-	{/if}
+			<!-- Question Content Form -->
+			<QuestionContentForm content={question.content} onContentChange={handleContentChange} />
 
-	<!-- Question Edit Header -->
-	<QuestionEditHeader quizId={quiz.id} questionType={question.type} points={question.points} timeLimit={question.timeLimit} {isSubmitting} onTypeChange={handleTypeChange} onPointsChange={handlePointsChange} onTimeLimitChange={handleTimeLimitChange} />
+			<!-- Answer Options -->
+			<AnswerOptionsContainer questionType={question.type} options={question.options} onOptionsChange={handleOptionsChange} />
 
-	<!-- Question Content Form -->
-	<QuestionContentForm content={question.content} onContentChange={handleContentChange} />
+			<!-- Save Button -->
+			<div class="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky bottom-0 -mx-4 border-t p-4 backdrop-blur">
+				<div class="flex justify-end">
+					<Button type="submit" disabled={isSubmitting} class="gap-2" size="lg">
+						<Save class="h-4 w-4" />
+						{isSubmitting ? "Saving..." : "Save Question"}
+					</Button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
 
-	<!-- Answer Options -->
-	<AnswerOptionsContainer questionType={question.type} options={question.options} onOptionsChange={handleOptionsChange} />
-</form>
+<Toaster richColors />
